@@ -654,6 +654,51 @@ body{font-size:14.5px}
  .boardhead,.trainrow{grid-template-columns:39px 64px minmax(0,1fr) 46px;column-gap:6px;padding-left:9px;padding-right:9px}
 }
 
+
+/* v33: one compact RR expand control; copyright fixed at sidebar bottom. */
+.side-foot{margin-top:auto}
+.fold-button{
+ display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0;
+ border:1px solid transparent;border-radius:5px;background:transparent;color:#475d75;
+ transition:background-color .15s,border-color .15s,color .15s
+}
+.fold-button svg.chevron{
+ display:block;flex:none;width:17px;height:17px;fill:none;
+ stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round
+}
+.fold-button:hover{background:#eef4fa;border-color:#dbe5f1;color:var(--main)}
+.fold-button:focus-visible{outline:2px solid var(--main);outline-offset:2px}
+.fold-mini-logo{display:none}
+@media(min-width:751px){
+ .folded .side-header{
+  height:var(--head);padding:0 5px;display:flex;flex-direction:row;
+  align-items:center;justify-content:center;gap:0
+ }
+ .folded .fold-button{width:62px;height:40px;gap:5px;padding:0 5px}
+ .folded .fold-mini-logo{display:flex;align-items:center;justify-content:center;flex:none}
+ .folded .fold-mini-logo img{width:30px;height:auto;max-height:17px;display:block}
+ .folded .fold-button svg.chevron{width:14px;height:14px;transform:rotate(180deg)}
+ .folded .fold-placeholder{display:none}
+ .folded .side-foot{
+  display:flex;align-items:center;justify-content:center;
+  margin-top:auto;padding:12px 0 15px;border-top:0;
+  min-height:0;color:#808b96;font-size:10px;line-height:1;letter-spacing:.035em
+ }
+ .folded .side-foot span{
+  display:block;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap
+ }
+}
+@media(max-width:750px){
+ .fold-button,.app.folded .fold-button{display:none}
+ .side-foot,.app.folded .side-foot{
+  display:block;margin-top:0;padding:11px 17px;border-top:1px solid var(--hair);
+  font-size:11px;letter-spacing:normal;line-height:1.35
+ }
+ .side-foot span,.app.folded .side-foot span{
+  writing-mode:horizontal-tb;transform:none;white-space:normal
+ }
+}
+
 </style>
 </head>
 <body>
@@ -725,17 +770,18 @@ body{font-size:14.5px}
   <aside class="side">
     <div class="side-header">
       <div class="longmark"><img src="./assets/rr-mainline-logo.svg" width="410" height="60" alt="RR Mainline"></div>
-      <div class="shortmark"><img src="./assets/rr-mark.svg" width="108" height="50" alt="RR"></div>
-      <button id="collapse" class="fold-button" title="Collapse departures" aria-label="Collapse departures">‹</button>
+      <button id="collapse" class="fold-button" type="button" title="Collapse departures" aria-label="Collapse departures" aria-controls="sidebarContent" aria-expanded="true">
+        <span class="fold-mini-logo" aria-hidden="true"><img src="./assets/rr-mark.svg" width="108" height="50" alt=""></span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 18l-6-6 6-6"/></svg>
+      </button>
     </div>
-    <div class="side-content">
+    <div class="side-content" id="sidebarContent">
       <div class="board-tabs" role="tablist" aria-label="Railway information"><button id="departuresTab" class="board-tab active" type="button" role="tab" aria-selected="true">Departures</button><button id="journeysTab" class="board-tab" type="button" role="tab" aria-selected="false">Journeys</button></div>
       <div class="side-controls"><div id="stationPanel"><div class="eyebrow">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button">Station facilities <span aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct trains only</label></div></div>
       <div class="boardhead"><span>Time</span><span>Train</span><span>Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
-      <footer class="side-foot">© Radelish Railways plc 2026</footer>
     </div>
-    <div class="fold-placeholder"><button id="reopen" aria-label="Open departures" title="Open departures"><svg viewBox="0 0 24 24"><path d="M3 4h18v3H3zm0 6h18v3H3zm0 6h12v3H3z"/></svg></button><span>Board</span></div>
+    <footer class="side-foot"><span>© Radelish Railways plc 2026</span></footer>
   </aside>
   <section class="map-area">
     <header class="map-header">
@@ -1349,8 +1395,16 @@ $('to').addEventListener('change',()=>searchJourneys());
 
 $('trace').onclick=()=>searchJourneys();$('clear').onclick=()=>{viewMode='departures';updateBoardTabs();selectedJourney=null;selectedLegPaths=[];clear()};
 stationSelect.addEventListener('change',e=>setCurrentStation(e.target.value));
-$('collapse').onclick=()=>{app.classList.toggle('folded');const is=app.classList.contains('folded');$('collapse').textContent=is?'›':'‹';$('collapse').setAttribute('aria-label',is?'Expand departures':'Collapse departures');setTimeout(resize,200)};
-$('reopen').onclick=()=>$('collapse').click();
+$('collapse').onclick=()=>{
+ app.classList.toggle('folded');
+ const is=app.classList.contains('folded');
+ const control=$('collapse');
+ const action=is?'Expand departures':'Collapse departures';
+ control.setAttribute('aria-label',action);
+ control.setAttribute('aria-expanded',String(!is));
+ control.title=action;
+ setTimeout(resize,200);
+};
 $('closeDetail').onclick=()=>{app.classList.remove('detail-open');$('showTrainDetails').hidden=!selectedTrain;requestAnimationFrame(resize)};
 const ro=new ResizeObserver(()=>resize());ro.observe(container);
 pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
