@@ -457,6 +457,32 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .stop-list.has-disruptions .stop-name{padding-top:12px;padding-bottom:12px}
 @media(max-width:990px){.stop-list.has-disruptions .stop{grid-template-columns:22px 67px minmax(0,1fr);column-gap:10px}}
 
+
+/* v27 — RR Info identity; map controls grouped to the left; improved small type. */
+.map-header{justify-content:flex-start;column-gap:19px;row-gap:9px}
+.map-title{flex:0 0 auto}
+.map-tools{margin-left:0;justify-content:flex-start;column-gap:9px;row-gap:7px}
+.map-tools #clear{position:static;top:auto;right:auto}
+.eyebrow,.map-tools label,.station-fac-link{font-size:13px}
+.boardhead{font-size:11.5px}
+.rowstatus .status-tag{font-size:12.5px}
+.side-foot,.map-legend,.journey-count,.journey-via,.journey-via .status-tag{font-size:12px}
+.facility span{font-size:11px;line-height:1.25}
+.picker-option,.picker-input,.map-tools>button,.station-info-button,.station-intro{font-size:13px}
+.picker-empty,.journey-row-meta,.journey-summary-sub,.journey-leg-heading,.journey-transfer{font-size:12.5px}
+.keylabel,.infoval{font-size:13.5px}
+.details-note,.station-note{font-size:12px}
+@media (min-width:751px) and (max-width:990px){
+ .map-title{width:auto;flex:0 0 100%}
+ .map-tools{width:100%;margin-left:0;justify-content:flex-start}
+ .map-tools #clear{position:static;top:auto;right:auto}
+ .boardhead{font-size:10.5px}
+}
+@media (max-width:750px){
+ .map-header{justify-content:flex-start}
+ .map-tools{justify-content:flex-start}
+ .map-legend{font-size:11.5px}
+}
 </style>
 </head>
 <body>
@@ -532,8 +558,8 @@ button{transition:background-color .12s ease,border-color .12s ease}
     <title>Clip 175</title>
     <g id="🚆RR-Master" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <rect id="Rectangle-3" fill="#FFFFFF" x="-76" y="-138" width="906" height="960"></rect>
-        <text id="RR-Info" font-family="FrutigerNext-Md, Frutiger Next" font-size="75" font-weight="400" letter-spacing="-0.3" fill="#181818">
-            <tspan x="131.996011" y="55">Info</tspan>
+        <text id="Mainline" font-family="FrutigerNext-Md, Frutiger Next" font-size="75" font-weight="400" letter-spacing="-0.3" fill="#181818">
+            <tspan x="131.996011" y="55">Mainline</tspan>
         </text>
         <path d="M50.4848433,5 L63.0987288,5 L97.9305582,39.9063025 L97.9305582,5.15830576 L107.189542,14.4309003 L107.189542,55 L81.5520711,55 C75.5336399,55 69.7633604,52.601465 65.5182791,48.3352255 L36.6537638,19.3268445 C33.5247198,16.1822049 29.2711127,14.4147727 24.8349349,14.4159587 L16.2298906,14.4182593 L56.7047019,55 L44.0907561,55 L9.25892666,20.0936975 L9.25892666,54.8416931 L0,45.5690999 L0,5 L25.6698361,5 C31.6889577,5 37.4598404,7.39908378 41.7050329,11.6661865 L70.5614481,40.6715349 C73.6905759,43.8168126 77.9446307,45.5846494 82.3813199,45.5834612 L90.9596543,45.5811638 L50.4848433,5 Z" id="Clip-175" fill="#0057B8"></path>
     </g>
@@ -559,11 +585,11 @@ button{transition:background-color .12s ease,border-color .12s ease}
   </aside>
   <section class="map-area">
     <header class="map-header">
-      <div class="map-title">Network</div>
+      <div class="map-title">RR Info</div>
       <div class="map-tools"><label for="fromInput">From</label><select id="from"></select><label for="toInput">To</label><select id="to"></select><button id="trace" type="button">Find trains</button><button id="clear" type="button">Reset</button></div>
     </header>
     <div class="map-container" id="mapContainer">
-      <svg id="map" role="img" aria-label="Interactive RR Info railway network"><g id="world"><path id="hslTrack" class="rail hsl"/><path id="mlTrack" class="rail ml"/><g id="routeWorld"></g></g><g id="stationLayer"></g><g id="labelLayer"></g></svg>
+      <svg id="map" role="img" aria-label="Interactive RR Info railway map"><g id="world"><path id="hslTrack" class="rail hsl"/><path id="mlTrack" class="rail ml"/><g id="routeWorld"></g></g><g id="stationLayer"></g><g id="labelLayer"></g></svg>
       <div class="tooltip" id="tooltip"></div>
       <button id="showTrainDetails" class="map-train-toggle" type="button" hidden>Train details</button>
       <div class="map-notice" id="mapNotice"></div>
