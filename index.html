@@ -753,6 +753,32 @@ body{font-size:14.5px}
  .board-tab{font-size:11.5px}
 }
 
+
+/* v39 - aligned journey gutters, explicit journey filters and per-train amenities. */
+.journey-row{padding-left:20px;padding-right:20px}
+.journey-more{width:calc(100% - 40px);margin-left:20px;margin-right:20px}
+.journey-filters{display:flex;flex-direction:column;gap:10px;margin-top:13px}
+.journey-filters .direct-filter{margin-top:0;line-height:1.3}
+.filter-hint{color:#667588;font-size:11px}
+.leg-ends{font-size:13px;color:#4d637a;line-height:1.4;margin:4px 0 8px}
+.journey-leg+.journey-transfer{margin-top:12px}
+.journey-transfer .transfer-detail{display:block;margin-top:4px;color:#50677d}
+.journey-leg .facilities-heading{margin-top:16px;margin-bottom:11px;font-size:13px}
+.journey-leg .facilities{margin-bottom:12px}
+.journey-leg .stops-heading{margin-top:19px}
+.journey-leg:not(:first-of-type){border-top:1px solid #e4e9ee;margin-top:10px}
+@media(min-width:751px) and (max-width:1260px){
+ .journey-row{padding-left:15px;padding-right:15px}
+ .journey-more{width:calc(100% - 30px);margin-left:15px;margin-right:15px}
+}
+@media(max-width:750px){
+ .journey-row{padding-left:17px;padding-right:17px}
+ .journey-more{width:calc(100% - 34px);margin-left:17px;margin-right:17px}
+}
+@media(max-width:370px){
+ .journey-row{padding-left:14px;padding-right:14px}
+ .journey-more{width:calc(100% - 28px);margin-left:14px;margin-right:14px}
+}
 </style>
 </head>
 <body>
@@ -831,7 +857,7 @@ body{font-size:14.5px}
     </div>
     <div class="side-content" id="sidebarContent">
       <div class="board-tabs" role="tablist" aria-label="Railway information"><button id="departuresTab" class="board-tab active" type="button" role="tab" aria-selected="true">Departures</button><button id="arrivalsTab" class="board-tab" type="button" role="tab" aria-selected="false">Arrivals</button><button id="journeysTab" class="board-tab" type="button" role="tab" aria-selected="false">Journeys</button></div>
-      <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button">Station facilities <span aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct trains only</label></div></div>
+      <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button">Station facilities <span aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><div class="journey-filters"><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct trains only</label><label class="direct-filter" title="Every leg must be operated by RR Max or RR Via"><input type="checkbox" id="highSpeedOnly"> High-speed only <span class="filter-hint">Max / Via</span></label></div></div></div>
       <div class="boardhead"><span>Time</span><span>Train</span><span id="boardRouteHeader">Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
     </div>
@@ -864,6 +890,8 @@ const LABELS=["Yuchow Central", "Peiting Central", "North Chungsia", "Yenchia Ma
 const LABEL_HINTS={"Yuchow Central": [0, -24, "middle"], "Peiting Central": [0, 26, "middle"], "North Chungsia": [0, -24, "middle"], "Yenchia Main": [0, -24, "middle"], "Somerfield St John": [0, -24, "middle"], "Batavie": [0, -22, "middle"], "Touraine-Central": [0, -24, "middle"], "Prinsburg Central": [18, 0, "start"], "Cranford Central": [0, 26, "middle"], "Amptonside Central": [0, -24, "middle"], "Farinport Central": [-20, 0, "end"], "Havenbolme Hbf": [-18, 0, "end"], "Binchester": [0, 24, "middle"], "Mapleriver Central": [0, 28, "middle"], "Grafton Central": [0, 24, "middle"], "Ribeauvillé": [0, 26, "middle"], "Brunswick": [18, 0, "start"], "Bayarfort": [18, 0, "start"], "Vindelle-Central": [0, 26, "middle"], "Melbridge Central": [0, 28, "middle"], "Victoria Central": [18, 0, "start"], "Southend": [0, 28, "middle"], "Songqiao Airport": [18, 0, "start"], "Atlantic Airport": [18, 0, "start"]};
 
 const C={Max:'#0057B8',VIA:'#D162C0',InterCity:'#0057B8',Nightline:'#394779'};
+function serviceName(type){return ({Max:'RR Max',VIA:'RR Via',InterCity:'RR InterCity',Nightline:'RR Nightline'})[type]||('RR '+type)}
+function isHighSpeed(train){return train.type==='Max'||train.type==='VIA'}
 const P=GRAPH.pts, E=GRAPH.edges;
 const $=id=>document.getElementById(id);
 const app=$('app'), map=$('map'), board=$('board'), stationSelect=$('stationSelect');
@@ -1020,29 +1048,33 @@ function pictoItem(name){
  const kind=ICONS[name]||ICONS[facilityLabel(name)];if(!kind)return '';
  return `<div class="facility" title="${name}"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#rr-picto-${kind}"></use></svg><span>${name}</span></div>`;
 }
+const STATION_CORE=['Information','Accessible','Accessible Toilet','Toilet','Lift','Escalator'];
 const STATION_AMENITIES={
- national:['Information','Accessible','Toilet','Accessible Toilet','Lift','Escalator','Interchange','Café','Dining','Wi-Fi','Power','Luggage','Cycles','Baby Changing','Family','Quiet Zone','Shower'],
- major:['Information','Accessible','Toilet','Accessible Toilet','Lift','Escalator','Interchange','Café','Dining','Wi-Fi','Power','Luggage','Cycles','Baby Changing','Family'],
- regional:['Information','Accessible','Toilet','Accessible Toilet','Lift','Escalator','Interchange','Café','Wi-Fi','Power','Luggage','Baby Changing'],
- local:['Information','Accessible','Toilet','Accessible Toilet','Lift','Café','Wi-Fi','Power'],
- halt:['Information','Accessible','Toilet','Wi-Fi']
+ national:['Interchange','Café','Dining','Wi-Fi','Luggage','Cycles','Baby Changing','Family'],
+ major:['Interchange','Café','Dining','Wi-Fi','Luggage','Cycles','Baby Changing','Family'],
+ regional:['Interchange','Café','Wi-Fi','Luggage','Baby Changing'],
+ local:['Café','Wi-Fi']
 };
 function stationFacilities(name){
- const airport=AIRPORT_STATIONS.has(name)||/\bAirport\b/.test(name);
- const tier=NATIONAL_HUBS.has(name)?'national':MAJOR_INTERCHANGES.has(name)||/\b(Hbf|Central|Main)\b/.test(name)?'major':REGIONAL_INTERCHANGES.has(name)?'regional':/\b(Airport|Aéroport)\b/.test(name)?'regional':'local';
- const items=[...STATION_AMENITIES[tier]];
- if(airport){
-  // Airport stations also offer the airport/interchange connection icons.
-  for(const item of ['Airport','Interchange','Luggage','Escalator','Baby Changing'])if(!items.includes(item))items.push(item);
- }
+ const airport=AIRPORT_STATIONS.has(name)||/\\bAirport\\b/.test(name);
+ const tier=NATIONAL_HUBS.has(name)?'national':MAJOR_INTERCHANGES.has(name)||/\\b(Hbf|Central|Main)\\b/.test(name)?'major':REGIONAL_INTERCHANGES.has(name)?'regional':/\\b(Airport|Aéroport)\\b/.test(name)?'regional':'local';
+ const items=[...STATION_CORE,...STATION_AMENITIES[tier]];
+ if(airport)for(const item of ['Airport','Interchange','Luggage','Baby Changing'])items.push(item);
+ return [...new Set(items)];
+}
+function trainFacilities(train){
+ const items=[...new Set(train.fac.map(facilityLabel))];
+ if(items.includes('Accessible')&&items.includes('Toilet')&&!items.includes('Accessible Toilet'))items.push('Accessible Toilet');
  return items;
 }
 function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){
  $('detailsTitle').textContent='Station facilities';$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
+ const additional=facilities.filter(f=>!STATION_CORE.includes(f));
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${returnTrain.train.id}"><span aria-hidden="true">←</span> Back to ${returnTrain.train.id}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney">← Back to journey</button>`:'';
  detail.innerHTML=`<div class="station-name-band">${name}</div>
- ${backButton}<div class="station-picto-grid">${facilities.map(pictoItem).join('')}</div>
+ ${backButton}<div class="facilities-heading">Standard facilities</div><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
+ ${additional.length?`<div class="facilities-heading">Additional station facilities</div><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}
  `;
  if(returnTrain){
   $('backToTrain').addEventListener('click',()=>{
@@ -1059,11 +1091,10 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
 }
 $('stationInfo').addEventListener('click',()=>fillStationInfo(currentStation));
 $('stationInfoLeft').addEventListener('click',()=>fillStationInfo(currentStation));
-function fillDetails(t){$('detailsTitle').textContent='Train details';$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=t.hereIndex??0,isArrival=viewMode==='arrivals';const facilityNames=[...new Set(t.fac.map(facilityLabel))];
- if(facilityNames.includes('Accessible')&&facilityNames.includes('Toilet'))facilityNames.push('Accessible Toilet');
+function fillDetails(t){$('detailsTitle').textContent='Train details';$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=t.hereIndex??0,isArrival=viewMode==='arrivals';const facilityNames=trainFacilities(t);
  const facilities=facilityNames.map(pictoItem).join('');
  const stops=t.route.map(([name,time],i)=>`<div class="stop${name===currentStation?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${t.type}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="facilities-heading">Facilities</div><div class="facilities">${facilities}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${stops}</div>`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${serviceName(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="facilities-heading">On-board facilities</div><div class="facilities">${facilities}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${stops}</div>`;
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
 function chooseTrain(t,openDrawer=true){selectedJourney=null;selectedLegPaths=[];selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=C[t.type];manualTrace=false;fillDetails(t);drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');$('showTrainDetails').hidden=true;requestAnimationFrame(()=>{resize();focusRoute()})}}
@@ -1307,11 +1338,11 @@ function journeyLeg(t,a,b){
  if(arr<=dep)return null;
  return {train:t,from:a,to:b,fromIdx:ia,toIdx:ib,dep,arr};
 }
-function findJourneys(from,to){
+function findJourneys(from,to,highSpeedOnly=false){
  if(from===to)return [];
  const departures=[],arrivals=[],direct=[];
  for(const t of TRAINS){
-  if(statusTone(t.status)==='cancelled')continue;
+  if(statusTone(t.status)==='cancelled'||(highSpeedOnly&&!isHighSpeed(t)))continue;
   const i=t.route.findIndex(p=>p[0]===from),j=t.route.findIndex(p=>p[0]===to);
   if(i>=0&&i<t.route.length-1){
    const dep=stopOrdinal(t,i);
@@ -1356,7 +1387,7 @@ function findJourneys(from,to){
   const startingPoints=new Set(departures.map(l=>l.to));
   const middleByOrigin=new Map();
   for(const t of TRAINS){
-   if(statusTone(t.status)==='cancelled')continue;
+   if(statusTone(t.status)==='cancelled'||(highSpeedOnly&&!isHighSpeed(t)))continue;
    for(let i=0;i<t.route.length-1;i++){
     const station=t.route[i][0];if(!startingPoints.has(station))continue;
     const dep=stopOrdinal(t,i);
@@ -1411,11 +1442,11 @@ function renderJourneyResults(){
  const from=$('from').value,to=$('to').value;
  $('journeyFromName').textContent=from;$('journeyToName').textContent=to;
  const onlyDirect=$('directOnly').checked;
- const list=journeyResults.filter(j=>!onlyDirect||j.change===0);
+ const list=journeyResults.filter(j=>(!onlyDirect||j.change===0)&&(!$('highSpeedOnly').checked||j.legs.every(l=>isHighSpeed(l.train))));
  $('journeyCount').textContent=list.length+' '+(list.length===1?'service':'services');
  board.replaceChildren();
  if(from===to){board.innerHTML='<div class="empty">Choose two different stations.</div>';return}
- if(!list.length){board.innerHTML='<div class="empty">No services found between these stations in the current timetable.</div>';return}
+ if(!list.length){board.innerHTML=`<div class="empty">No ${$('highSpeedOnly').checked?'high-speed ':''}${onlyDirect?'direct ':''}services found between these stations in the current timetable.</div>`;return}
  for(const j of list.slice(0,journeyShown)){
   const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
   el.style.setProperty('--journey-color',C[j.legs[0].train.type]);
@@ -1428,10 +1459,18 @@ function renderJourneyResults(){
 }
 function searchJourneys(autoSelect=true){
  const from=$('from').value,to=$('to').value;
- journeyResults=findJourneys(from,to);journeyShown=12;selectedJourney=null;
+ journeyResults=findJourneys(from,to,$('highSpeedOnly').checked);
+ journeyShown=12;selectedJourney=null;
  viewMode='journeys';updateBoardTabs();renderJourneyResults();board.scrollTop=0;
- if(autoSelect&&journeyResults.length){const j=journeyResults.find(j=>!$('directOnly').checked||j.change===0);if(j)chooseJourney(j)}
- else{selectedTrain=null;selectedPath=[];selectedLegPaths=[];selectedNames=[from,to];routeWorld.replaceChildren();drawMap();$('detailsTitle').textContent='Journey details';detail.innerHTML='<div class="empty">Select a train to view its journey.</div>';$('focusRoute').hidden=true;app.classList.remove('detail-open');requestAnimationFrame(resize)}
+ const first=journeyResults.find(j=>(!$('directOnly').checked||j.change===0)&&(!$('highSpeedOnly').checked||j.legs.every(l=>isHighSpeed(l.train))));
+ if(autoSelect&&first){chooseJourney(first)}
+ else{
+  selectedTrain=null;selectedPath=[];selectedLegPaths=[];selectedNames=[from,to];
+  routeWorld.replaceChildren();drawMap();$('detailsTitle').textContent='Journey details';
+  detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
+  $('focusRoute').hidden=true;app.classList.remove('detail-open');
+  $('showTrainDetails').hidden=true;requestAnimationFrame(resize);
+ }
 }
 function getSegmentPath(t,a,b){
  const start=t.route.findIndex(p=>p[0]===a),end=t.route.findIndex(p=>p[0]===b);
@@ -1457,16 +1496,20 @@ function fillJourneyDetails(j){
  $('detailsTitle').textContent='Journey details';$('focusRoute').hidden=false;
  const from=j.legs[0].from,to=j.legs[j.legs.length-1].to;
  let legs='';
- j.legs.forEach((l,index)=>{
-  const t=l.train,c=C[t.type],stations=t.route.slice(l.fromIdx,l.toIdx+1);
-  const rows=stations.map(([name,time],i)=>`<div class="stop${name===from?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,l.fromIdx+i)}</div><button type="button" class="stop-name stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button></div>`).join('');
-  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service" style="--service-color:${c}">${t.id}</span><span>${t.type}</span>${statusTag(stopStatus(t,l.fromIdx))}</h3><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${rows}</div></section>`;
-  if(index<j.legs.length-1)legs+=`<div class="journey-transfer"><strong>Change at ${l.to}</strong> · ${j.legs[index+1].dep-l.arr} min</div>`;
+ j.legs.forEach((leg,index)=>{
+  const t=leg.train,c=C[t.type],stations=t.route.slice(leg.fromIdx,leg.toIdx+1);
+  const rows=stations.map(([name,time],i)=>`<div class="stop${name===from?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,leg.fromIdx+i)}</div><button type="button" class="stop-name stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button></div>`).join('');
+  const facilities=trainFacilities(t);
+  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service" style="--service-color:${c}">${t.id}</span><span>${serviceName(t.type)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3><div class="leg-ends">${leg.from} → ${leg.to}</div><div class="facilities-heading">On board this train</div><div class="facilities">${facilities.map(pictoItem).join('')}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${rows}</div></section>`;
+  if(index<j.legs.length-1){
+   const next=j.legs[index+1],station=leg.to;
+   const arrivalPlatform=t.platforms?.[station]||t.plat||'—';
+   const departurePlatform=next.train.platforms?.[station]||next.train.plat||'—';
+   legs+=`<div class="journey-transfer"><strong>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div>`;
+  }
  });
- const uniqueFacilityNames=[...new Set(j.legs.flatMap(l=>l.train.fac.map(facilityLabel)))];
- if(uniqueFacilityNames.includes('Accessible')&&uniqueFacilityNames.includes('Toilet'))uniqueFacilityNames.push('Accessible Toilet');
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
- detail.innerHTML=`<div class="journey-hero"><div class="journey-summary-time"><div><strong>${stopTimeMarkup(depFirst.train,depFirst.fromIdx)}</strong><small>Departs</small><span class="station">${from}</span></div><span class="arrow" aria-hidden="true">→</span><div class="journey-arrival"><strong>${stopTimeMarkup(arrLast.train,arrLast.toIdx)}</strong><small>Arrives</small><span class="station">${to}</span></div></div><div class="journey-summary-sub">${fmtDuration(j.arr-j.dep)} · ${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</div></div>${legs}<div class="facilities-heading">Facilities</div><div class="facilities">${uniqueFacilityNames.map(pictoItem).join('')}</div>`;
+ detail.innerHTML=`<div class="journey-hero"><div class="journey-summary-time"><div><strong>${stopTimeMarkup(depFirst.train,depFirst.fromIdx)}</strong><small>Departs</small><span class="station">${from}</span></div><span class="arrow" aria-hidden="true">→</span><div class="journey-arrival"><strong>${stopTimeMarkup(arrLast.train,arrLast.toIdx)}</strong><small>Arrives</small><span class="station">${to}</span></div></div><div class="journey-summary-sub">${fmtDuration(j.arr-j.dep)} · ${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</div></div>${legs}`;
  detail.querySelectorAll('.stop-station').forEach(btn=>btn.addEventListener('click',()=>{
   const name=decodeURIComponent(btn.dataset.name),returned=j;
   setCurrentStation(name);fillStationInfo(name,null,returned);
@@ -1475,9 +1518,8 @@ function fillJourneyDetails(j){
 $('departuresTab').addEventListener('click',()=>setViewMode('departures'));
 $('arrivalsTab').addEventListener('click',()=>setViewMode('arrivals'));
 $('journeysTab').addEventListener('click',()=>searchJourneys());
-$('directOnly').addEventListener('change',()=>{journeyShown=12;renderJourneyResults();if(selectedJourney&&$('directOnly').checked&&selectedJourney.change) {
- const first=journeyResults.find(j=>j.change===0);if(first)chooseJourney(first);
- }});
+$('directOnly').addEventListener('change',()=>searchJourneys());
+$('highSpeedOnly').addEventListener('change',()=>searchJourneys());
 $('from').addEventListener('change',()=>searchJourneys());
 $('to').addEventListener('change',()=>searchJourneys());
 
