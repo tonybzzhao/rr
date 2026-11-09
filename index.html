@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RR Mainline — Interactive Network</title>
+<title>RR Info</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8cGF0aCBkPSJNNTAuNDg0ODQzMywwIEw2My4wOTg3Mjg4LDAgTDk3LjkzMDU1ODIsMzQuOTA2MzAyNSBMOTcuOTMwNTU4MiwwLjE1ODMwNTc2MSBMMTA3LjE4OTU0Miw5LjQzMDkwMDI3IEwxMDcuMTg5NTQyLDUwIEw4MS41NTIwNzExLDUwIEM3NS41MzM2Mzk5LDUwIDY5Ljc2MzM2MDQsNDcuNjAxNDY1IDY1LjUxODI3OTEsNDMuMzM1MjI1NSBMMzYuNjUzNzYzOCwxNC4zMjY4NDQ1IEMzMy41MjQ3MTk4LDExLjE4MjIwNDkgMjkuMjcxMTEyNyw5LjQxNDc3MjY2IDI0LjgzNDkzNDksOS40MTU5NTg2OSBMMTYuMjI5ODkwNiw5LjQxODI1OTI4IEw1Ni43MDQ3MDE5LDUwIEw0NC4wOTA3NTYxLDUwIEw5LjI1ODkyNjY2LDE1LjA5MzY5NzUgTDkuMjU4OTI2NjYsNDkuODQxNjkzMSBMMCw0MC41NjkwOTk5IEwwLDAgTDI1LjY2OTgzNjEsMCBDMzEuNjg4OTU3NywwIDM3LjQ1OTg0MDQsMi4zOTkwODM3OCA0MS43MDUwMzI5LDYuNjY2MTg2NDYgTDcwLjU2MTQ0ODEsMzUuNjcxNTM0OSBDNzMuNjkwNTc1OSwzOC44MTY4MTI2IDc3Ljk0NDYzMDcsNDAuNTg0NjQ5NCA4Mi4zODEzMTk5LDQwLjU4MzQ2MTIgTDkwLjk1OTY1NDMsNDAuNTgxMTYzOCBMNTAuNDg0ODQzMywwIFoiIGZpbGw9IiMwMDU3QjgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIuMSAxOC4wKSBzY2FsZSgwLjU2KSIvPgo8L3N2Zz4=">
 
 <style>
@@ -532,8 +532,8 @@ button{transition:background-color .12s ease,border-color .12s ease}
     <title>Clip 175</title>
     <g id="🚆RR-Master" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <rect id="Rectangle-3" fill="#FFFFFF" x="-76" y="-138" width="906" height="960"></rect>
-        <text id="Mainline" font-family="FrutigerNext-Md, Frutiger Next" font-size="75" font-weight="400" letter-spacing="-0.3" fill="#181818">
-            <tspan x="131.996011" y="55">Mainline</tspan>
+        <text id="RR-Info" font-family="FrutigerNext-Md, Frutiger Next" font-size="75" font-weight="400" letter-spacing="-0.3" fill="#181818">
+            <tspan x="131.996011" y="55">Info</tspan>
         </text>
         <path d="M50.4848433,5 L63.0987288,5 L97.9305582,39.9063025 L97.9305582,5.15830576 L107.189542,14.4309003 L107.189542,55 L81.5520711,55 C75.5336399,55 69.7633604,52.601465 65.5182791,48.3352255 L36.6537638,19.3268445 C33.5247198,16.1822049 29.2711127,14.4147727 24.8349349,14.4159587 L16.2298906,14.4182593 L56.7047019,55 L44.0907561,55 L9.25892666,20.0936975 L9.25892666,54.8416931 L0,45.5690999 L0,5 L25.6698361,5 C31.6889577,5 37.4598404,7.39908378 41.7050329,11.6661865 L70.5614481,40.6715349 C73.6905759,43.8168126 77.9446307,45.5846494 82.3813199,45.5834612 L90.9596543,45.5811638 L50.4848433,5 Z" id="Clip-175" fill="#0057B8"></path>
     </g>
@@ -563,7 +563,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
       <div class="map-tools"><label for="fromInput">From</label><select id="from"></select><label for="toInput">To</label><select id="to"></select><button id="trace" type="button">Find trains</button><button id="clear" type="button">Reset</button></div>
     </header>
     <div class="map-container" id="mapContainer">
-      <svg id="map" role="img" aria-label="Interactive RR Mainline railway network"><g id="world"><path id="hslTrack" class="rail hsl"/><path id="mlTrack" class="rail ml"/><g id="routeWorld"></g></g><g id="stationLayer"></g><g id="labelLayer"></g></svg>
+      <svg id="map" role="img" aria-label="Interactive RR Info railway network"><g id="world"><path id="hslTrack" class="rail hsl"/><path id="mlTrack" class="rail ml"/><g id="routeWorld"></g></g><g id="stationLayer"></g><g id="labelLayer"></g></svg>
       <div class="tooltip" id="tooltip"></div>
       <button id="showTrainDetails" class="map-train-toggle" type="button" hidden>Train details</button>
       <div class="map-notice" id="mapNotice"></div>
