@@ -684,11 +684,26 @@ const ICONS={
 const mapFacilityName={'Wi‑Fi':'Wi-Fi','Quiet':'Quiet Zone','Seat':'Reserved Seats','Baby changing':'Baby Changing'};
 function facilityLabel(name){return mapFacilityName[name]||name;}
 
+// Facilities reflect the relative scale of RR stations: large city terminals
+// offer substantially more than small stops. Airport symbols are shown only
+// where a station serves an airport.
+const NATIONAL_HUBS=new Set([
+ 'Mapleriver Central','Peiting Central','Prinsburg Central','Vindelle-Central',
+ 'Victoria Central','Yenchia Main','Somerfield St John','Touraine-Central',
+ 'Amptonside Central','Havenbolme Hauptbahnhof'
+]);
 const MAJOR_INTERCHANGES=new Set([
- 'Mapleriver Central','Peiting Central','North Chungsia','Yenchia Main',
- 'Amptonside Central','Somerfield St John','Batavie','Grafton Central',
- 'Ribeauvillé','Touraine-Central','Prinsburg Central','Cranford Central',
- 'Melbridge Central','Victoria Central','Binchester','Hantsin'
+ ...NATIONAL_HUBS,
+ 'North Chungsia','Yuchow Central','Farinport Central','Medway Central',
+ 'Grafton Central','Melbridge Central','Cranford Central','Batavie',
+ 'Ribeauvillé','Binchester','Hantsin','Brunswick','Southend'
+]);
+const REGIONAL_INTERCHANGES=new Set([
+ 'Peiting New Town','Chankow','Chungsia','Sianning','Yungang',
+ 'Canterbury','Chatham','Norbourne','Hiltsbury','Königstadt',
+ 'Medway Airport','Springford','Netherwood','Newport','Hervilly','Cartier',
+ 'Aéroport Parnay','Yuchow Airport','Songqiao Airport','Alderford Airport',
+ 'Atlantic Airport','Medway Central','Cosgrove','Grafton Central'
 ]);
 const AIRPORT_STATIONS=new Set([
  'Yuchow Airport','Songqiao Airport','Alderford Airport','Newport',
@@ -698,13 +713,22 @@ function pictoItem(name){
  const kind=ICONS[name]||ICONS[facilityLabel(name)];if(!kind)return '';
  return `<div class="facility" title="${name}"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#rr-picto-${kind}"></use></svg><span>${name}</span></div>`;
 }
+const STATION_AMENITIES={
+ national:['Information','Accessible','Toilet','Accessible Toilet','Lift','Escalator','Interchange','Café','Dining','Wi-Fi','Power','Luggage','Cycles','Baby Changing','Family','Quiet Zone','Shower'],
+ major:['Information','Accessible','Toilet','Accessible Toilet','Lift','Escalator','Interchange','Café','Dining','Wi-Fi','Power','Luggage','Cycles','Baby Changing','Family'],
+ regional:['Information','Accessible','Toilet','Accessible Toilet','Lift','Escalator','Interchange','Café','Wi-Fi','Power','Luggage','Baby Changing'],
+ local:['Information','Accessible','Toilet','Accessible Toilet','Lift','Café','Wi-Fi','Power'],
+ halt:['Information','Accessible','Toilet','Wi-Fi']
+};
 function stationFacilities(name){
- const major=MAJOR_INTERCHANGES.has(name);
  const airport=AIRPORT_STATIONS.has(name)||/\bAirport\b/.test(name);
- const items=['Information','Toilet','Lift'];
- if(major){items.push('Escalator','Interchange','Baby Changing','Accessible Toilet');}
- if(airport){items.push('Airport','Interchange');}
- return [...new Set(items)];
+ const tier=NATIONAL_HUBS.has(name)?'national':MAJOR_INTERCHANGES.has(name)||/\b(Hauptbahnhof|Central|Main)\b/.test(name)?'major':REGIONAL_INTERCHANGES.has(name)?'regional':/\b(Airport|Aéroport)\b/.test(name)?'regional':'local';
+ const items=[...STATION_AMENITIES[tier]];
+ if(airport){
+  // Airport stations also offer the airport/interchange connection icons.
+  for(const item of ['Airport','Interchange','Luggage','Escalator','Baby Changing'])if(!items.includes(item))items.push(item);
+ }
+ return items;
 }
 function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){
  $('detailsTitle').textContent='Station facilities';$('focusRoute').hidden=true;
