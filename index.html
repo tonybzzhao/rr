@@ -633,6 +633,27 @@ body{font-size:14.5px}
  .journey-summary-time strong .time-delayed .retime-box{font-size:18px}
 }
 
+
+/* v32: Phone departure board remains visible before map. */
+@media (max-width:750px){
+ /* Restore natural page flow: train listings are scrollable, not compressed away. */
+ .app,.app.folded{display:flex;flex-direction:column;height:auto;min-height:100dvh}
+ .side{order:0;width:100%;height:auto;flex:0 0 auto;min-height:0;overflow:visible}
+ .side-content,.app.folded .side-content{display:flex;flex:0 0 auto;flex-direction:column;height:auto;min-height:0;max-height:none;overflow:visible}
+ .board-tabs,.side-controls,.boardhead{flex:0 0 auto}
+ .board{display:block;flex:0 0 auto;height:auto;min-height:142px;max-height:min(42dvh,370px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ .side-foot,.app.folded .side-foot{display:block;flex:0 0 auto}
+ .map-area{order:1;width:100%;flex:0 0 auto;min-height:440px;height:max(440px,56dvh)}
+ /* A collapsed desktop sidebar must not hide the board on mobile. */
+ .fold-button,.fold-placeholder,.app.folded .fold-placeholder{display:none}
+ .app.folded .side-header{height:var(--head);padding:0 15px;flex-direction:row;align-items:center;justify-content:space-between}
+ .app.folded .longmark{display:block}
+ .app.folded .shortmark{display:none}
+}
+@media (max-width:370px){
+ .boardhead,.trainrow{grid-template-columns:39px 64px minmax(0,1fr) 46px;column-gap:6px;padding-left:9px;padding-right:9px}
+}
+
 </style>
 </head>
 <body>
