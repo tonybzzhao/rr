@@ -24,7 +24,7 @@ button,input,select{font:inherit}
 button{cursor:pointer}
 button:focus-visible,select:focus-visible{outline:2px solid var(--main);outline-offset:2px}
 .app{display:grid;grid-template-columns:316px minmax(340px,1fr) 362px;height:100dvh;min-height:520px;transition:grid-template-columns .18s ease}
-.app.folded{grid-template-columns:74px minmax(340px,1fr) 362px}
+.app.folded{grid-template-columns:88px minmax(340px,1fr) 362px}
 .side,.details{min-width:0;background:#fff;display:flex;flex-direction:column;min-height:0}
 .side{border-right:1px solid var(--hair)}
 .side-header{height:var(--head);display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--hair);padding:0 15px;flex-shrink:0}
@@ -116,7 +116,7 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--main);outline-
 .stop-name{font-size:13px;line-height:1.28;font-weight:500;padding:0 0 16px}
 .details-note{font-size:11px;color:#666;padding-top:16px;line-height:1.5;border-top:1px solid var(--hair)}
 .map-notice{position:absolute;top:12px;left:16px;background:#fff;border:1px solid #ddd;padding:7px 11px;font-size:12px;color:#555;display:none}
-@media(max-width:1260px){.app{grid-template-columns:290px minmax(0,1fr)}.app.folded{grid-template-columns:74px minmax(0,1fr)}.details{position:fixed;z-index:60;right:0;top:0;bottom:0;width:min(370px,100vw);box-shadow:-8px 0 32px #00000015;transform:translateX(102%);transition:transform .2s ease}.app.detail-open .details{transform:translateX(0)}.close-detail{display:block}}
+@media(max-width:1260px){.app{grid-template-columns:290px minmax(0,1fr)}.app.folded{grid-template-columns:88px minmax(0,1fr)}.details{position:fixed;z-index:60;right:0;top:0;bottom:0;width:min(370px,100vw);box-shadow:-8px 0 32px #00000015;transform:translateX(102%);transition:transform .2s ease}.app.detail-open .details{transform:translateX(0)}.close-detail{display:block}}
 @media(max-width:750px){:root{--head:62px}.app{display:flex;flex-direction:column;min-height:100dvh;height:auto}.side{min-height:0;flex:none;border-right:0;border-bottom:1px solid var(--hair)}.side-header{height:62px}.side-content{max-height:280px}.side-controls{padding:12px 16px}.side-controls h1{font-size:18px;margin:0 0 8px}.board{max-height:200px}.map-area{min-height:630px;height:calc(100dvh - 210px)}.map-header{padding:12px 14px}.map-tools{width:100%}.map-tools select{max-width:120px}.map-container{min-height:500px}.folded .side-header{height:62px;flex-direction:row;justify-content:space-between;padding:0 14px}.folded .fold-placeholder{display:none}.map-legend{bottom:12px;left:10px;font-size:10px;gap:8px;padding:8px}.zoom-control{right:10px;bottom:58px}}
 
 /* Station facilities: compact, typographic, no extra cards. */
@@ -211,7 +211,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
 }
 @media(max-width:990px) and (min-width:751px){
  .app{grid-template-columns:250px minmax(0,1fr)}
- .app.folded{grid-template-columns:74px minmax(0,1fr)}
+ .app.folded{grid-template-columns:88px minmax(0,1fr)}
  .map-header{align-items:flex-start;gap:6px}
  .map-tools{width:100%;justify-content:flex-start;flex-wrap:wrap}
 }
@@ -250,9 +250,9 @@ button{transition:background-color .12s ease,border-color .12s ease}
 @media(min-width:751px) and (max-width:1260px){
  .app,.app.folded{display:grid;height:100dvh;min-height:520px;grid-template-rows:minmax(0,1fr);transition:none}
  .app{grid-template-columns:clamp(225px,24vw,290px) minmax(0,1fr)}
- .app.folded{grid-template-columns:74px minmax(0,1fr)}
+ .app.folded{grid-template-columns:88px minmax(0,1fr)}
  .app.detail-open{grid-template-columns:clamp(218px,22vw,278px) minmax(0,1fr) clamp(270px,27vw,345px)}
- .app.folded.detail-open{grid-template-columns:74px minmax(0,1fr) clamp(270px,27vw,345px)}
+ .app.folded.detail-open{grid-template-columns:88px minmax(0,1fr) clamp(270px,27vw,345px)}
  .side{grid-column:1;grid-row:1;min-height:0}
  .map-area{grid-column:2;grid-row:1;min-height:0;height:auto;max-height:none}
  .details{display:none;position:relative;grid-column:3;grid-row:1;top:auto;right:auto;bottom:auto;width:auto;height:auto;min-height:0;max-height:none;overflow:hidden;transform:none!important;box-shadow:none!important;z-index:0;border:0;border-left:1px solid var(--hair);transition:none!important}
@@ -273,7 +273,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
  .map-header{align-items:flex-start;gap:6px}
  .map-tools{justify-content:flex-start;flex-wrap:wrap;width:100%}
  .app.detail-open{grid-template-columns:210px minmax(0,1fr) 278px}
- .app.folded.detail-open{grid-template-columns:74px minmax(0,1fr) 278px}
+ .app.folded.detail-open{grid-template-columns:88px minmax(0,1fr) 278px}
 }
 /* On phones, train details are an off-canvas drawer with an explicit return to full-width map. */
 @media(max-width:750px){
@@ -657,7 +657,7 @@ body{font-size:14.5px}
 
 /* v34: independent brand area, separate expand control, horizontal copyright. */
 .side-foot{margin-top:auto}
-.side-header{padding-left:28px}
+.side-header{padding-left:20px}
 .fold-button{
  display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;
  padding:0;border:1px solid transparent;border-radius:5px;background:transparent;color:#617185;
@@ -694,7 +694,7 @@ body{font-size:14.5px}
 @media(max-width:750px){
  .fold-button,.app.folded .fold-button{display:none}
  .app.folded .side-header{
-  height:var(--head);padding:0 15px 0 28px;flex-direction:row;
+  height:var(--head);padding:0 15px 0 20px;flex-direction:row;
   align-items:center;justify-content:space-between;gap:8px
  }
  .app.folded .longmark{display:block}
@@ -705,6 +705,29 @@ body{font-size:14.5px}
  }
  .copyright-full,.app.folded .copyright-full{display:inline}
  .copyright-compact,.app.folded .copyright-compact{display:none}
+}
+
+
+/* v36: preserve RR emblem coordinates across expanded/collapsed states. */
+.side-header{padding-left:20px}
+.boardhead,.trainrow{padding-left:20px}
+@media(min-width:751px){
+ .folded .side-header{align-items:flex-start}
+ /* Exact emblem visual top matches expanded SVG, including its 5-unit top inset. */
+ .folded .shortmark{
+  height:69px;flex:0 0 69px;justify-content:flex-start;padding-left:20px
+ }
+}
+@media(min-width:751px) and (max-width:1260px){
+ .side-header{padding-right:11px;gap:7px}
+ .boardhead,.trainrow{padding-left:15px}
+}
+@media(max-width:750px){
+ .app.folded .side-header{padding-left:20px}
+ .boardhead,.trainrow{padding-left:17px}
+}
+@media(max-width:370px){
+ .boardhead,.trainrow{padding-left:14px}
 }
 
 </style>
