@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RR Info</title>
+<link rel="preload" href="./fonts/FrutigerNext-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/FrutigerNext-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/FrutigerNext-Bold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8cGF0aCBkPSJNNTAuNDg0ODQzMywwIEw2My4wOTg3Mjg4LDAgTDk3LjkzMDU1ODIsMzQuOTA2MzAyNSBMOTcuOTMwNTU4MiwwLjE1ODMwNTc2MSBMMTA3LjE4OTU0Miw5LjQzMDkwMDI3IEwxMDcuMTg5NTQyLDUwIEw4MS41NTIwNzExLDUwIEM3NS41MzM2Mzk5LDUwIDY5Ljc2MzM2MDQsNDcuNjAxNDY1IDY1LjUxODI3OTEsNDMuMzM1MjI1NSBMMzYuNjUzNzYzOCwxNC4zMjY4NDQ1IEMzMy41MjQ3MTk4LDExLjE4MjIwNDkgMjkuMjcxMTEyNyw5LjQxNDc3MjY2IDI0LjgzNDkzNDksOS40MTU5NTg2OSBMMTYuMjI5ODkwNiw5LjQxODI1OTI4IEw1Ni43MDQ3MDE5LDUwIEw0NC4wOTA3NTYxLDUwIEw5LjI1ODkyNjY2LDE1LjA5MzY5NzUgTDkuMjU4OTI2NjYsNDkuODQxNjkzMSBMMCw0MC41NjkwOTk5IEwwLDAgTDI1LjY2OTgzNjEsMCBDMzEuNjg4OTU3NywwIDM3LjQ1OTg0MDQsMi4zOTkwODM3OCA0MS43MDUwMzI5LDYuNjY2MTg2NDYgTDcwLjU2MTQ0ODEsMzUuNjcxNTM0OSBDNzMuNjkwNTc1OSwzOC44MTY4MTI2IDc3Ljk0NDYzMDcsNDAuNTg0NjQ5NCA4Mi4zODEzMTk5LDQwLjU4MzQ2MTIgTDkwLjk1OTY1NDMsNDAuNTgxMTYzOCBMNTAuNDg0ODQzMywwIFoiIGZpbGw9IiMwMDU3QjgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIuMSAxOC4wKSBzY2FsZSgwLjU2KSIvPgo8L3N2Zz4=">
 
 <style>
-@font-face{font-family:Frutiger;src:local('Frutiger Next'),local('FrutigerNext-Regular');font-weight:400}
-@font-face{font-family:Frutiger;src:local('Frutiger Next Medium'),local('FrutigerNext-Medium');font-weight:500}
-@font-face{font-family:Frutiger;src:local('Frutiger Next Bold'),local('FrutigerNext-Bold');font-weight:700}
+@font-face{font-family:Frutiger;src:url('./fonts/FrutigerNext-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:Frutiger;src:url('./fonts/FrutigerNext-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:Frutiger;src:url('./fonts/FrutigerNext-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 :root{--main:#0057B8;--via:#D162C0;--night:#394779;--rr:#00783C;--ink:#1d1d1d;--muted:#666;--hair:#ddddda;--surface:#fff;--map:#fbfbfa;--rail:#9dc8ee;--head:70px}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
@@ -1344,6 +1347,14 @@ $('reopen').onclick=()=>$('collapse').click();
 $('closeDetail').onclick=()=>{app.classList.remove('detail-open');$('showTrainDetails').hidden=!selectedTrain;requestAnimationFrame(resize)};
 const ro=new ResizeObserver(()=>resize());ro.observe(container);
 pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
+// Recompute map-label collision positions once the hosted fonts are available.
+if (document.fonts && document.fonts.load) {
+  Promise.all([
+    document.fonts.load('400 14px Frutiger'),
+    document.fonts.load('500 13px Frutiger'),
+    document.fonts.load('700 13px Frutiger')
+  ]).then(()=>{if(W&&H)updateWorld()}).catch(()=>{});
+}
 </script>
 </body>
 </html>
