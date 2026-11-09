@@ -427,7 +427,8 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .journey-summary-time strong .day-offset{font-size:13px;vertical-align:top;position:relative;top:3px}
 
 
-/* v23: delayed trains show both scheduled and revised times. */.time-delayed{display:inline-flex;align-items:flex-end;gap:8px;max-width:100%}
+/* v23: delayed trains show both scheduled and revised times. */
+.time-delayed{display:inline-flex;align-items:flex-end;gap:8px;max-width:100%}
 .time-delayed .scheduled-time{display:inline-block;font:inherit;color:inherit;line-height:inherit;white-space:nowrap}
 .time-delayed .retime-box{display:inline-flex;align-items:flex-end;padding:.18em .26em .15em;background:#f1f3f6;border:1px solid #d7dde6;border-radius:2px;color:#233380;font-weight:700;line-height:1;white-space:nowrap}
 .time-delayed .retime-box .day-offset{color:#6070b3}
@@ -562,6 +563,68 @@ body{font-size:14.5px}
  .app.detail-open .map-tools>.search-picker{grid-column:2 / 4;width:100%;max-width:none;min-width:0}
  .app.detail-open .map-tools>#trace{grid-column:2;justify-self:start}
  .app.detail-open .map-tools>#clear{grid-column:3;justify-self:start}
+}
+
+
+/* v31 — overnight delayed times: each time and its day marker form one unit.
+   The revised time is primary; the struck-through scheduled time sits above it. */
+.time-value{display:inline-flex;align-items:flex-start;gap:0;white-space:nowrap;max-width:none;flex-wrap:nowrap;font-variant-numeric:tabular-nums;line-height:inherit}
+.time-value .time-primary{display:inline-block;flex:none;white-space:nowrap;line-height:inherit}
+.time-value .day-offset{display:inline-block;flex:none;position:static;top:auto;vertical-align:top;margin:2px 0 0 3px;line-height:1;font-size:.53em;font-weight:500;letter-spacing:0;color:#8190a0;white-space:nowrap}
+.time-delayed{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:0;max-width:100%;vertical-align:top}
+.time-delayed .scheduled-time{display:inline-flex;align-items:flex-start;flex:none;white-space:nowrap;font-size:.66em;color:#8391a0;font-weight:500;line-height:1.1;text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:#9ca9b7}
+.time-delayed .retime-box{display:inline-flex;align-items:flex-start;justify-content:flex-start;flex:none;max-width:none;min-width:0;white-space:nowrap;flex-wrap:nowrap;padding:3px 5px;border:0;border-radius:2px;background:#edf3fa;color:#1d426d;font-size:inherit;font-weight:700;line-height:1.1}
+.time-delayed .retime-box .day-offset{color:#7e8fa1}
+/* The train badge must never break, and revised times must not compete for its row. */
+.train-hero-top{align-items:flex-start;min-width:0;gap:10px}
+.train-hero .service-title{flex:0 1 auto;min-width:0}
+.train-hero .train-number{white-space:nowrap;word-break:normal;max-width:none;line-height:1.12}
+.train-hero .train-departure{flex:0 0 auto;min-width:0;max-width:56%;text-align:right}
+.train-hero .depart-time{line-height:1.12}
+.train-hero .depart-time .time-delayed{display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-left:auto;min-width:0}
+.train-hero .depart-time .scheduled-time{font-size:14px;line-height:1.12}
+.train-hero .depart-time .retime-box{font-size:26px;line-height:1.12;padding:4px 6px}
+.train-hero .depart-time .time-value .day-offset{font-size:11px;line-height:1;margin:2px 0 0 3px}
+.train-hero .depart-time .scheduled-time .day-offset{font-size:9px;margin-top:1px}
+/* Journey summaries use the same two-line hierarchy within each column. */
+.journey-summary-time strong{min-width:0}
+.journey-summary-time strong .time-delayed{display:flex;flex-direction:column;align-items:flex-start;gap:4px;max-width:100%}
+.journey-summary-time .journey-arrival strong .time-delayed{align-items:flex-end}
+.journey-summary-time strong .scheduled-time{font-size:13px;line-height:1.15}
+.journey-summary-time strong .time-delayed .retime-box{font-size:21px;line-height:1.1;padding:4px 5px}
+.journey-summary-time strong .time-value .day-offset{position:static;top:auto;font-size:10px;margin-top:1px;margin-left:2px}
+.journey-summary-time strong .scheduled-time .day-offset{font-size:8px;margin-top:1px}
+/* Journey search: no broken +1, and the revised time is clearly legible. */
+.journey-clock .time-delayed{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.journey-clock .scheduled-time{font-size:12px;line-height:1.15}
+.journey-clock .time-delayed .retime-box{font-size:16px;line-height:1.13;padding:3px 4px}
+.journey-clock .time-value .day-offset{position:static;top:auto;font-size:9px;margin:1px 0 0 2px}
+/* Narrow departure-board time column; use small consistent day-offsets. */
+.row-time .time-delayed{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.row-time .scheduled-time{font-size:11px;line-height:1.15}
+.row-time .time-delayed .retime-box{font-size:11.5px;line-height:1.15;padding:2px 1px}
+.row-time .time-value .day-offset{font-size:8px;margin:1px 0 0 2px}
+.row-time .scheduled-time .day-offset{font-size:7px}
+/* The calling-at timeline retains its original white background and railway dots. */
+.stop-time .time-value .day-offset{font-size:9px;margin:1px 0 0 2px}
+.stop-list.has-disruptions .stop-time .time-delayed{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.stop-list.has-disruptions .stop-time .scheduled-time{font-size:11.5px;line-height:1.1}
+.stop-list.has-disruptions .stop-time .retime-box{font-size:13px;line-height:1.15;padding:2px 4px;white-space:nowrap}
+.stop-list.has-disruptions .stop-time .retime-box .day-offset{font-size:8px;margin-top:1px}
+@media(min-width:751px) and (max-width:1260px){
+ .train-hero .train-number{font-size:18px;padding:8px 10px}
+ .train-hero .depart-time .retime-box{font-size:23px;padding:4px 5px}
+ .train-hero .depart-time .scheduled-time{font-size:13px}
+ .journey-summary-time strong .time-delayed .retime-box{font-size:18px;padding:3px 4px}
+}
+@media(max-width:750px){
+ .train-hero .train-number{font-size:20px;padding:8px 10px}
+ .train-hero .depart-time .retime-box{font-size:24px}
+}
+@media(max-width:370px){
+ .train-hero .train-number{font-size:18px;padding:7px 8px}
+ .train-hero .depart-time .retime-box{font-size:22px;padding:3px 4px}
+ .journey-summary-time strong .time-delayed .retime-box{font-size:18px}
 }
 
 </style>
@@ -856,7 +919,8 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
 }
 $('stationInfo').addEventListener('click',()=>fillStationInfo(currentStation));
 $('stationInfoLeft').addEventListener('click',()=>fillStationInfo(currentStation));
-function fillDetails(t){$('detailsTitle').textContent='Train details';$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a departure.</div>';return}const c=C[t.type],here=t.hereIndex??0;const facilityNames=[...new Set(t.fac.map(facilityLabel))]; if(facilityNames.includes('Accessible')&&facilityNames.includes('Toilet'))facilityNames.push('Accessible Toilet');
+function fillDetails(t){$('detailsTitle').textContent='Train details';$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a departure.</div>';return}const c=C[t.type],here=t.hereIndex??0;const facilityNames=[...new Set(t.fac.map(facilityLabel))];
+ if(facilityNames.includes('Accessible')&&facilityNames.includes('Toilet'))facilityNames.push('Accessible Toilet');
  const facilities=facilityNames.map(pictoItem).join('');
  const stops=t.route.map(([name,time],i)=>`<div class="stop${name===currentStation?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station departures">${name}</button></div>`).join('');
  detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">Departure</div></div></div><div class="destination-label">To</div><div class="service-dest">${t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${t.type}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="facilities-heading">Facilities</div><div class="facilities">${facilities}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${stops}</div>`;
@@ -1061,7 +1125,8 @@ const JOURNEY_MAX_RESULTS=260;
 function fmtDuration(n){const h=Math.floor(n/60),m=n%60;return h?`${h}h ${String(m).padStart(2,'0')}m`:`${m} min`}
 function timeMarkup(s){
  const m=String(s).match(/^(\d{1,2}:\d{2})(?:\s*\+(\d+))?$/);
- return m?`<span class="time-primary">${m[1]}</span>${m[2]?`<span class="day-offset">+${m[2]}</span>`:''}`:String(s);
+ // Keep time and the day-offset together as one non-wrapping unit.
+ return m?`<span class="time-value"><span class="time-primary">${m[1]}</span>${m[2]?` <span class="day-offset" title="Day ${Number(m[2])+1}">+${m[2]}</span>`:''}</span>`:String(s);
 }
 function delayMinutes(status){const m=String(status||'').match(/Expected\s*\+(\d+)\s*min/i);return m?+m[1]:0}
 // Station-specific revisions: the train may recover time en route.
@@ -1090,7 +1155,7 @@ function shiftTimeString(s,mins){
 function delayedTimeMarkup(s,status){
  const delay=delayMinutes(status);
  if(delay<=0)return timeMarkup(s);
- return `<span class="time-delayed"><span class="scheduled-time">${timeMarkup(s)}</span><span class="retime-box">${timeMarkup(shiftTimeString(s,delay))}</span></span>`;
+ return `<span class="time-delayed" aria-label="Scheduled ${s}; revised ${shiftTimeString(s,delay)}"><span class="scheduled-time" aria-hidden="true">${timeMarkup(s)}</span> <span class="retime-box" aria-hidden="true">${timeMarkup(shiftTimeString(s,delay))}</span></span>`;
 }
 function clockText(v){const day=Math.floor(v/1440);return timeMarkup(String(Math.floor(v/60)%24).padStart(2,'0')+':'+String(v%60).padStart(2,'0')+(day?' +'+day:''))}
 function clockTextDelayed(original,status){return delayedTimeMarkup(original,status)}
