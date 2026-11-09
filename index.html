@@ -655,48 +655,55 @@ body{font-size:14.5px}
 }
 
 
-/* v33: one compact RR expand control; copyright fixed at sidebar bottom. */
+/* v34: independent brand area, separate expand control, horizontal copyright. */
 .side-foot{margin-top:auto}
 .fold-button{
- display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0;
- border:1px solid transparent;border-radius:5px;background:transparent;color:#475d75;
+ display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;
+ padding:0;border:1px solid transparent;border-radius:5px;background:transparent;color:#617185;
  transition:background-color .15s,border-color .15s,color .15s
 }
 .fold-button svg.chevron{
- display:block;flex:none;width:17px;height:17px;fill:none;
- stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round
+ display:block;width:17px;height:17px;fill:none;stroke:currentColor;
+ stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round
 }
-.fold-button:hover{background:#eef4fa;border-color:#dbe5f1;color:var(--main)}
+.fold-button:hover{background:#f0f5fa;border-color:#dce6f1;color:var(--main)}
 .fold-button:focus-visible{outline:2px solid var(--main);outline-offset:2px}
-.fold-mini-logo{display:none}
+.shortmark{display:none}
+.copyright-compact{display:none}
 @media(min-width:751px){
  .folded .side-header{
-  height:var(--head);padding:0 5px;display:flex;flex-direction:row;
-  align-items:center;justify-content:center;gap:0
+  height:120px;padding:0 0 9px;display:flex;flex-direction:column;
+  justify-content:flex-start;align-items:center;gap:5px
  }
- .folded .fold-button{width:62px;height:40px;gap:5px;padding:0 5px}
- .folded .fold-mini-logo{display:flex;align-items:center;justify-content:center;flex:none}
- .folded .fold-mini-logo img{width:30px;height:auto;max-height:17px;display:block}
- .folded .fold-button svg.chevron{width:14px;height:14px;transform:rotate(180deg)}
- .folded .fold-placeholder{display:none}
+ .folded .longmark{display:none}
+ .folded .shortmark{
+  width:100%;height:73px;flex:0 0 73px;
+  display:flex;align-items:center;justify-content:center
+ }
+ .folded .shortmark img{width:39px;height:auto;display:block}
+ .folded .fold-button{width:32px;height:32px;flex:none}
+ .folded .fold-button svg.chevron{transform:rotate(180deg)}
  .folded .side-foot{
-  display:flex;align-items:center;justify-content:center;
-  margin-top:auto;padding:12px 0 15px;border-top:0;
-  min-height:0;color:#808b96;font-size:10px;line-height:1;letter-spacing:.035em
+  display:block;margin-top:auto;padding:12px 4px 13px;
+  border-top:1px solid var(--hair);text-align:center;color:#677687;line-height:1.2
  }
- .folded .side-foot span{
-  display:block;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap
- }
+ .folded .copyright-full{display:none}
+ .folded .copyright-compact{display:block;font-size:10px;white-space:nowrap;letter-spacing:-.01em}
 }
 @media(max-width:750px){
  .fold-button,.app.folded .fold-button{display:none}
+ .app.folded .side-header{
+  height:var(--head);padding:0 15px;flex-direction:row;
+  align-items:center;justify-content:space-between;gap:8px
+ }
+ .app.folded .longmark{display:block}
+ .app.folded .shortmark{display:none}
  .side-foot,.app.folded .side-foot{
   display:block;margin-top:0;padding:11px 17px;border-top:1px solid var(--hair);
-  font-size:11px;letter-spacing:normal;line-height:1.35
+  font-size:11px;letter-spacing:normal;line-height:1.35;text-align:left
  }
- .side-foot span,.app.folded .side-foot span{
-  writing-mode:horizontal-tb;transform:none;white-space:normal
- }
+ .copyright-full,.app.folded .copyright-full{display:inline}
+ .copyright-compact,.app.folded .copyright-compact{display:none}
 }
 
 </style>
@@ -770,8 +777,8 @@ body{font-size:14.5px}
   <aside class="side">
     <div class="side-header">
       <div class="longmark"><img src="./assets/rr-mainline-logo.svg" width="410" height="60" alt="RR Mainline"></div>
+      <div class="shortmark"><img src="./assets/rr-mark.svg" width="108" height="50" alt="RR"></div>
       <button id="collapse" class="fold-button" type="button" title="Collapse departures" aria-label="Collapse departures" aria-controls="sidebarContent" aria-expanded="true">
-        <span class="fold-mini-logo" aria-hidden="true"><img src="./assets/rr-mark.svg" width="108" height="50" alt=""></span>
         <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 18l-6-6 6-6"/></svg>
       </button>
     </div>
@@ -781,7 +788,7 @@ body{font-size:14.5px}
       <div class="boardhead"><span>Time</span><span>Train</span><span>Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
     </div>
-    <footer class="side-foot"><span>© Radelish Railways plc 2026</span></footer>
+    <footer class="side-foot" title="© Radelish Railways plc 2026"><span class="copyright-full">© Radelish Railways plc 2026</span><span class="copyright-compact">© RR 2026</span></footer>
   </aside>
   <section class="map-area">
     <header class="map-header">
