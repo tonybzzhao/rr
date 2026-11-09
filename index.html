@@ -730,6 +730,23 @@ body{font-size:14.5px}
  .boardhead,.trainrow{padding-left:14px}
 }
 
+
+/* v37: symmetrical timetable gutters and centered collapsed-sidebar toggle. */
+.boardhead,.trainrow{padding-left:20px;padding-right:20px}
+@media(min-width:751px){
+ /* Align the chevron center with the unchanged RR symbol center. */
+ .folded .fold-button{margin-left:calc(20px + (46.63px - 32px)/2)}
+}
+@media(min-width:751px) and (max-width:1260px){
+ .boardhead,.trainrow{padding-left:15px;padding-right:15px}
+}
+@media(max-width:750px){
+ .boardhead,.trainrow{padding-left:17px;padding-right:17px}
+}
+@media(max-width:370px){
+ .boardhead,.trainrow{padding-left:14px;padding-right:14px}
+}
+
 </style>
 </head>
 <body>
