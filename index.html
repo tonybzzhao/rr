@@ -2047,45 +2047,66 @@ function journeyStationColors(journey){
  }
  return byStation;
 }
-// Identify *actual* changes, not merely stations visited by multiple legs.
-// Store the inbound colour first (left edge) and outbound second (right edge).
-function journeyInterchangeColors(journey){
+// Derive the outline boundary from the *actual highlighted route paths*, not
+// a fixed left/right split. Each colour occupies the half facing the track
+// segment it touches at the interchange.
+function rrJourneyLegOutwardTangent(path,atEnd){
+ if(!path||path.length<2)return null;
+ const at=atEnd?path.length-1:0,p=P[path[at]];
+ for(let i=at+(atEnd?-1:1);i>=0&&i<path.length;i+=atEnd?-1:1){
+  const q=P[path[i]],dx=q[0]-p[0],dy=q[1]-p[1],length=Math.hypot(dx,dy);
+  if(length>1e-5)return {x:dx/length,y:dy/length};
+ }
+ return null;
+}
+function rrInterchangeStartAngle(inboundRay,outboundRay){
+ if(!inboundRay||!outboundRay)return Math.PI/2;
+ const dx=inboundRay.x-outboundRay.x,dy=inboundRay.y-outboundRay.y;
+ // Both services touch the same side of the marker on a shared track.
+ // The outbound route is drawn last, so its colour is the one visible there.
+ const sameSide=Math.hypot(dx,dy)<0.20;
+ const normal=sameSide?{x:-outboundRay.x,y:-outboundRay.y}:{x:dx,y:dy};
+ return Math.atan2(normal.y,normal.x)-Math.PI/2;
+}
+function journeyInterchangeMarkers(journey){
  const interchanges=new Map();
  if(!journey)return interchanges;
  for(let i=0;i<journey.legs.length-1;i++){
   const inbound=journey.legs[i],outbound=journey.legs[i+1];
   if(inbound.to!==outbound.from)continue;
-  const station=inbound.to;
-  const colors=interchanges.get(station)||[];
-  for(const color of [C[inbound.train.type]||'#0057B8',C[outbound.train.type]||'#0057B8']){
-   if(!colors.includes(color))colors.push(color);
-  }
-  interchanges.set(station,colors);
+  const colorA=C[inbound.train.type]||'#0057B8',colorB=C[outbound.train.type]||'#0057B8';
+  const aPath=selectedJourney===journey?selectedLegPaths[i]?.path:getSegmentPath(inbound.train,inbound.from,inbound.to);
+  const bPath=selectedJourney===journey?selectedLegPaths[i+1]?.path:getSegmentPath(outbound.train,outbound.from,outbound.to);
+  const inboundRay=rrJourneyLegOutwardTangent(aPath,true);
+  const outboundRay=rrJourneyLegOutwardTangent(bPath,false);
+  interchanges.set(inbound.to,{
+   colors:colorA===colorB?[colorA]:[colorA,colorB],
+   startAngle:rrInterchangeStartAngle(inboundRay,outboundRay),
+   inboundRay,outboundRay
+  });
  }
  return interchanges;
 }
-// Keep the interchange dot's *outer diameter* identical to all other route dots.
-// The outline is inset inside the existing radius, leaving a white centre.
-// With two service colours the inbound service owns the left semicircle.
-function appendInterchangeDot(group,x,y,r,colors){
- const edge=2,innerRadius=r-edge/2;
- group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'#fff',
-  'pointer-events':'none'}));
- if(colors.length<2||colors[0]===colors[1]){
+// Draw two open, 180-degree strokes so the white centre has no dividing line.
+// Both strokes sit within the existing station-dot outer diameter.
+function appendInterchangeDot(group,x,y,r,marker){
+ const colors=marker.colors,edge=2,innerRadius=r-edge/2;
+ group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'#fff','pointer-events':'none'}));
+ if(colors.length<2){
   group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'none',
    stroke:colors[0]||'#0057B8','stroke-width':edge,'pointer-events':'none'}));
   return;
  }
- const top=y-innerRadius,bottom=y+innerRadius;
- // Open paths avoid an unwanted coloured dividing line through the white fill.
- group.append(se('path',{d:`M ${x} ${top} A ${innerRadius} ${innerRadius} 0 0 0 ${x} ${bottom}`,
+ const a=marker.startAngle;
+ const x1=x+innerRadius*Math.cos(a),y1=y+innerRadius*Math.sin(a);
+ const x2=x+innerRadius*Math.cos(a+Math.PI),y2=y+innerRadius*Math.sin(a+Math.PI);
+ group.append(se('path',{d:`M ${x1} ${y1} A ${innerRadius} ${innerRadius} 0 0 1 ${x2} ${y2}`,
   fill:'none',stroke:colors[0],'stroke-width':edge,'stroke-linecap':'butt','pointer-events':'none'}));
- group.append(se('path',{d:`M ${x} ${top} A ${innerRadius} ${innerRadius} 0 0 1 ${x} ${bottom}`,
+ group.append(se('path',{d:`M ${x2} ${y2} A ${innerRadius} ${innerRadius} 0 0 1 ${x1} ${y1}`,
   fill:'none',stroke:colors[1],'stroke-width':edge,'stroke-linecap':'butt','pointer-events':'none'}));
 }
-// Render one solid disc or equally sized coloured sectors for the current-station
-// translucent background; ordinary calling points always have solid fills.
-function appendStationDisc(group,x,y,r,colors,opacity=1){
+// The translucent current-station halo uses the same angular split as the dot.
+function appendStationDisc(group,x,y,r,colors,opacity=1,startAngle=Math.PI/2){
  const attrs={'pointer-events':'none'};
  if(opacity!==1)attrs['fill-opacity']=opacity;
  if(colors.length===1){
@@ -2094,7 +2115,7 @@ function appendStationDisc(group,x,y,r,colors,opacity=1){
  }
  const step=2*Math.PI/colors.length;
  for(let i=0;i<colors.length;i++){
-  const start=Math.PI/2+i*step,end=start+step;
+  const start=startAngle+i*step,end=start+step;
   const x1=x+r*Math.cos(start),y1=y+r*Math.sin(start);
   const x2=x+r*Math.cos(end),y2=y+r*Math.sin(end);
   const d=`M ${x} ${y} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
@@ -2107,7 +2128,7 @@ function drawMap(){
  const sc=fit*zoom,visible=[];
  const selectedSet=new Set(selectedNames);
  const legStationColors=journeyStationColors(selectedJourney);
- const interchangeColors=journeyInterchangeColors(selectedJourney);
+ const interchangeMarkers=journeyInterchangeMarkers(selectedJourney);
  for(const s of STATIONS){
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
@@ -2116,18 +2137,21 @@ function drawMap(){
   const radius=selected?5.8:(important?4.7:3.2),g=se('g',{'data-station':s.name});
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
   const activeColors=selected&&selectedPath.length?(colors.length?colors:[routeColor]):[];
-  const transferColors=selected&&selectedPath.length?interchangeColors.get(s.name):null;
+  const transferMarker=selected&&selectedPath.length?interchangeMarkers.get(s.name):null;
   if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
-  if(transferColors?.length)g.setAttribute('data-interchange-colors',transferColors.join(','));
-  // Real interchanges use a white dot with a one- or two-colour outline.
-  // Its outer diameter stays identical to other highlighted station dots.
+  if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.join(','));
+  // Interchange stroke and current-station halo meet their actual leg's line.
   if(current){
    const markerColors=activeColors.length?activeColors:['#0057B8'];
-   appendStationDisc(g,x,y,radius*5/3,markerColors,0.29);
-   if(transferColors?.length)appendInterchangeDot(g,x,y,radius,transferColors);
-   else appendStationDisc(g,x,y,radius,[markerColors[0]]);
-  }else if(transferColors?.length){
-   appendInterchangeDot(g,x,y,radius,transferColors);
+   if(transferMarker){
+    appendStationDisc(g,x,y,radius*5/3,transferMarker.colors,0.29,transferMarker.startAngle);
+    appendInterchangeDot(g,x,y,radius,transferMarker);
+   }else{
+    appendStationDisc(g,x,y,radius*5/3,[markerColors[0]],0.29);
+    appendStationDisc(g,x,y,radius,[markerColors[0]]);
+   }
+  }else if(transferMarker){
+   appendInterchangeDot(g,x,y,radius,transferMarker);
   }else if(activeColors.length){
    appendStationDisc(g,x,y,radius,[activeColors[0]]);
   }else{
