@@ -2354,6 +2354,7 @@ function drawMap(){
  const passedStationNames=new Set(progressIndex>0?selectedTrain.route.slice(0,progressIndex).map(([name])=>name):[]);
  const passedTrainColor=progressIndex>0?rrTraveledColor(routeColor):null;
  const legStationColors=journeyStationColors(selectedJourney);
+ const selectedLabelColors=new Map();
  const interchangeMarkers=journeyInterchangeMarkers(selectedJourney);
  for(const s of STATIONS){
   const {x,y}=screen(s.x,s.y);
@@ -2364,6 +2365,11 @@ function drawMap(){
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
   const activeColors=selected&&selectedPath.length?(colors.length?colors:[passedTrainColor&&!current&&passedStationNames.has(s.name)?passedTrainColor:routeColor]):[];
   const transferMarker=selected&&selectedPath.length?interchangeMarkers.get(s.name):null;
+  if(selected&&(selectedTrain||selectedJourney)&&activeColors.length){
+   // A transfer's name uses its onward leg; the station ring still shows
+   // the separate incoming/outgoing service colours.
+   selectedLabelColors.set(s.name,activeColors.at(-1));
+  }
   if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
   if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.join(','));
   // Interchange stroke and current-station halo meet their actual leg's line.
@@ -2450,6 +2456,11 @@ function drawMap(){
   const group=se('g',{class:'station-label',role:'button',tabindex:0,'aria-label':`Show departures at ${name}`});
   const textX=chosen.anchor==='end'?chosen.x+chosen.w:chosen.anchor==='middle'?chosen.x+chosen.w/2:chosen.x;
   const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,class:'label'+(important?' important':''),'pointer-events':'all'});
+  const routeNameColor=selectedLabelColors.get(name);
+  if(routeNameColor){
+   text.style.fill=routeNameColor;
+   text.setAttribute('data-route-label',selectedTrain&&passedStationNames.has(name)?'passed':'forthcoming');
+  }
   chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});span.textContent=line;text.append(span)});
   group.append(text);
   group.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(name)});
