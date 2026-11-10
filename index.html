@@ -1191,7 +1191,7 @@ body{font-size:14.5px}
  .map-tools{
   display:grid;grid-template-columns:40px minmax(0,1fr) 36px;
   grid-template-areas:'from-label from-field from-field'
-                      '. . swap'
+                      'swap . .'
                       'to-label to-field to-field'
                       'actions actions actions';
   width:100%;min-width:0;max-width:100%;margin:0;
@@ -1201,7 +1201,7 @@ body{font-size:14.5px}
  .map-tools>label[for="toInput"]{grid-area:to-label;min-width:0}
  .map-tools>.search-picker:has(#fromInput){grid-area:from-field;width:100%;min-width:0;max-width:none}
  .map-tools>.search-picker:has(#toInput){grid-area:to-field;width:100%;min-width:0;max-width:none}
- .map-tools #swapStations{grid-area:swap;justify-self:end;width:32px;height:30px;min-height:30px;flex-basis:32px}
+ .map-tools #swapStations{grid-area:swap;justify-self:start;width:32px;height:30px;min-height:30px;flex-basis:32px}
  .map-tools #swapStations .rr-action-icon{width:17px;height:17px;flex-basis:17px;transform:rotate(90deg)}
  .map-tools .map-actions{
   grid-area:actions;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
