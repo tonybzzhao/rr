@@ -66,8 +66,8 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--main);outline-
 .map-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .map-tools label{font-size:12px;color:#555}
 .map-tools select{border:1px solid #bebebe;height:32px;background:#fff;border-radius:0;max-width:142px;padding:0 6px;font-size:12px;text-overflow:ellipsis}
-.map-tools button{height:32px;padding:0 11px;background:#fff;border:1px solid #bdbdbd;border-radius:0;color:#222;font-size:12px;font-weight:500}
-.map-tools button:hover{background:#f5f5f5}
+.map-tools>button{height:32px;padding:0 11px;background:#fff;border:1px solid #bdbdbd;border-radius:0;color:#222;font-size:12px;font-weight:500}
+.map-tools>button:hover{background:#f5f5f5}
 .map-container{position:relative;flex:1;min-height:0;overflow:hidden;background:var(--map)}
 #map{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-user-drag:none}#map text,#map tspan,#map .station-label,#map .mapnode{user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
 #map.drag{cursor:grabbing}
@@ -1219,6 +1219,68 @@ body{font-size:14.5px}
  .map-tools .map-actions .rr-action-icon{flex:0 0 17px;width:17px;height:17px}
 }
 
+
+/* v42: journey pickers now share the clean station-selector menu treatment. */
+.mobile-planner-slot{display:none}
+.search-picker.open{z-index:45}
+.search-picker .picker-control{border:1px solid #b8c3d0;border-radius:4px}
+.search-picker.open .picker-control,.search-picker .picker-control:focus-within{
+ border-color:#628bb8;box-shadow:0 0 0 2px rgba(0,87,184,.08)
+}
+.search-picker .picker-list{
+ border:1px solid #bcc8d7;border-radius:5px;padding:4px 0;
+ box-shadow:0 6px 18px rgba(17,46,83,.12)
+}
+/* Must override generic button selectors: each option is one unbordered row. */
+.search-picker .picker-option{
+ display:block;box-sizing:border-box;width:100%;height:auto;min-height:0;
+ padding:9px 11px;border:0;border-left:3px solid transparent;border-radius:0;
+ background:#fff;color:#1e2a3b;font-size:13.5px;font-weight:500;
+ text-align:left;line-height:1.35;white-space:normal;box-shadow:none;
+}
+.search-picker .picker-option:hover,.search-picker .picker-option.active{background:#eaf2fc;color:#003d86}
+.search-picker .picker-option[aria-selected="true"]{border-left-color:var(--main);font-weight:500}
+.search-picker .picker-toggle{box-sizing:border-box;height:100%;min-height:0;padding:0 0;border:0!important;border-left:1px solid #e6e9ed!important;border-radius:0 3px 3px 0}
+@media(max-width:750px){
+ /* Controls belong between tabs and timetable, not in the map header. */
+ .map-header{display:none}
+ .mobile-planner-slot{display:block;position:relative;z-index:40;flex:0 0 auto;
+   padding:12px 16px 13px;border-bottom:1px solid var(--hair);background:#fff}
+ .mobile-planner-slot .map-tools{
+   display:grid;grid-template-columns:44px minmax(0,1fr);
+   grid-template-areas:'from-label from-field' 'swap .' 'to-label to-field' 'actions actions';
+   gap:8px 9px;align-items:center;justify-content:stretch;
+   width:100%;min-width:0;max-width:none;margin:0
+ }
+ .mobile-planner-slot .map-tools>label[for="fromInput"]{grid-area:from-label}
+ .mobile-planner-slot .map-tools>label[for="toInput"]{grid-area:to-label}
+ .mobile-planner-slot .map-tools>.search-picker:has(#fromInput){grid-area:from-field}
+ .mobile-planner-slot .map-tools>.search-picker:has(#toInput){grid-area:to-field}
+ .mobile-planner-slot .map-tools>.search-picker{
+   box-sizing:border-box;width:100%;min-width:0;max-width:none
+ }
+ .mobile-planner-slot .map-tools #swapStations{
+   grid-area:swap;justify-self:start;align-self:center;width:34px;height:32px;min-height:32px;
+   flex-basis:34px;margin:0
+ }
+ .mobile-planner-slot .map-tools .map-actions{
+   grid-area:actions;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+   gap:8px;min-width:0;max-width:100%;width:100%;margin:0
+ }
+ .mobile-planner-slot .map-tools .map-actions>button,
+ .mobile-planner-slot .map-tools .map-actions #trace,
+ .mobile-planner-slot .map-tools .map-actions #clear{
+   position:static;grid-area:auto;grid-row:auto;grid-column:auto;
+   width:100%;height:40px;min-height:40px;min-width:0;max-width:none;
+   justify-self:stretch;align-self:stretch;padding:0 8px;
+ }
+ .mobile-planner-slot .picker-list{max-height:min(246px,46dvh)}
+ .mobile-planner-slot .map-tools .search-picker.open{z-index:45}
+}
+@media(max-width:370px){
+ .mobile-planner-slot{padding:11px 14px 12px}
+}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -1457,6 +1519,7 @@ body{font-size:14.5px}
     </div>
     <div class="side-content" id="sidebarContent">
       <div class="board-tabs" role="tablist" aria-label="Railway information"><button id="departuresTab" class="board-tab active" type="button" role="tab" aria-selected="true">Departures</button><button id="arrivalsTab" class="board-tab" type="button" role="tab" aria-selected="false">Arrivals</button><button id="journeysTab" class="board-tab" type="button" role="tab" aria-selected="false">Journeys</button></div>
+      <div id="mobilePlannerSlot" class="mobile-planner-slot" aria-label="Journey planner"></div>
       <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-info"></use></svg><span class="rr-station-fac-text">Station information</span><span class="rr-station-fac-chevron" aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><div class="journey-filters"><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct trains only</label><label class="direct-filter" title="Every leg must be operated by RR Max or RR Via"><input type="checkbox" id="highSpeedOnly"> High-speed only <span class="filter-hint">Max / Via</span></label></div></div></div>
       <div class="boardhead"><span>Time</span><span>Train</span><span id="boardRouteHeader">Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
@@ -2427,6 +2490,22 @@ $('collapse').onclick=()=>{
 };
 $('closeDetail').onclick=()=>{app.classList.remove('detail-open');requestAnimationFrame(resize)};
 const ro=new ResizeObserver(()=>resize());ro.observe(container);
+
+/* v42: relocate one functional From/To planner between mobile tabs and timetable. */
+const rrPlannerMobileQuery=window.matchMedia('(max-width:750px)');
+const rrPlannerTools=document.querySelector('.map-tools');
+const rrPlannerDesktopHome=document.querySelector('.map-header');
+const rrPlannerMobileHome=document.getElementById('mobilePlannerSlot');
+function rrPlacePlanner(){
+ const parent=rrPlannerMobileQuery.matches?rrPlannerMobileHome:rrPlannerDesktopHome;
+ if(rrPlannerTools.parentElement!==parent){
+  pickerViews.get('from')?.shut();pickerViews.get('to')?.shut();
+  parent.append(rrPlannerTools);
+ }
+}
+rrPlacePlanner();
+rrPlannerMobileQuery.addEventListener('change',()=>{rrPlacePlanner();requestAnimationFrame(resize)});
+
 pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
 // Recompute map-label collision positions once the hosted fonts are available.
 if (document.fonts && document.fonts.load) {
