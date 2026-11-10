@@ -1328,6 +1328,16 @@ body{font-size:14.5px}
 .details-body .time-delayed .retime-box{letter-spacing:.015em}
 .details-body .time-delayed .scheduled-time{letter-spacing:.025em}
 
+/* v52: the train-number badge and destination share exactly the same
+   font size and character spacing at each responsive breakpoint. */
+.train-hero .train-number{font-size:23px;letter-spacing:normal}
+@media(min-width:751px) and (max-width:1260px){
+ .train-hero .train-number{font-size:21px}
+}
+@media(max-width:750px){
+ .train-hero .train-number{font-size:22px}
+}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
