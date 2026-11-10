@@ -1352,6 +1352,22 @@ body{font-size:14.5px}
  .train-hero{--rr-hero-value-size:22px}
 }
 
+
+/* v54: calling-point station names use the site's neutral typography palette.
+   Keep service colours exclusively on the route and station markers. */
+.details-body .stop-name.stop-station,
+.details-body .stop-name.stop-station:hover{
+ color:var(--ink);font-weight:500
+}
+.details-body .stop.travelled .stop-name.stop-station,
+.details-body .stop.travelled .stop-name.stop-station:hover{
+ color:var(--muted);font-weight:500
+}
+.details-body .stop.current .stop-name.stop-station,
+.details-body .stop.current .stop-name.stop-station:hover{
+ color:var(--ink);font-weight:700
+}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
