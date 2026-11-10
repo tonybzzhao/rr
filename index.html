@@ -1281,6 +1281,36 @@ body{font-size:14.5px}
  .mobile-planner-slot{padding:11px 14px 12px}
 }
 
+
+/* v49: phone timetable, planner and map retain stable, independent heights.
+   The planner has exactly the same subtle divider above and below. */
+@media(max-width:750px){
+ .board{
+  box-sizing:border-box;flex:0 0 300px;height:300px;min-height:300px;max-height:300px;
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+ }
+ .mobile-planner-slot{
+  box-sizing:border-box;display:block;flex:0 0 202px;
+  height:202px;min-height:202px;max-height:202px;
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+  overflow:visible;
+ }
+ .map-area{height:auto;min-height:0;flex:0 0 auto}
+ .map-container{
+  box-sizing:border-box;flex:0 0 460px;height:460px;
+  min-height:460px;max-height:460px;
+ }
+}
+
+
+/* v50: Journey details service/number/status, and journey-list train IDs,
+   use the same Frutiger Next Medium (500) weight. Nothing else changes. */
+.journey-leg-heading .service,
+.journey-leg-heading .rr-service-identity,
+.journey-leg-heading .rr-service-identity > span,
+.journey-leg-heading .status-tag,
+.journey-row-meta .service {font-weight:500!important}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -1994,9 +2024,77 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-informatio
 function chooseTrain(t,openDrawer=true){selectedJourney=null;selectedLegPaths=[];selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=C[t.type];manualTrace=false;fillDetails(t);drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
 function trace(){selectedLegPaths=[];const a=S.get($('from').value),b=S.get($('to').value);if(!a||!b)return;selectedTrain=null;selectedPath=shortest(a.point,b.point);selectedNames=[a.name,b.name];routeColor=C.Max;manualTrace=true;drawRoute();drawMap();drawBoard();$('focusRoute').hidden=false;rrDetailsHeading('Route','rr-ui-route');detail.innerHTML=`<div class="service-dest">${a.name} → ${b.name}</div>`;app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}
 function clear(){selectedJourney=null;selectedLegPaths=[];selectedTrain=null;selectedPath=[];selectedNames=[currentStation];manualTrace=false;routeWorld.replaceChildren();drawBoard();$('focusRoute').hidden=true;detail.innerHTML=`<div class="empty">Select ${viewMode==='arrivals'?'an arrival':'a departure'}.</div>`;app.classList.remove('detail-open');requestAnimationFrame(resize);drawMap()}
-function drawRoute(){routeWorld.replaceChildren();if(!selectedPath.length)return;
+// Shared schematic edges get smooth, adjacent half-width colour bands using
+// a single perpendicular gradient stroke; transfer-ring halves match these bands.
+const RR_ROUTE_WIDTH=5.5;
+let rrJourneyEdges=new Map(),rrRouteRenderedScale=null;
+function rrTrackKey(a,b){return a<b?`${a}:${b}`:`${b}:${a}`}
+function rrTrackNormal(a,b){
+ const p=P[Math.min(a,b)],q=P[Math.max(a,b)];
+ const dx=q[0]-p[0],dy=q[1]-p[1],len=Math.hypot(dx,dy)||1;
+ return {x:-dy/len,y:dx/len};
+}
+function rrJourneyEdgeIndex(legs){
+ const edges=new Map();
+ for(const {path,color} of legs){
+  for(let i=1;i<path.length;i++){
+   const a=path[i-1],b=path[i];if(a===b)continue;
+   const key=rrTrackKey(a,b);
+   let edge=edges.get(key);
+   if(!edge){edge={a:Math.min(a,b),b:Math.max(a,b),colors:[]};edges.set(key,edge)}
+   if(!edge.colors.includes(color))edge.colors.push(color);
+  }
+ }
+ return edges;
+}
+function rrLaneNormalAt(edge,color){
+ if(!edge||edge.colors.length<2)return null;
+ const i=edge.colors.indexOf(color);if(i<0)return null;
+ const side=i-(edge.colors.length-1)/2;
+ if(!side)return null;
+ const n=rrTrackNormal(edge.a,edge.b),sign=Math.sign(side);
+ return {x:n.x*sign,y:n.y*sign};
+}
+function drawRoute(){
+ routeWorld.replaceChildren();rrRouteRenderedScale=fit*zoom;
+ rrJourneyEdges=new Map();
+ if(!selectedPath.length)return;
  const segments=selectedLegPaths.length?selectedLegPaths:[{path:selectedPath,color:routeColor}];
- for(const {path,color} of segments){if(!path.length)continue;routeWorld.append(se('path',{d:makePath(path),class:'rail-under'}),se('path',{d:makePath(path),class:'route-line',stroke:color}))}}
+ if(!selectedJourney||segments.length<2){
+  for(const {path,color} of segments){if(path.length<2)continue;
+   routeWorld.append(se('path',{d:makePath(path),class:'rail-under'}),
+    se('path',{d:makePath(path),class:'route-line',stroke:color}));}
+  return;
+ }
+ rrJourneyEdges=rrJourneyEdgeIndex(segments);
+ const sc=Math.max(1e-6,fit*zoom),back=[],coloured=[],gradients=se('defs');
+ let gradientIndex=0;
+ for(const edge of rrJourneyEdges.values()){
+  const a=P[edge.a],b=P[edge.b],d=`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`;
+  back.push(se('path',{d,class:'rail-under'}));
+  const n=edge.colors.length;
+  if(n===1){coloured.push(se('path',{d,class:'route-line',stroke:edge.colors[0]}));continue;}
+  // One full-width stroke, split into adjacent, equal-width colour bands.
+  // Unlike independently offset short segments, a perpendicular hard-stop
+  // gradient has no overlapping round caps or zigzag seams at graph nodes.
+  const normal=rrTrackNormal(edge.a,edge.b),halfWidth=RR_ROUTE_WIDTH/(2*sc);
+  const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+  const id=`rr-shared-track-${gradientIndex++}`;
+  const gradient=se('linearGradient',{id,gradientUnits:'userSpaceOnUse',
+   x1:mx-normal.x*halfWidth,y1:my-normal.y*halfWidth,
+   x2:mx+normal.x*halfWidth,y2:my+normal.y*halfWidth});
+  for(let i=0;i<n;i++){
+   const color=edge.colors[i];
+   const start=100*i/n,end=100*(i+1)/n;
+   gradient.append(se('stop',{offset:`${start}%`,'stop-color':color}),
+    se('stop',{offset:`${end}%`,'stop-color':color}));
+  }
+  gradients.append(gradient);
+  coloured.push(se('path',{d,class:'route-line',stroke:`url(#${id})`,
+   'data-shared-colors':edge.colors.join(',')}));
+ }
+ routeWorld.append(gradients,...back,...coloured);
+}
 function screen(x,y){const sc=fit*zoom;return{x:x*sc+offX,y:y*sc+offY}}
 function resize(){W=container.clientWidth;H=container.clientHeight;if(!W||!H)return;map.setAttribute('viewBox',`0 0 ${W} ${H}`);fit=Math.max(0.001,Math.min((W-90)/graphWidth,(H-90)/graphHeight));updateWorld()}
 // The initial fit is the minimum scale. Keep the railway in view at every zoom level.
@@ -2009,7 +2107,7 @@ function clampPan(){
  panY=Math.min(maxY,Math.max(-maxY,panY));
  if(zoom<=1.000001){panX=0;panY=0;}
 }
-function updateWorld(){clampPan();const sc=fit*zoom;offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);drawMap();$('zoomOut').disabled=zoom<=1.000001;}
+function updateWorld(){clampPan();const sc=fit*zoom;offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap();$('zoomOut').disabled=zoom<=1.000001;}
 // Point and segment collision checks in screen pixels.
 const ctx=document.createElement('canvas').getContext('2d');
 function rectOverlap(a,b,g=5){return a.x-g<b.x+b.w && a.x+a.w+g>b.x && a.y-g<b.y+b.h && a.y+a.h+g>b.y}
@@ -2047,9 +2145,10 @@ function journeyStationColors(journey){
  }
  return byStation;
 }
-// Derive the outline boundary from the *actual highlighted route paths*, not
-// a fixed left/right split. Each colour occupies the half facing the track
-// segment it touches at the interchange.
+// Derive split-ring orientation from the highlighted route geometry.
+// Opposing/branching legs get one semicircle facing each line. If both legs
+// overlap on the same track, the coloured semicircles instead face their
+// corresponding half-width lanes, so a line never touches the wrong colour.
 function rrJourneyLegOutwardTangent(path,atEnd){
  if(!path||path.length<2)return null;
  const at=atEnd?path.length-1:0,p=P[path[at]];
@@ -2059,14 +2158,14 @@ function rrJourneyLegOutwardTangent(path,atEnd){
  }
  return null;
 }
-function rrInterchangeStartAngle(inboundRay,outboundRay){
+function rrInterchangeStartAngle(inboundRay,outboundRay,sharedLaneNormal=null){
+ if(sharedLaneNormal)return Math.atan2(sharedLaneNormal.y,sharedLaneNormal.x)-Math.PI/2;
  if(!inboundRay||!outboundRay)return Math.PI/2;
  const dx=inboundRay.x-outboundRay.x,dy=inboundRay.y-outboundRay.y;
- // Both services touch the same side of the marker on a shared track.
- // The outbound route is drawn last, so its colour is the one visible there.
- const sameSide=Math.hypot(dx,dy)<0.20;
- const normal=sameSide?{x:-outboundRay.x,y:-outboundRay.y}:{x:dx,y:dy};
- return Math.atan2(normal.y,normal.x)-Math.PI/2;
+ // The incoming semicircle faces the incoming line and the outgoing one
+ // faces the outgoing line; never rotate the colours by a fixed angle.
+ if(Math.hypot(dx,dy)>1e-5)return Math.atan2(dy,dx)-Math.PI/2;
+ return Math.atan2(-inboundRay.y,inboundRay.x)-Math.PI/2;
 }
 function journeyInterchangeMarkers(journey){
  const interchanges=new Map();
@@ -2079,10 +2178,17 @@ function journeyInterchangeMarkers(journey){
   const bPath=selectedJourney===journey?selectedLegPaths[i+1]?.path:getSegmentPath(outbound.train,outbound.from,outbound.to);
   const inboundRay=rrJourneyLegOutwardTangent(aPath,true);
   const outboundRay=rrJourneyLegOutwardTangent(bPath,false);
+  // A repeated edge immediately beside the transfer station means both
+  // services touch the same side. Use the lane's actual side to orient the ring.
+  const aNode=aPath?.at(-1),aPrev=aPath?.at(-2);
+  const bNode=bPath?.[0],bNext=bPath?.[1];
+  const sameEdge=aNode===bNode&&aPrev===bNext&&aPrev!==undefined;
+  const edge=sameEdge?rrJourneyEdges.get(rrTrackKey(aNode,aPrev)):null;
+  const sharedNormal=sameEdge&&colorA!==colorB?rrLaneNormalAt(edge,colorA):null;
   interchanges.set(inbound.to,{
    colors:colorA===colorB?[colorA]:[colorA,colorB],
-   startAngle:rrInterchangeStartAngle(inboundRay,outboundRay),
-   inboundRay,outboundRay
+   startAngle:rrInterchangeStartAngle(inboundRay,outboundRay,sharedNormal),
+   inboundRay,outboundRay,sharedEdge:!!sharedNormal
   });
  }
  return interchanges;
@@ -2101,9 +2207,11 @@ function appendInterchangeDot(group,x,y,r,marker){
  const x1=x+innerRadius*Math.cos(a),y1=y+innerRadius*Math.sin(a);
  const x2=x+innerRadius*Math.cos(a+Math.PI),y2=y+innerRadius*Math.sin(a+Math.PI);
  group.append(se('path',{d:`M ${x1} ${y1} A ${innerRadius} ${innerRadius} 0 0 1 ${x2} ${y2}`,
-  fill:'none',stroke:colors[0],'stroke-width':edge,'stroke-linecap':'butt','pointer-events':'none'}));
+  fill:'none',stroke:colors[0],'stroke-width':edge,'stroke-linecap':'butt',
+  'data-ring-half':'incoming','pointer-events':'none'}));
  group.append(se('path',{d:`M ${x2} ${y2} A ${innerRadius} ${innerRadius} 0 0 1 ${x1} ${y1}`,
-  fill:'none',stroke:colors[1],'stroke-width':edge,'stroke-linecap':'butt','pointer-events':'none'}));
+  fill:'none',stroke:colors[1],'stroke-width':edge,'stroke-linecap':'butt',
+  'data-ring-half':'outgoing','pointer-events':'none'}));
 }
 // The translucent current-station halo uses the same angular split as the dot.
 function appendStationDisc(group,x,y,r,colors,opacity=1,startAngle=Math.PI/2){
