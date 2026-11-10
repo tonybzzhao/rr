@@ -2032,32 +2032,65 @@ function splitName(name){
  const single=[name],two=best;
  return name.length>=13?[two,single]:[single,two];
 }
-// A selected departure/arrival uses its own service colour at the current station.
-// Unselected stations (and map-only route tracing) retain the default blue marker.
-function currentStationHighlightColor(){
- const base='#0057B8';
- if(!selectedPath.length||!selectedNames.includes(currentStation))return base;
- if(selectedTrain)return C[selectedTrain.type]||base;
- if(selectedJourney){
-  const leg=selectedJourney.legs.find(l=>l.train.route.slice(l.fromIdx,l.toIdx+1).some(stop=>stop[0]===currentStation));
-  return leg?(C[leg.train.type]||base):base;
+// Each journey leg keeps its own service colour on the map, including its station dots.
+// An interchange can belong to two differently coloured legs: show both colours
+// on its dot (and on the current-station halo), in travel order.
+function journeyStationColors(journey){
+ const byStation=new Map();
+ if(!journey)return byStation;
+ for(const leg of journey.legs){
+  const color=C[leg.train.type]||'#0057B8';
+  for(const [name] of leg.train.route.slice(leg.fromIdx,leg.toIdx+1)){
+   const colors=byStation.get(name)||[];
+   if(!colors.includes(color)){colors.push(color);byStation.set(name,colors)}
+  }
  }
- return base;
+ return byStation;
+}
+// Render one solid disc or equally sized coloured sectors for a transfer station.
+// The first service occupies the left semicircle for the usual two-leg transfer.
+function appendStationDisc(group,x,y,r,colors,opacity=1){
+ const attrs={'pointer-events':'none'};
+ if(opacity!==1)attrs['fill-opacity']=opacity;
+ if(colors.length===1){
+  group.append(se('circle',{cx:x,cy:y,r,fill:colors[0],...attrs}));
+  return;
+ }
+ const step=2*Math.PI/colors.length;
+ for(let i=0;i<colors.length;i++){
+  const start=Math.PI/2+i*step,end=start+step;
+  const x1=x+r*Math.cos(start),y1=y+r*Math.sin(start);
+  const x2=x+r*Math.cos(end),y2=y+r*Math.sin(end);
+  const d=`M ${x} ${y} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
+  group.append(se('path',{d,fill:colors[i],...attrs}));
+ }
 }
 function drawMap(){
  if(!W||!H)return;
  layer.replaceChildren();labels.replaceChildren();tooltip.style.display='none';
- const sc=fit*zoom, visible=[],markerColor=currentStationHighlightColor();
+ const sc=fit*zoom,visible=[];
+ const selectedSet=new Set(selectedNames);
+ const legStationColors=journeyStationColors(selectedJourney);
  for(const s of STATIONS){
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
   visible.push({...s,sx:x,sy:y});
-  const selected=selectedNames.includes(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
-  const radius=selected?5.8:(important?4.7:3.2),g=se('g');
-  // Keep the reference's solid centre and translucent halo, using the active service colour when applicable.
-  // The outer disc remains 5/3 the radius of the dot.
-  if(current)g.append(se('circle',{cx:x,cy:y,r:radius*5/3,fill:markerColor,'fill-opacity':0.29,'pointer-events':'none'}));
-  g.append(se('circle',{cx:x,cy:y,r:radius,fill:current?markerColor:selected?routeColor:important?'#fff':'#737373',stroke:current?'none':selected?routeColor:important?'#888':'none','stroke-width':1.4,'pointer-events':'none'}));
+  const selected=selectedSet.has(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
+  const radius=selected?5.8:(important?4.7:3.2),g=se('g',{'data-station':s.name});
+  const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
+  const activeColors=selected&&selectedPath.length?(colors.length?colors:[routeColor]):[];
+  if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
+  // Match the current station and every calling point to the actual highlighted leg.
+  // Only transfers shared by different service colours are split into sectors.
+  if(current){
+   const markerColors=activeColors.length?activeColors:['#0057B8'];
+   appendStationDisc(g,x,y,radius*5/3,markerColors,0.29);
+   appendStationDisc(g,x,y,radius,markerColors);
+  }else if(activeColors.length){
+   appendStationDisc(g,x,y,radius,activeColors);
+  }else{
+   g.append(se('circle',{cx:x,cy:y,r:radius,fill:important?'#fff':'#737373',stroke:important?'#888':'none','stroke-width':1.4,'pointer-events':'none'}));
+  }
   const hit=se('circle',{cx:x,cy:y,r:12,fill:'transparent',class:'mapnode',role:'button','aria-label':s.name,tabindex:0});
   hit.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(s.name)});
   hit.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(s.name)}});
@@ -2066,7 +2099,6 @@ function drawMap(){
   g.append(hit);layer.append(g);
  }
  const byVisible=new Map(visible.map(v=>[v.name,v]));
- const selectedSet=new Set(selectedNames);
  const priorities=[currentStation];
  for(const n of selectedNames)if(!priorities.includes(n))priorities.push(n);
  for(const n of LABELS)if(!priorities.includes(n))priorities.push(n);
@@ -2409,7 +2441,7 @@ function searchJourneys(autoSelect=false){
  if(autoSelect&&first){chooseJourney(first)}
  else{
   selectedTrain=null;selectedPath=[];selectedLegPaths=[];selectedNames=[from,to];
-  routeWorld.replaceChildren();drawMap();rrDetailsHeading('Journey details','rr-ui-route');
+  routeWorld.replaceChildren();drawMap();rrDetailsHeading('Journey details','rr-ui-info');
   detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
   $('focusRoute').hidden=true;app.classList.remove('detail-open');
   requestAnimationFrame(resize);
@@ -2436,7 +2468,7 @@ function chooseJourney(j){
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
 function fillJourneyDetails(j){
- rrDetailsHeading('Journey details','rr-ui-route');$('focusRoute').hidden=false;
+ rrDetailsHeading('Journey details','rr-ui-info');$('focusRoute').hidden=false;
  const from=j.legs[0].from,to=j.legs[j.legs.length-1].to;
  let legs='';
  j.legs.forEach((leg,index)=>{
