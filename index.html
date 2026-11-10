@@ -76,7 +76,7 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--main);outline-
 .rail-under{fill:none;stroke:#fff;stroke-width:10;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
 .route-line{fill:none;vector-effect:non-scaling-stroke;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
 .mapnode{cursor:pointer}
-.label{font-family:Frutiger,'Helvetica Neue',Arial,sans-serif;fill:#242424;font-size:18.75px;letter-spacing:-.01em;font-weight:500;cursor:pointer;pointer-events:all}
+.label{font-family:Frutiger,'Helvetica Neue',Arial,sans-serif;fill:#242424;font-size:15.625px;letter-spacing:-.01em;font-weight:500;cursor:pointer;pointer-events:all}
 .label.important{font-weight:700}
 .station-label{cursor:pointer;pointer-events:all}
 .station-label:focus-visible .label{text-decoration:underline}
@@ -2291,7 +2291,7 @@ function drawMap(){
  }
  for(const name of priorities){
   const s=byVisible.get(name);if(!s)continue;
-  const important=LABELS.includes(name),fontSize=18.75,weight=important?700:500,lh=21.75;
+  const important=LABELS.includes(name),fontSize=15.625,weight=important?700:500,lh=18.125;
   ctx.font=`${weight} ${fontSize}px Frutiger,Arial`;
   const splits=splitName(name);
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
@@ -2723,8 +2723,8 @@ pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPic
 if (document.fonts && document.fonts.load) {
   Promise.all([
     document.fonts.load('400 14px Frutiger'),
-    document.fonts.load('500 18.75px Frutiger'),
-    document.fonts.load('700 18.75px Frutiger')
+    document.fonts.load('500 15.625px Frutiger'),
+    document.fonts.load('700 15.625px Frutiger')
   ]).then(()=>{if(W&&H)updateWorld()}).catch(()=>{});
 }
 </script>
