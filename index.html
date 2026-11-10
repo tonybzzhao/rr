@@ -141,6 +141,13 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--main);outline-
 .stop-icon{height:14px;width:14px;border:3px solid var(--route);border-radius:50%;background:#fff;position:relative;z-index:1;margin:0;flex:none}
 .stop:first-child .stop-icon,.stop:last-child .stop-icon{background:var(--route)}
 .stop.current .stop-icon{box-shadow:0 0 0 3px #e2e2e2}
+/* A selected intermediate stop divides the travelled and remaining parts of
+   the service. Use exactly the same faded colour on the map and calling list. */
+.stop.travelled .stop-marker::before{background:var(--route-travelled,var(--route))}
+.stop.travelled .stop-icon{border-color:var(--route-travelled,var(--route))}
+.stop.travelled:first-child .stop-icon{background:var(--route-travelled,var(--route))}
+.stop-list.is-en-route .stop.current:not(:last-child) .stop-marker::before{background:linear-gradient(to bottom,var(--route-travelled) 0%,var(--route-travelled) 50%,var(--route) 50%,var(--route) 100%)}
+.stop-list.is-en-route .stop.current:last-child .stop-marker::before{background:var(--route-travelled)}
 .stop-time,.stop-name{padding:12px 0;align-self:center;min-width:0;margin:0}
 .stop-time{font-size:13px;line-height:1.35;font-variant-numeric:tabular-nums;font-weight:500}
 .stop-name{font-size:13px;line-height:1.35;font-weight:500;overflow-wrap:normal}
@@ -1618,8 +1625,23 @@ function shortest(a,b){if(a===b)return[a];const d=new Float64Array(P.length);d.f
  function pop(){const root=heap[0],last=heap.pop();if(!heap.length)return root;let i=0;while(true){let j=i*2+1;if(j>=heap.length)break;if(j+1<heap.length&&heap[j+1][0]<heap[j][0])j++;if(heap[j][0]>=last[0])break;heap[i]=heap[j];i=j}heap[i]=last;return root}
  while(heap.length){const [dist,u]=pop();if(dist>d[u])continue;if(u===b)break;for(const [v,w] of adj[u]){const nd=dist+w;if(nd<d[v]){d[v]=nd;prev[v]=u;push([nd,v])}}}
  if(!isFinite(d[b]))return[];const result=[];for(let cur=b;cur!==-1;cur=prev[cur])result.push(cur);return result.reverse()}
-const routeCache=new Map();
-function getTrainPath(t){if(routeCache.has(t.id))return routeCache.get(t.id);let r=[];for(let i=0;i<t.route.length-1;i++){const a=S.get(t.route[i][0]),b=S.get(t.route[i+1][0]);if(!a||!b)continue;let seg=shortest(a.point,b.point);if(r.length)seg=seg.slice(1);r.push(...seg)}routeCache.set(t.id,r);return r}
+const routeCache=new Map(),routeStopPathEnds=new Map();
+function getTrainPath(t){
+ if(routeCache.has(t.id))return routeCache.get(t.id);
+ const r=[],ends=[0];
+ for(let i=0;i<t.route.length-1;i++){
+  const a=S.get(t.route[i][0]),b=S.get(t.route[i+1][0]);
+  if(a&&b){
+   let seg=shortest(a.point,b.point);
+   if(r.length)seg=seg.slice(1);
+   r.push(...seg);
+  }
+  ends.push(Math.max(0,r.length-1));
+ }
+ routeCache.set(t.id,r);
+ routeStopPathEnds.set(t.id,ends);
+ return r;
+}
 function makePath(ids){if(!ids.length)return'';return ids.map((i,j)=>(j?'L':'M')+P[i][0]+' '+P[i][1]).join('')}
 
 function stationList(){const names=[...S.keys()].sort((a,b)=>a.localeCompare(b));for(const id of ['stationSelect','from','to']){const el=$(id);el.replaceChildren(...names.map(name=>{const n=document.createElement('option');n.value=name;n.textContent=name;return n}))}stationSelect.value=currentStation;$('from').value='Mapleriver Central';$('to').value='Peiting Central'}
@@ -1856,7 +1878,8 @@ function rrIsDuplex(train,form,index){
  return RR_DUPLEX_FORMATIONS.has(form.key)&&rrHighPatronageProxy(train);
 }
 function rrSelectedVehicleIcon(train,form,car,index){
- if(car.role==='Sleeper'||car.role==='First sleeper')return 'sleeper';
+ // A sleeper remains a sleeper in its facilities and coach drawing; the
+ // heading beside the coach number identifies the actual vehicle body.
  return rrIsDuplex(train,form,index)?'duplex':'single';
 }
 // The ONLY in-coach symbols are accessible seating, bicycles, restaurant,
@@ -2015,9 +2038,21 @@ function rrEnsureCoachVisible(){
  });
 }
 
-function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=t.hereIndex??0,isArrival=viewMode==='arrivals';
- const stops=t.route.map(([name,time],i)=>`<div class="stop${name===currentStation?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${stops}</div>${rrCoachFormation(t)}`;
+function rrTrainProgressIndex(t){
+ const index=Number.isInteger(t.hereIndex)?t.hereIndex:t.route.findIndex(([name])=>name===currentStation);
+ return index>=0&&index<t.route.length?index:0;
+}
+function rrTraveledColor(color){
+ // 58% of the line highlight blended with 42% of the base railway line.
+ const rail=getComputedStyle(document.documentElement).getPropertyValue('--rail').trim()||'#9dc8ee';
+ const channels=c=>/^#[0-9a-f]{6}$/i.test(c)?[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)):null;
+ const a=channels(color),b=channels(rail);
+ if(!a||!b)return color;
+ return '#'+a.map((n,i)=>Math.round(n*.58+b[i]*.42).toString(16).padStart(2,'0')).join('');
+}
+function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
+ const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c};--route-travelled:${rrTraveledColor(c)}">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -2059,6 +2094,20 @@ function drawRoute(){
  routeWorld.replaceChildren();rrRouteRenderedScale=fit*zoom;
  rrJourneyEdges=new Map();
  if(!selectedPath.length)return;
+ if(selectedTrain){
+  const here=rrTrainProgressIndex(selectedTrain);
+  const boundary=routeStopPathEnds.get(selectedTrain.id)?.[here];
+  if(here>0&&Number.isInteger(boundary)&&boundary>0&&boundary<selectedPath.length){
+   // The boundary is recorded at the exact calling point, not the nearest
+   // matching node elsewhere on a route that revisits the same tracks.
+   routeWorld.append(
+    se('path',{d:makePath(selectedPath),class:'rail-under'}),
+    se('path',{d:makePath(selectedPath.slice(0,boundary+1)),class:'route-line',stroke:rrTraveledColor(routeColor)}),
+    se('path',{d:makePath(selectedPath.slice(boundary)),class:'route-line',stroke:routeColor})
+   );
+   return;
+  }
+ }
  const segments=selectedLegPaths.length?selectedLegPaths:[{path:selectedPath,color:routeColor}];
  if(!selectedJourney||segments.length<2){
   for(const {path,color} of segments){if(path.length<2)continue;
@@ -2235,6 +2284,9 @@ function drawMap(){
  layer.replaceChildren();labels.replaceChildren();tooltip.style.display='none';
  const sc=fit*zoom,visible=[];
  const selectedSet=new Set(selectedNames);
+ const progressIndex=selectedTrain?rrTrainProgressIndex(selectedTrain):0;
+ const passedStationNames=new Set(progressIndex>0?selectedTrain.route.slice(0,progressIndex).map(([name])=>name):[]);
+ const passedTrainColor=progressIndex>0?rrTraveledColor(routeColor):null;
  const legStationColors=journeyStationColors(selectedJourney);
  const interchangeMarkers=journeyInterchangeMarkers(selectedJourney);
  for(const s of STATIONS){
@@ -2244,7 +2296,7 @@ function drawMap(){
   const selected=selectedSet.has(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
   const radius=selected?5.8:(important?4.7:3.2),g=se('g',{'data-station':s.name});
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
-  const activeColors=selected&&selectedPath.length?(colors.length?colors:[routeColor]):[];
+  const activeColors=selected&&selectedPath.length?(colors.length?colors:[passedTrainColor&&!current&&passedStationNames.has(s.name)?passedTrainColor:routeColor]):[];
   const transferMarker=selected&&selectedPath.length?interchangeMarkers.get(s.name):null;
   if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
   if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.join(','));
