@@ -1150,6 +1150,75 @@ body{font-size:14.5px}
 /* Preserve the original time as smaller than the revised time. */
 .trainrow .row-time .time-delayed .retime-box{font-size:1em}
 
+
+/* v40: robust responsive From/To actions with a functional station swap control.
+   The action row is a proper layout group so Find trains and Reset cannot
+   be squeezed to opposite edges of the phone header. */
+.map-tools .map-actions{display:flex;align-items:center;gap:8px;min-width:0}
+.map-tools .map-actions>button{
+ box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+ gap:7px;height:36px;min-height:36px;max-width:none;margin:0;
+ padding:0 12px;border:1px solid #c4ccd5;border-radius:4px;
+ background:#fff;color:#23364e;font-size:13px;font-weight:500;line-height:1.2;
+ white-space:nowrap;cursor:pointer
+}
+.map-tools .map-actions #trace{background:#0057B8;border-color:#0057B8;color:#fff}
+.map-tools .map-actions #trace:hover{background:#004a9a;border-color:#004a9a;color:#fff}
+.map-tools .map-actions #clear{position:static;top:auto;right:auto;justify-self:auto}
+.map-tools .map-actions #clear:hover{background:#edf3fb;border-color:#8da9ca;color:#003e89}
+.map-tools #swapStations{
+ display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+ flex:0 0 36px;width:36px;height:36px;min-height:36px;padding:0;
+ border:1px solid #c4ccd5;border-radius:4px;background:#fff;color:#23364e;
+ cursor:pointer;position:static
+}
+.map-tools #swapStations:hover{background:#edf3fb;border-color:#8da9ca;color:#003e89}
+.map-tools #swapStations:active{background:#dfeafb}
+.map-tools #swapStations .rr-action-icon{display:block;flex:0 0 18px;width:18px;height:18px;fill:none;color:inherit}
+@media(min-width:561px) and (max-width:990px){
+ .map-tools .map-actions{gap:6px}
+ .map-tools .map-actions>button{padding-inline:9px}
+}
+/* Preserve enough vertical room for the controls: the fixed 56dvh map
+   previously caused the header to shrink and clip both action buttons. */
+@media(max-width:750px){
+ .map-area{height:auto;min-height:0;flex:0 0 auto}
+ .map-header{flex:0 0 auto;height:auto}
+ .map-container{height:clamp(350px,55dvh,590px);min-height:350px;flex:0 0 auto}
+}
+@media(max-width:560px){
+ .map-header{padding:10px 13px;align-items:stretch;justify-content:flex-start}
+ .map-tools{
+  display:grid;grid-template-columns:40px minmax(0,1fr) 36px;
+  grid-template-areas:'from-label from-field from-field'
+                      '. . swap'
+                      'to-label to-field to-field'
+                      'actions actions actions';
+  width:100%;min-width:0;max-width:100%;margin:0;
+  align-items:center;justify-content:stretch;column-gap:8px;row-gap:5px
+ }
+ .map-tools>label[for="fromInput"]{grid-area:from-label;min-width:0}
+ .map-tools>label[for="toInput"]{grid-area:to-label;min-width:0}
+ .map-tools>.search-picker:has(#fromInput){grid-area:from-field;width:100%;min-width:0;max-width:none}
+ .map-tools>.search-picker:has(#toInput){grid-area:to-field;width:100%;min-width:0;max-width:none}
+ .map-tools #swapStations{grid-area:swap;justify-self:end;width:32px;height:30px;min-height:30px;flex-basis:32px}
+ .map-tools #swapStations .rr-action-icon{width:17px;height:17px;flex-basis:17px;transform:rotate(90deg)}
+ .map-tools .map-actions{
+  grid-area:actions;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:stretch;gap:8px;width:100%;min-width:0;max-width:100%;margin-top:2px
+ }
+ .map-tools .map-actions>button{
+  width:100%;min-width:0;max-width:none;height:40px;min-height:40px;
+  padding:0 7px;font-size:13.5px;gap:7px;justify-content:center;
+  grid-area:auto;grid-column:auto;grid-row:auto;justify-self:stretch;align-self:stretch
+ }
+ .map-tools .map-actions #trace,.map-tools .map-actions #clear{
+  position:static;top:auto;right:auto;grid-area:auto;grid-column:auto;grid-row:auto;
+  justify-self:stretch;align-self:stretch
+ }
+ .map-tools .map-actions .rr-action-icon{flex:0 0 17px;width:17px;height:17px}
+}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -1396,7 +1465,7 @@ body{font-size:14.5px}
   </aside>
   <section class="map-area">
     <header class="map-header">
-      <div class="map-tools"><label for="fromInput">From</label><select id="from"></select><label for="toInput">To</label><select id="to"></select><button id="trace" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-find"></use></svg><span>Find trains</span></button><button id="clear" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-reset"></use></svg><span>Reset</span></button></div>
+      <div class="map-tools"><label for="fromInput">From</label><select id="from"></select><button id="swapStations" class="swap-stations" type="button" aria-label="Swap From and To stations" title="Swap From and To stations"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg></button><label for="toInput">To</label><select id="to"></select><div class="map-actions"><button id="trace" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-find"></use></svg><span>Find trains</span></button><button id="clear" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-reset"></use></svg><span>Reset</span></button></div></div>
     </header>
     <div class="map-container" id="mapContainer">
       <svg id="map" role="img" aria-label="Interactive RR Info railway map"><g id="world"><path id="hslTrack" class="rail hsl"/><path id="mlTrack" class="rail ml"/><g id="routeWorld"></g></g><g id="stationLayer"></g><g id="labelLayer"></g></svg>
@@ -2335,6 +2404,16 @@ $('from').addEventListener('change',()=>searchJourneys());
 $('to').addEventListener('change',()=>searchJourneys());
 
 $('trace').onclick=()=>searchJourneys();$('clear').onclick=()=>{viewMode='departures';updateBoardTabs();selectedJourney=null;selectedLegPaths=[];clear()};
+// Swap station values in the original selects and both searchable picker inputs.
+// Refresh the journey search only once, after both values have been exchanged.
+$('swapStations').addEventListener('click',()=>{
+ const from=$('from'),to=$('to'),previousFrom=from.value;
+ from.value=to.value;to.value=previousFrom;
+ pickerViews.get('from')?.sync();
+ pickerViews.get('to')?.sync();
+ searchJourneys();
+});
+
 stationSelect.addEventListener('change',e=>setCurrentStation(e.target.value));
 $('collapse').onclick=()=>{
  app.classList.toggle('folded');
