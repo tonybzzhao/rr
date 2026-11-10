@@ -1338,6 +1338,20 @@ body{font-size:14.5px}
  .train-hero .train-number{font-size:22px}
 }
 
+/* v53: the large train-detail time matches the destination text, including
+   responsive sizes. Keep the small crossed-out scheduled time as before. */
+.train-hero{--rr-hero-value-size:23px}
+.details-body .train-hero .service-dest,
+.details-body .train-hero .depart-time{font-size:var(--rr-hero-value-size);letter-spacing:normal}
+.details-body .train-hero .depart-time .time-value,
+.details-body .train-hero .depart-time .retime-box{letter-spacing:normal}
+@media(min-width:751px) and (max-width:1260px){
+ .train-hero{--rr-hero-value-size:21px}
+}
+@media(max-width:750px){
+ .train-hero{--rr-hero-value-size:22px}
+}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
