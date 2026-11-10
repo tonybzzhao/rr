@@ -1318,6 +1318,16 @@ body{font-size:14.5px}
 .journey-leg-heading .status-tag,
 .journey-row-meta .service {font-weight:500!important}
 
+/* v51: slightly relax character spacing only in the right details panel.
+   Keep the mobile and desktop time hierarchy, tabular numerals, and
+   day-offset spacing intact; departure/arrival board columns are unchanged. */
+.details-body .depart-time,
+.details-body .journey-summary-time strong{letter-spacing:0}
+.details-body .stop-time,
+.details-body .time-value,
+.details-body .time-delayed .retime-box{letter-spacing:.015em}
+.details-body .time-delayed .scheduled-time{letter-spacing:.025em}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -2043,12 +2053,10 @@ function rrTrainProgressIndex(t){
  return index>=0&&index<t.route.length?index:0;
 }
 function rrTraveledColor(color){
- // 58% of the line highlight blended with 42% of the base railway line.
- const rail=getComputedStyle(document.documentElement).getPropertyValue('--rail').trim()||'#9dc8ee';
- const channels=c=>/^#[0-9a-f]{6}$/i.test(c)?[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)):null;
- const a=channels(color),b=channels(rail);
- if(!a||!b)return color;
- return '#'+a.map((n,i)=>Math.round(n*.58+b[i]*.42).toString(16).padStart(2,'0')).join('');
+ // Fixed travelled-route palette, matching the actual service line.
+ // RR Max and InterCity share blue, RR Via is pink, RR Nightline is purple.
+ const travelled={'#0057B8':'#4D8EE9','#D162C0':'#F08ADF','#394779':'#7080B1'};
+ return travelled[String(color).toUpperCase()]||color;
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
