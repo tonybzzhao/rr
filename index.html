@@ -1242,7 +1242,7 @@ body{font-size:14.5px}
 .search-picker .picker-option[aria-selected="true"]{border-left-color:var(--main);font-weight:500}
 .search-picker .picker-toggle{box-sizing:border-box;height:100%;min-height:0;padding:0 0;border:0!important;border-left:1px solid #e6e9ed!important;border-radius:0 3px 3px 0}
 @media(max-width:750px){
- /* Controls belong between tabs and timetable, not in the map header. */
+ /* On mobile the planner follows the timetable and precedes the map. */
  .map-header{display:none}
  .mobile-planner-slot{display:block;position:relative;z-index:40;flex:0 0 auto;
    padding:12px 16px 13px;border-bottom:1px solid var(--hair);background:#fff}
@@ -1519,10 +1519,10 @@ body{font-size:14.5px}
     </div>
     <div class="side-content" id="sidebarContent">
       <div class="board-tabs" role="tablist" aria-label="Railway information"><button id="departuresTab" class="board-tab active" type="button" role="tab" aria-selected="true">Departures</button><button id="arrivalsTab" class="board-tab" type="button" role="tab" aria-selected="false">Arrivals</button><button id="journeysTab" class="board-tab" type="button" role="tab" aria-selected="false">Journeys</button></div>
-      <div id="mobilePlannerSlot" class="mobile-planner-slot" aria-label="Journey planner"></div>
       <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-info"></use></svg><span class="rr-station-fac-text">Station information</span><span class="rr-station-fac-chevron" aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><div class="journey-filters"><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct trains only</label><label class="direct-filter" title="Every leg must be operated by RR Max or RR Via"><input type="checkbox" id="highSpeedOnly"> High-speed only <span class="filter-hint">Max / Via</span></label></div></div></div>
       <div class="boardhead"><span>Time</span><span>Train</span><span id="boardRouteHeader">Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
+      <div id="mobilePlannerSlot" class="mobile-planner-slot" aria-label="Journey planner"></div>
     </div>
     <footer class="side-foot" title="© Radelish Railways plc 2026"><span class="copyright-full">© Radelish Railways plc 2026</span><span class="copyright-compact">© RR 2026</span></footer>
   </aside>
@@ -2032,9 +2032,9 @@ function splitName(name){
  const single=[name],two=best;
  return name.length>=13?[two,single]:[single,two];
 }
-// Each journey leg keeps its own service colour on the map, including its station dots.
-// An interchange can belong to two differently coloured legs: show both colours
-// on its dot (and on the current-station halo), in travel order.
+// Calling-point dots follow their leg's service colour. Interchanges get
+// white centres and service-coloured outlines, with split outlines for transfers
+// between differently coloured services.
 function journeyStationColors(journey){
  const byStation=new Map();
  if(!journey)return byStation;
@@ -2047,8 +2047,44 @@ function journeyStationColors(journey){
  }
  return byStation;
 }
-// Render one solid disc or equally sized coloured sectors for a transfer station.
-// The first service occupies the left semicircle for the usual two-leg transfer.
+// Identify *actual* changes, not merely stations visited by multiple legs.
+// Store the inbound colour first (left edge) and outbound second (right edge).
+function journeyInterchangeColors(journey){
+ const interchanges=new Map();
+ if(!journey)return interchanges;
+ for(let i=0;i<journey.legs.length-1;i++){
+  const inbound=journey.legs[i],outbound=journey.legs[i+1];
+  if(inbound.to!==outbound.from)continue;
+  const station=inbound.to;
+  const colors=interchanges.get(station)||[];
+  for(const color of [C[inbound.train.type]||'#0057B8',C[outbound.train.type]||'#0057B8']){
+   if(!colors.includes(color))colors.push(color);
+  }
+  interchanges.set(station,colors);
+ }
+ return interchanges;
+}
+// Keep the interchange dot's *outer diameter* identical to all other route dots.
+// The outline is inset inside the existing radius, leaving a white centre.
+// With two service colours the inbound service owns the left semicircle.
+function appendInterchangeDot(group,x,y,r,colors){
+ const edge=2,innerRadius=r-edge/2;
+ group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'#fff',
+  'pointer-events':'none'}));
+ if(colors.length<2||colors[0]===colors[1]){
+  group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'none',
+   stroke:colors[0]||'#0057B8','stroke-width':edge,'pointer-events':'none'}));
+  return;
+ }
+ const top=y-innerRadius,bottom=y+innerRadius;
+ // Open paths avoid an unwanted coloured dividing line through the white fill.
+ group.append(se('path',{d:`M ${x} ${top} A ${innerRadius} ${innerRadius} 0 0 0 ${x} ${bottom}`,
+  fill:'none',stroke:colors[0],'stroke-width':edge,'stroke-linecap':'butt','pointer-events':'none'}));
+ group.append(se('path',{d:`M ${x} ${top} A ${innerRadius} ${innerRadius} 0 0 1 ${x} ${bottom}`,
+  fill:'none',stroke:colors[1],'stroke-width':edge,'stroke-linecap':'butt','pointer-events':'none'}));
+}
+// Render one solid disc or equally sized coloured sectors for the current-station
+// translucent background; ordinary calling points always have solid fills.
 function appendStationDisc(group,x,y,r,colors,opacity=1){
  const attrs={'pointer-events':'none'};
  if(opacity!==1)attrs['fill-opacity']=opacity;
@@ -2071,6 +2107,7 @@ function drawMap(){
  const sc=fit*zoom,visible=[];
  const selectedSet=new Set(selectedNames);
  const legStationColors=journeyStationColors(selectedJourney);
+ const interchangeColors=journeyInterchangeColors(selectedJourney);
  for(const s of STATIONS){
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
@@ -2079,15 +2116,20 @@ function drawMap(){
   const radius=selected?5.8:(important?4.7:3.2),g=se('g',{'data-station':s.name});
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
   const activeColors=selected&&selectedPath.length?(colors.length?colors:[routeColor]):[];
+  const transferColors=selected&&selectedPath.length?interchangeColors.get(s.name):null;
   if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
-  // Match the current station and every calling point to the actual highlighted leg.
-  // Only transfers shared by different service colours are split into sectors.
+  if(transferColors?.length)g.setAttribute('data-interchange-colors',transferColors.join(','));
+  // Real interchanges use a white dot with a one- or two-colour outline.
+  // Its outer diameter stays identical to other highlighted station dots.
   if(current){
    const markerColors=activeColors.length?activeColors:['#0057B8'];
    appendStationDisc(g,x,y,radius*5/3,markerColors,0.29);
-   appendStationDisc(g,x,y,radius,markerColors);
+   if(transferColors?.length)appendInterchangeDot(g,x,y,radius,transferColors);
+   else appendStationDisc(g,x,y,radius,[markerColors[0]]);
+  }else if(transferColors?.length){
+   appendInterchangeDot(g,x,y,radius,transferColors);
   }else if(activeColors.length){
-   appendStationDisc(g,x,y,radius,activeColors);
+   appendStationDisc(g,x,y,radius,[activeColors[0]]);
   }else{
    g.append(se('circle',{cx:x,cy:y,r:radius,fill:important?'#fff':'#737373',stroke:important?'#888':'none','stroke-width':1.4,'pointer-events':'none'}));
   }
@@ -2523,7 +2565,7 @@ $('collapse').onclick=()=>{
 $('closeDetail').onclick=()=>{app.classList.remove('detail-open');requestAnimationFrame(resize)};
 const ro=new ResizeObserver(()=>resize());ro.observe(container);
 
-/* v42: relocate one functional From/To planner between mobile tabs and timetable. */
+/* v46: relocate the functional From/To planner under mobile timetable. */
 const rrPlannerMobileQuery=window.matchMedia('(max-width:750px)');
 const rrPlannerTools=document.querySelector('.map-tools');
 const rrPlannerDesktopHome=document.querySelector('.map-header');
