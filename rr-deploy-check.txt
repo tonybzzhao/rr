@@ -1,0 +1,5 @@
+RR Info deployment check
+Latest icon code present: inline-original-svg-paths
+French delay: Retard +N min
+Mobile planner: journey-tab-only
+Build marker: 2026-11-11-inline-icons-v3
