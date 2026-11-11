@@ -1724,6 +1724,81 @@ body{font-size:14.5px}
  font-size:var(--rr-board-tabs-font-size);
  line-height:1.15
 }
+
+/* v62: bilingual brand geometry. Both 90-unit SVG artboards share the
+   identical RR emblem path and position; scale by height, never by width. */
+.longmark img{
+ width:auto;height:39px;max-width:none;max-height:none;display:block
+}
+@media(min-width:751px) and (max-width:1120px){
+ .longmark img{height:31px}
+ .app.detail-open .longmark img{height:26px}
+}
+@media(min-width:751px) and (max-width:990px){
+ .longmark img{height:29px}
+ .app.detail-open .longmark img{height:26px}
+}
+/* A preference icon without an uploaded mask must retain its vector fallback.
+   This prevents missing masks from painting as solid rectangles. */
+:root.rr-symbol-font-ready .rr-site-settings .rr-icon-slot:not([style*="--rr-icon-source"])::after{display:none}
+:root.rr-symbol-font-ready .rr-site-settings .rr-icon-slot:not([style*="--rr-icon-source"]) .rr-fallback-icon{display:block!important}
+/* Right-panel headings are text-first. Wrap within the available column;
+   no title may intrude into the route action or close control. */
+.app .details-head{min-width:0;gap:7px}
+.app .details-head .details-heading{
+ flex:1 1 auto;min-width:0;width:auto;max-width:100%;
+ align-items:center;gap:9px
+}
+.app .details-head .details-heading h2{
+ min-width:0;max-width:100%;flex:1 1 auto;
+ white-space:normal;overflow-wrap:break-word;hyphens:auto;
+ line-height:1.16;
+}
+.app .details-head .details-heading .rr-action-icon{flex:0 0 24px}
+.app .details-head .details-actions{
+ flex:0 0 auto;min-width:0;width:auto;
+ display:flex;align-items:center;gap:5px;margin-left:auto
+}
+.app .details-head .details-actions #focusRoute{flex:0 0 auto;white-space:nowrap}
+/* Text can grow vertically within body rows instead of being hidden behind
+   neighbouring columns, icons, controls or the viewport edge. */
+.details-body .info-grid{
+ grid-template-columns:minmax(76px,89px) minmax(0,1fr)
+}
+.details-body .info-grid .keylabel,
+.details-body .info-grid .infoval,
+.details-body .journey-leg-heading,
+.details-body .journey-transfer,
+.details-body .journey-summary-sub,
+.details-body .rr-selected-main,
+.details-body .rr-fac-item,
+.details-body .facilities-heading,
+.details-body .stops-heading{
+ min-width:0;overflow-wrap:break-word;white-space:normal
+}
+.details-body .rr-selected-role.rr-first-label{
+ white-space:normal;max-width:100%;overflow-wrap:break-word
+}
+.details-body .status-tag{max-width:100%;white-space:normal}
+.side .station-fac-link .rr-station-fac-text,
+.side .journey-via,
+.side .journey-count,
+.side .picker-empty,
+.map-tools>button,
+#focusRoute span{overflow-wrap:break-word;min-width:0}
+.map-legend{max-width:calc(100% - 170px);flex-wrap:wrap;row-gap:7px}
+.map-legend .key{min-width:0;white-space:normal}
+@media(max-width:750px){
+ .map-legend{max-width:calc(100% - 30px)}
+}
+@media(max-width:390px){
+ .app .details-head{gap:4px}
+ .app .details-head .details-heading{gap:6px}
+ .app .details-head .details-heading h2{font-size:14px}
+ .app .details-head .details-actions{gap:3px}
+}
+/* End v62 responsive French typography & bilingual logos. */
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -2003,7 +2078,7 @@ body{font-size:14.5px}
       <button id="rrLanguageToggle" class="appearance-toggle" type="button" aria-label="Language: English" title="Language" aria-haspopup="true" aria-expanded="false" aria-controls="rrLanguageMenu"><span class="rr-icon-slot rr-pref-icon" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/globe.svg')"><img class="rr-upload-icon" src="./assets/preferences/globe.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-globe"></use></svg></span></button>
       <div id="rrLanguageMenu" class="appearance-menu language-menu" role="group" aria-label="Language" hidden>
         <button class="appearance-option" data-language-choice="en" type="button" aria-pressed="true"><span>English</span><span class="rr-icon-slot appearance-check" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/checkmark.svg')"><img class="rr-upload-icon" src="./assets/preferences/checkmark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-checkmark"></use></svg></span></button>
-        <button class="appearance-option" data-language-choice="fr" type="button" aria-pressed="false"><span>Français</span><span class="rr-icon-slot appearance-check" aria-hidden="true"><svg class="rr-fallback-icon" viewBox="0 0 24 24"><use href="#rr-settings-checkmark"></use></svg></span></button>
+        <button class="appearance-option" data-language-choice="fr" type="button" aria-pressed="false"><span>Français</span><span class="rr-icon-slot appearance-check" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/checkmark.svg')"><img class="rr-upload-icon" src="./assets/preferences/checkmark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-checkmark"></use></svg></span></button>
         </div></div>
     <div class="appearance-picker" id="rrAppearancePicker">
       <button id="rrAppearanceToggle" class="appearance-toggle" type="button" aria-label="Appearance: System" title="Appearance: System" aria-haspopup="true" aria-expanded="false" aria-controls="rrAppearanceMenu"><svg class="rr-pref-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.4"/><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" stroke="none"/></svg></button>
@@ -3413,7 +3488,7 @@ function rrFrenchText(source){
  let s=source.slice(leading.length,source.length-trailing.length);
  if(Object.prototype.hasOwnProperty.call(rrFrenchExact,s))return leading+rrFrenchExact[s]+trailing;
  s=s
-  .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard estimé de '+n+' min')
+  .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard '+n+' min')
   .replace(/\b(\d+) services\b/g,(_,n)=>n+' trajets')
   .replace(/\b1 service\b/g,'1 trajet')
   .replace(/\b(\d+) changes\b/g,(_,n)=>n+' correspondances')
