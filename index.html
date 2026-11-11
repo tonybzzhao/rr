@@ -1821,6 +1821,39 @@ body{font-size:14.5px}
 }
 /* End v63 French narrow-panel header adaptation. */
 
+
+/* v64: all preference/swap pictograms render from real vector outlines.
+   Never hide a visible path based on SF Pro availability. */
+.rr-site-settings .rr-icon-slot::after,
+.map-tools #swapStations .rr-swap-icon::after{display:none!important}
+.rr-site-settings .rr-icon-slot .rr-upload-icon,
+.map-tools #swapStations .rr-swap-icon .rr-upload-icon{display:none!important}
+.rr-site-settings .rr-icon-slot .rr-fallback-icon,
+.map-tools #swapStations .rr-swap-icon .rr-fallback-icon{display:block!important}
+
+/* Mobile only: display Journey search immediately after the tab bar,
+   ahead of 'Available trains' and the journey results. Preserve fixed
+   planner/board/map heights in their respective active views. */
+@media(max-width:750px){
+ .app:not(.journey-mode) #mobilePlannerSlot{display:none!important}
+ .app.journey-mode #mobilePlannerSlot{
+  display:block;flex:0 0 202px;height:202px;min-height:202px;max-height:202px;
+  order:0;border-top:0;border-bottom:1px solid var(--hair)
+ }
+ .side-content>.board-tabs{order:0}
+ .side-content>#mobilePlannerSlot{order:1}
+ .side-content>.side-controls{order:2}
+ .side-content>.boardhead{order:3}
+ .side-content>.board{order:4}
+ /* Never allow the site masthead or floating preferences to cover the
+    selected train/journey details. All drawers start at viewport y=0. */
+ .app .details,.app.detail-open>.details{
+  position:fixed;top:0;bottom:0;right:0;
+  height:100dvh;min-height:0;max-height:100dvh;margin-top:0;
+ }
+ .app.detail-open>.details{z-index:120}
+}
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -2069,10 +2102,10 @@ body{font-size:14.5px}
     </div>
     <div class="side-content" id="sidebarContent">
       <div class="board-tabs" role="tablist" aria-label="Railway information"><button id="departuresTab" class="board-tab active" type="button" role="tab" aria-selected="true">Departures</button><button id="arrivalsTab" class="board-tab" type="button" role="tab" aria-selected="false">Arrivals</button><button id="journeysTab" class="board-tab" type="button" role="tab" aria-selected="false">Journeys</button></div>
+      <div id="mobilePlannerSlot" class="mobile-planner-slot" aria-label="Journey planner"></div>
       <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-info"></use></svg><span class="rr-station-fac-text">Station information</span><span class="rr-station-fac-chevron" aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><div class="journey-filters"><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct only</label><label class="direct-filter" title="Every leg must be operated by RR Max or RR Via"><input type="checkbox" id="highSpeedOnly"> High-speed only <span class="filter-hint">Max / Via</span></label></div></div></div>
       <div class="boardhead"><span>Time</span><span>Train</span><span id="boardRouteHeader">Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
-      <div id="mobilePlannerSlot" class="mobile-planner-slot" aria-label="Journey planner"></div>
     </div>
     <footer class="side-foot" title="© Radelish Railways plc 2026"><span class="copyright-full">© Radelish Railways plc 2026</span><span class="copyright-compact">© RR 2026</span></footer>
   </aside>
@@ -2370,6 +2403,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
   });
  }
  if(returnJourney){$('backToJourney').addEventListener('click',()=>{viewMode='journeys';updateBoardTabs();chooseJourney(returnJourney)})}
+ detail.scrollTop=0;
  app.classList.add('detail-open');
  requestAnimationFrame(resize);
 }
@@ -2605,7 +2639,7 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-informatio
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
-function chooseTrain(t,openDrawer=true){selectedJourney=null;selectedLegPaths=[];selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=C[t.type];manualTrace=false;fillDetails(t);drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
+function chooseTrain(t,openDrawer=true){selectedJourney=null;selectedLegPaths=[];selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
 function trace(){selectedLegPaths=[];const a=S.get($('from').value),b=S.get($('to').value);if(!a||!b)return;selectedTrain=null;selectedPath=shortest(a.point,b.point);selectedNames=[a.name,b.name];routeColor=C.Max;manualTrace=true;drawRoute();drawMap();drawBoard();$('focusRoute').hidden=false;rrDetailsHeading('Route','rr-ui-route');detail.innerHTML=`<div class="service-dest">${a.name} → ${b.name}</div>`;app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}
 function clear(){selectedJourney=null;selectedLegPaths=[];selectedTrain=null;selectedPath=[];selectedNames=[currentStation];manualTrace=false;routeWorld.replaceChildren();drawBoard();$('focusRoute').hidden=true;detail.innerHTML=`<div class="empty">Select ${viewMode==='arrivals'?'an arrival':'a departure'}.</div>`;app.classList.remove('detail-open');requestAnimationFrame(resize);drawMap()}
 // Shared schematic edges get smooth, adjacent half-width colour bands using
@@ -3273,7 +3307,7 @@ function chooseJourney(j){
  selectedPath=selectedLegPaths.flatMap((p,i)=>i?p.path.slice(1):p.path);
  selectedNames=[...new Set(j.legs.flatMap(l=>l.train.route.slice(l.fromIdx,l.toIdx+1).map(s=>s[0])))];
  routeColor=C[j.legs[0].train.type];
- fillJourneyDetails(j);renderJourneyResults();drawRoute();drawMap();
+ fillJourneyDetails(j);detail.scrollTop=0;renderJourneyResults();drawRoute();drawMap();
  app.classList.add('detail-open');
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
@@ -3510,7 +3544,7 @@ function rrFrenchText(source){
  let s=source.slice(leading.length,source.length-trailing.length);
  if(Object.prototype.hasOwnProperty.call(rrFrenchExact,s))return leading+rrFrenchExact[s]+trailing;
  s=s
-  .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard '+n+' min')
+  .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard +'+n+' min')
   .replace(/\b(\d+) services\b/g,(_,n)=>n+' trajets')
   .replace(/\b1 service\b/g,'1 trajet')
   .replace(/\b(\d+) changes\b/g,(_,n)=>n+' correspondances')
@@ -3670,27 +3704,8 @@ try{rrInitialLanguage=localStorage.getItem(rrLanguageKey)||'en'}catch(_){}
 rrSetLanguage(rrInitialLanguage);
 
 
-/* The uploaded SVGs contain SF Pro private-use text, not path outlines.
-   If the native font cannot render them, retain the compatible vector fallback. */
-(function rrResolveUploadedIconSupport(){
- const glyphProbe=new Image();
- const useFallback=()=>document.documentElement.classList.remove('rr-symbol-font-ready');
- glyphProbe.onload=()=>{
-  try{
-   const canvas=document.createElement('canvas');
-   canvas.width=32;canvas.height=32;
-   const ctx=canvas.getContext('2d',{willReadFrequently:true});
-   ctx.drawImage(glyphProbe,0,0,32,32);
-   const pixels=ctx.getImageData(0,0,32,32).data;
-   let drawn=0;
-   for(let i=3;i<pixels.length;i+=4)if(pixels[i]>40)drawn++;
-   if(drawn>=8)document.documentElement.classList.add('rr-symbol-font-ready');
-   else useFallback();
-  }catch(_){useFallback()}
- };
- glyphProbe.onerror=useFallback;
- glyphProbe.src='./assets/preferences/light.svg';
-})();
+/* All six preference/swap SVG files now contain real vector outlines.
+   Inline SVG symbols render across devices without any system-font probe. */
 </script>
 </body>
 </html>
