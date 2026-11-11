@@ -1464,6 +1464,50 @@ body{font-size:14.5px}
 .folded .appearance-toggle svg{width:17px;height:17px}
 .folded .appearance-menu{right:auto;left:calc(100% + 10px);top:-12px}
 @media(max-width:750px){.appearance-toggle{width:34px;height:34px}}
+
+/* v56 — global top-right preferences and an uninterrupted header above details. */
+.app{position:relative}
+.rr-site-settings{
+ position:absolute;top:0;right:0;z-index:90;width:112px;height:var(--head);
+ display:flex;align-items:center;justify-content:flex-end;gap:7px;
+ padding:0 17px;background:var(--surface);border-bottom:1px solid var(--hair)
+}
+.rr-site-settings .appearance-picker{position:relative;flex:0 0 34px}
+.rr-site-settings .appearance-toggle{width:34px;height:34px;min-height:34px}
+.rr-site-settings .appearance-toggle .rr-pref-icon{width:20px;height:20px;stroke:currentColor;fill:none}
+.rr-site-settings .appearance-menu{right:0;left:auto;top:calc(100% + 10px);min-width:181px}
+.rr-site-settings .appearance-option svg{width:17px;height:17px;flex:0 0 17px}
+.rr-site-settings .appearance-option .appearance-check{
+ display:block;flex:0 0 17px;width:17px;height:17px;margin-left:auto;visibility:hidden;color:var(--main-deep)
+}
+.rr-site-settings .appearance-option[aria-pressed="true"] .appearance-check{visibility:visible}
+.rr-site-settings .appearance-option:disabled{cursor:not-allowed;opacity:1;color:var(--muted-slate);background:transparent}
+.rr-coming-soon{margin-left:auto;color:var(--muted-slate);font-size:11px}
+.rr-language-note{
+ display:flex;align-items:flex-start;gap:7px;margin-top:5px;padding:9px 9px 5px;
+ border-top:1px solid var(--stroke-soft);color:var(--muted-slate);font-size:11px;line-height:1.3
+}
+.rr-language-note svg{width:14px;height:14px;flex:0 0 14px;stroke:currentColor;fill:none}
+@media(min-width:751px){
+ .app.detail-open>.details{margin-top:var(--head);min-height:0}
+ .app:not(.detail-open) .map-header{padding-right:120px}
+ .app.detail-open>.rr-site-settings{border-left:1px solid var(--hair)}
+}
+@media(min-width:1261px){.app.detail-open>.rr-site-settings{width:362px}}
+@media(min-width:991px) and (max-width:1260px){.app.detail-open>.rr-site-settings{width:clamp(270px,27vw,345px)}}
+@media(min-width:751px) and (max-width:990px){.app.detail-open>.rr-site-settings{width:278px}}
+@media(max-width:750px){
+ .side-header,.app.folded .side-header{padding-right:114px}
+ .rr-site-settings{width:106px;padding:0 12px;gap:5px}
+ .details,.app.detail-open>.details{
+  top:var(--head);bottom:0;height:calc(100dvh - var(--head));
+  max-height:calc(100dvh - var(--head));margin-top:0
+ }
+}
+@media(max-width:390px){
+ .rr-site-settings{width:101px;padding:0 9px;gap:4px}
+ .side-header,.app.folded .side-header{padding-right:106px}
+}
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -1691,22 +1735,21 @@ body{font-size:14.5px}
         <polygon id="Path" fill="currentColor" points="26 16 15.8160139 26 11.661597 26 19.4783111 18.367047 20.4008302 17.4662151 6 17.4662151 6 14.5337849 20.4008302 14.5337849 19.4783111 13.632953 11.661597 6 15.8160139 6"></polygon>
     </g>
 </symbol></svg>
+
+<!-- Vector interpretations of the provided SF Pro icon-glyph references; reliable on all browsers. -->
+<svg id="rr-settings-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden;pointer-events:none">
+ <symbol id="rr-settings-light" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2m0 15v2M2.5 12h2m15 0h2M5.3 5.3l1.45 1.45m10.5 10.5 1.45 1.45M5.3 18.7l1.45-1.45m10.5-10.5 1.45-1.45" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+ <symbol id="rr-settings-dark" viewBox="0 0 24 24"><path d="M20.25 15.48A8.7 8.7 0 0 1 8.52 3.75 8.7 8.7 0 1 0 20.25 15.48Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+ <symbol id="rr-settings-system" viewBox="0 0 24 24"><rect x="3.1" y="3.9" width="17.8" height="13.1" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 21h6m-3-4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+ <symbol id="rr-settings-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="4.2" ry="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.4 12h17.2M4.8 7.3h14.4M4.8 16.7h14.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+ <symbol id="rr-settings-checkmark" viewBox="0 0 24 24"><path d="m4.6 12.4 4.8 4.8L19.6 7" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="rr-settings-warning" viewBox="0 0 24 24"><path d="M10.3 3.9a2 2 0 0 1 3.4 0l8 14.4a2 2 0 0 1-1.75 3H4.05a2 2 0 0 1-1.75-3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v5.7m0 3.1v.15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+</svg>
 <div class="app" id="app">
   <aside class="side">
     <div class="side-header">
       <div class="longmark"><img class="logo-light" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEwcHgiIGhlaWdodD0iNjBweCIgdmlld0JveD0iMCAwIDQxMCA2MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDx0aXRsZT5SUiBNYWlubGluZTwvdGl0bGU+CiAgICA8ZyBpZD0i8J+ahlJSLU1hc3RlciIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPHJlY3QgaWQ9IlJlY3RhbmdsZS0zIiBmaWxsPSIjRkZGRkZGIiB4PSItNzYiIHk9Ii0xMzgiIHdpZHRoPSI5MDYiIGhlaWdodD0iOTYwIj48L3JlY3Q+CiAgICAgICAgPHBhdGggZD0ibSAxNDUuMzQ2MDIsNTUgaCAtNy4zNSBWIDQuOTc1IGggMTIuMyBsIDE1LjQ1LDQxLjEgMTUuMywtNDEuMSBoIDEyLjM3NSBWIDU1IGggLTcuNzI1IFYgMTAuODI1IEwgMTY5LjI3MTAyLDU1IGggLTcuNDI1IGwgLTE2LjUsLTQ0LjE3NSB6IG0gODAuMTAwMDUsLTE4LjM3NSBoIC0yLjAyNSBxIC0zLjE1LDAgLTUuNDc1LDAuMyAtMi4zMjUsMC4zIC00LjU3NSwxLjA1IC0yLjE3NSwwLjc1IC0zLjM3NSwyLjMyNSAtMS4xMjUsMS41NzUgLTEuMTI1LDMuOTc1IDAsMy4wNzUgMS44LDQuNTc1IDEuODc1LDEuNSA1LjAyNSwxLjUgNC44NzUsMCA3LjI3NSwtMy4zIDIuNDc1LC0zLjMgMi40NzUsLTguNCB6IG0gNy44LDE4LjM3NSBoIC03LjM1IGwgLTAuMjI1LC01LjkyNSBxIC0zLjc1LDYuNzUgLTExLjc3NSw2Ljc1IC01LjQ3NSwwIC05LC0yLjc3NSAtMy40NSwtMi43NzUgLTMuNDUsLTguMzI1IDAsLTEyLjc1IDE5LjgsLTEyLjc1IDMuMDc1LDAgNC4yLDAuMDc1IHYgLTEuNTc1IHEgMCwtOC40NzUgLTguNTUsLTguNDc1IC02LjIyNSwwIC0xMS4wMjUsMyBsIC0wLjQ1LC01Ljc3NSBxIDYuMTUsLTIuNDc1IDEyLjE1LC0yLjQ3NSAxNS4yMjUsMCAxNS4yMjUsMTQuMjUgdiAxNS42NzUgcSAwLDQuNDI1IDAuNDUsOC4zMjUgeiBNIDI1MC4xOTYwOSw5Ljc3NSBoIC03LjUgViAyLjUgaCA3LjUgeiBtIDAsNDUuMjI1IGggLTcuNSBWIDE3LjUgaCA3LjUgeiBtIDE3LjQ3NDk2LDAgaCAtNy41IFYgMjYuMTI1IHEgMCwtNC45NSAtMC4zNzUsLTguNjI1IGggNy4wNSBsIDAuMjI1LDYuNDUgcSAzLjk3NSwtNy4yIDEyLjE1LC03LjIgMTIuNiwwIDEyLjYsMTQuNTUgViA1NSBoIC03LjU3NSBWIDMyLjg3NSBxIDAsLTQuNzI1IC0xLjU3NSwtNy41IC0xLjUsLTIuNzc1IC01Ljg1LC0yLjc3NSAtNC44LDAgLTYuOTc1LDMuNDUgLTIuMTc1LDMuNDUgLTIuMTc1LDguNTUgeiBtIDQxLjYyNSwwIGggLTcuNSBWIDAuOTI1IGggNy41IHogTSAzMjYuNzcxMDEsOS43NzUgaCAtNy41IFYgMi41IGggNy41IHogbSAwLDQ1LjIyNSBoIC03LjUgViAxNy41IGggNy41IHogbSAxNy40NzQ5NywwIGggLTcuNSBWIDI2LjEyNSBxIDAsLTQuOTUgLTAuMzc1LC04LjYyNSBoIDcuMDUgbCAwLjIyNSw2LjQ1IHEgMy45NzUsLTcuMiAxMi4xNSwtNy4yIDEyLjYsMCAxMi42LDE0LjU1IFYgNTUgaCAtNy41NzUgViAzMi44NzUgcSAwLC00LjcyNSAtMS41NzUsLTcuNSAtMS41LC0yLjc3NSAtNS44NSwtMi43NzUgLTQuOCwwIC02Ljk3NSwzLjQ1IC0yLjE3NSwzLjQ1IC0yLjE3NSw4LjU1IHogbSAzOS41MjUsLTIxLjc1IGggMTggcSAwLC0xMS4zMjUgLTguNCwtMTEuMzI1IC00LjQyNSwwIC02LjksMy40NSAtMi40NzUsMy4zNzUgLTIuNyw3Ljg3NSB6IG0gMjUuMiw0LjY1IGggLTI1LjEyNSBxIDAsNS40NzUgMy4zLDkuMDc1IDMuMywzLjYgOS4yMjUsMy42IDUuNywwIDEwLjEyNSwtMi4zMjUgbCAwLjQ1LDUuNTUgcSAtNS4wMjUsMi4wMjUgLTExLjYyNSwyLjAyNSAtOS4zLDAgLTE0LjI1LC01LjMyNSAtNC45NSwtNS40IC00Ljk1LC0xNC40IDAsLTguMDI1IDQuNjUsLTEzLjY1IDQuNzI1LC01LjcgMTIuNTI1LC01LjcgMTUuNjc1LDAgMTUuNjc1LDE4LjkgeiIgaWQ9Ik1haW5saW5lIiBmaWxsPSIjMTgxODE4IiBhcmlhLWxhYmVsPSJNYWlubGluZSIgLz4KICAgICAgICA8cGF0aCBkPSJNNTAuNDg0ODQzMyw1IEw2My4wOTg3Mjg4LDUgTDk3LjkzMDU1ODIsMzkuOTA2MzAyNSBMOTcuOTMwNTU4Miw1LjE1ODMwNTc2IEwxMDcuMTg5NTQyLDE0LjQzMDkwMDMgTDEwNy4xODk1NDIsNTUgTDgxLjU1MjA3MTEsNTUgQzc1LjUzMzYzOTksNTUgNjkuNzYzMzYwNCw1Mi42MDE0NjUgNjUuNTE4Mjc5MSw0OC4zMzUyMjU1IEwzNi42NTM3NjM4LDE5LjMyNjg0NDUgQzMzLjUyNDcxOTgsMTYuMTgyMjA0OSAyOS4yNzExMTI3LDE0LjQxNDc3MjcgMjQuODM0OTM0OSwxNC40MTU5NTg3IEwxNi4yMjk4OTA2LDE0LjQxODI1OTMgTDU2LjcwNDcwMTksNTUgTDQ0LjA5MDc1NjEsNTUgTDkuMjU4OTI2NjYsMjAuMDkzNjk3NSBMOS4yNTg5MjY2Niw1NC44NDE2OTMxIEwwLDQ1LjU2OTA5OTkgTDAsNSBMMjUuNjY5ODM2MSw1IEMzMS42ODg5NTc3LDUgMzcuNDU5ODQwNCw3LjM5OTA4Mzc4IDQxLjcwNTAzMjksMTEuNjY2MTg2NSBMNzAuNTYxNDQ4MSw0MC42NzE1MzQ5IEM3My42OTA1NzU5LDQzLjgxNjgxMjYgNzcuOTQ0NjMwNyw0NS41ODQ2NDk0IDgyLjM4MTMxOTksNDUuNTgzNDYxMiBMOTAuOTU5NjU0Myw0NS41ODExNjM4IEw1MC40ODQ4NDMzLDUgWiIgaWQ9IkNsaXAtMTc1IiBmaWxsPSIjMDA1N0I4Ij48L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPgo=" width="410" height="60" alt="RR Mainline"><img class="logo-dark" src="./assets/rr-mainline-logo-dark.svg" width="410" height="60" alt="RR Mainline"></div>
       <div class="shortmark"><img class="logo-light" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4cHgiIGhlaWdodD0iNTBweCIgdmlld0JveD0iMCAwIDEwOCA1MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDx0aXRsZT5SUiBtYXJrPC90aXRsZT4KICAgIDxnIGlkPSLwn5qGUlItTWFzdGVyIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8cmVjdCBpZD0iUmVjdGFuZ2xlLTMiIGZpbGw9IiNGRkZGRkYiIHg9Ii03NiIgeT0iLTE0MyIgd2lkdGg9IjkwNiIgaGVpZ2h0PSI5NjAiPjwvcmVjdD4KICAgICAgICA8cGF0aCBkPSJNNTAuNDg0ODQzMywwIEw2My4wOTg3Mjg4LDAgTDk3LjkzMDU1ODIsMzQuOTA2MzAyNSBMOTcuOTMwNTU4MiwwLjE1ODMwNTc2MSBMMTA3LjE4OTU0Miw5LjQzMDkwMDI3IEwxMDcuMTg5NTQyLDUwIEw4MS41NTIwNzExLDUwIEM3NS41MzM2Mzk5LDUwIDY5Ljc2MzM2MDQsNDcuNjAxNDY1IDY1LjUxODI3OTEsNDMuMzM1MjI1NSBMMzYuNjUzNzYzOCwxNC4zMjY4NDQ1IEMzMy41MjQ3MTk4LDExLjE4MjIwNDkgMjkuMjcxMTEyNyw5LjQxNDc3MjY2IDI0LjgzNDkzNDksOS40MTU5NTg2OSBMMTYuMjI5ODkwNiw5LjQxODI1OTI4IEw1Ni43MDQ3MDE5LDUwIEw0NC4wOTA3NTYxLDUwIEw5LjI1ODkyNjY2LDE1LjA5MzY5NzUgTDkuMjU4OTI2NjYsNDkuODQxNjkzMSBMMCw0MC41NjkwOTk5IEwwLDAgTDI1LjY2OTgzNjEsMCBDMzEuNjg4OTU3NywwIDM3LjQ1OTg0MDQsMi4zOTkwODM3OCA0MS43MDUwMzI5LDYuNjY2MTg2NDYgTDcwLjU2MTQ0ODEsMzUuNjcxNTM0OSBDNzMuNjkwNTc1OSwzOC44MTY4MTI2IDc3Ljk0NDYzMDcsNDAuNTg0NjQ5NCA4Mi4zODEzMTk5LDQwLjU4MzQ2MTIgTDkwLjk1OTY1NDMsNDAuNTgxMTYzOCBMNTAuNDg0ODQzMywwIFoiIGlkPSJDbGlwLTE3NSIgZmlsbD0iIzAwNTdCOCI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4K" width="108" height="50" alt="RR"><img class="logo-dark" src="./assets/rr-mark-dark.svg" width="108" height="50" alt="RR"></div>
-      <div class="appearance-picker" id="rrAppearancePicker">
-        <button id="rrAppearanceToggle" class="appearance-toggle" type="button" aria-label="Appearance: System" title="Appearance: System" aria-haspopup="true" aria-expanded="false" aria-controls="rrAppearanceMenu">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.4"/><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" stroke="none"/></svg>
-        </button>
-        <div id="rrAppearanceMenu" class="appearance-menu" role="group" aria-label="Appearance" hidden>
-          <div class="appearance-heading">Appearance</div>
-          <button class="appearance-option" data-appearance-choice="light" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.5 1.5m11.2 11.2 1.5 1.5M2 12h2m16 0h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5"/></svg><span>Light</span><span class="appearance-check" aria-hidden="true">✓</span></button>
-          <button class="appearance-option" data-appearance-choice="dark" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.5A8.5 8.5 0 0 1 8.5 3.7 8.5 8.5 0 1 0 20.3 15.5Z"/></svg><span>Dark</span><span class="appearance-check" aria-hidden="true">✓</span></button>
-          <button class="appearance-option" data-appearance-choice="system" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8m-4-4v4"/></svg><span>System</span><span class="appearance-check" aria-hidden="true">✓</span></button>
-        </div>
-      </div>
       <button id="collapse" class="fold-button" type="button" title="Collapse departures" aria-label="Collapse departures" aria-controls="sidebarContent" aria-expanded="true">
         <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 18l-6-6 6-6"/></svg>
       </button>
@@ -1736,6 +1779,28 @@ body{font-size:14.5px}
     <div class="details-head"><div class="details-heading"><svg id="detailsHeadingIcon" class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-train-information"></use></svg><h2 id="detailsTitle">Train details</h2></div><div class="details-actions"><button id="focusRoute" class="station-info-button route-focus" type="button" hidden><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-route"></use></svg><span>View route</span></button><button class="close-detail" id="closeDetail" aria-label="Close train details">×</button></div></div>
     <div class="details-body" id="detailsBody"><div class="empty">Select a departure.</div></div>
   </aside>
+
+  <!-- Shared top-band controls, independent of the details panel. -->
+  <nav class="rr-site-settings" aria-label="Site preferences">
+    <div class="appearance-picker language-picker" id="rrLanguagePicker">
+      <button id="rrLanguageToggle" class="appearance-toggle" type="button" aria-label="Language: English" title="Language" aria-haspopup="true" aria-expanded="false" aria-controls="rrLanguageMenu"><svg class="rr-pref-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-globe"></use></svg></button>
+      <div id="rrLanguageMenu" class="appearance-menu language-menu" role="group" aria-label="Language" hidden>
+        <div class="appearance-heading">Language</div>
+        <button class="appearance-option" data-language-choice="en" type="button" aria-pressed="true"><span>English</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
+        <button class="appearance-option" data-language-choice="fr" type="button" disabled aria-disabled="true" aria-pressed="false" title="French edition in preparation"><span>Français</span><span class="rr-coming-soon">Soon</span></button>
+        <div class="rr-language-note"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-warning"></use></svg><span>French edition in preparation</span></div>
+      </div>
+    </div>
+    <div class="appearance-picker" id="rrAppearancePicker">
+      <button id="rrAppearanceToggle" class="appearance-toggle" type="button" aria-label="Appearance: System" title="Appearance: System" aria-haspopup="true" aria-expanded="false" aria-controls="rrAppearanceMenu"><svg class="rr-pref-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-system"></use></svg></button>
+      <div id="rrAppearanceMenu" class="appearance-menu" role="group" aria-label="Appearance" hidden>
+        <div class="appearance-heading">Appearance</div>
+        <button class="appearance-option" data-appearance-choice="light" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-light"></use></svg><span>Light</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
+        <button class="appearance-option" data-appearance-choice="dark" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-dark"></use></svg><span>Dark</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
+        <button class="appearance-option" data-appearance-choice="system" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-system"></use></svg><span>System</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
+      </div>
+    </div>
+  </nav>
   <footer class="mobile-site-footer">© Radelish Railways plc 2026</footer>
 </div>
 <script>
@@ -2994,6 +3059,7 @@ function rrSetAppearance(selected,persist=false){
  document.documentElement.style.colorScheme=dark?'dark':'light';
  rrAppearanceToggle.setAttribute('aria-label','Appearance: '+choice[0].toUpperCase()+choice.slice(1));
  rrAppearanceToggle.title='Appearance: '+choice[0].toUpperCase()+choice.slice(1);
+ rrAppearanceToggle.querySelector('use').setAttribute('href','#rr-settings-'+choice);
  rrAppearanceMenu.querySelectorAll('[data-appearance-choice]').forEach(button=>{
    button.setAttribute('aria-pressed',String(button.dataset.appearanceChoice===choice));
  });
@@ -3003,6 +3069,7 @@ function rrSetAppearance(selected,persist=false){
  if(W&&H)drawMap(); // Refresh inline SVG station fills and selected label contrast.
 }
 rrAppearanceToggle.addEventListener('click',()=>{
+ rrCloseLanguage();
  const opening=rrAppearanceMenu.hidden;
  rrAppearanceMenu.hidden=!opening;
  rrAppearanceToggle.setAttribute('aria-expanded',String(opening));
@@ -3032,6 +3099,60 @@ window.addEventListener('storage',event=>{
  if(event.key===rrAppearanceKey)rrSetAppearance(event.newValue||'system');
 });
 rrSetAppearance(document.documentElement.dataset.appearance||'system');
+
+/* Translation-ready language selection. French remains disabled until the
+   full content, dynamic timetables and train details are translated. */
+const rrLanguageKey='rr-info-language';
+const rrLanguagePicker=document.getElementById('rrLanguagePicker');
+const rrLanguageToggle=document.getElementById('rrLanguageToggle');
+const rrLanguageMenu=document.getElementById('rrLanguageMenu');
+const rrSupportedLanguages=Object.freeze({
+ en:{label:'English',ready:true},
+ fr:{label:'Français',ready:false}
+});
+function rrCloseLanguage(){
+ rrLanguageMenu.hidden=true;
+ rrLanguageToggle.setAttribute('aria-expanded','false');
+}
+function rrSetLanguage(code,persist=false){
+ const chosen=rrSupportedLanguages[code]?.ready?code:'en';
+ document.documentElement.lang=chosen;
+ document.documentElement.dataset.language=chosen;
+ rrLanguageToggle.setAttribute('aria-label','Language: '+rrSupportedLanguages[chosen].label);
+ rrLanguageMenu.querySelectorAll('[data-language-choice]').forEach(option=>{
+   const locale=option.dataset.languageChoice;
+   option.disabled=!rrSupportedLanguages[locale]?.ready;
+   option.setAttribute('aria-pressed',String(chosen===locale));
+ });
+ if(persist){try{localStorage.setItem(rrLanguageKey,chosen)}catch(_){}}
+}
+rrLanguageToggle.addEventListener('click',()=>{
+ rrCloseAppearance();
+ const opening=rrLanguageMenu.hidden;
+ rrLanguageMenu.hidden=!opening;
+ rrLanguageToggle.setAttribute('aria-expanded',String(opening));
+});
+rrLanguageMenu.querySelectorAll('[data-language-choice]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  if(button.disabled)return;
+  rrSetLanguage(button.dataset.languageChoice,true);
+  rrCloseLanguage();
+  rrLanguageToggle.focus();
+ });
+});
+document.addEventListener('pointerdown',event=>{
+ if(!rrLanguageMenu.hidden&&!rrLanguagePicker.contains(event.target))rrCloseLanguage();
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!rrLanguageMenu.hidden){rrCloseLanguage();rrLanguageToggle.focus()}
+});
+window.addEventListener('storage',event=>{
+ if(event.key===rrLanguageKey)rrSetLanguage(event.newValue||'en');
+});
+let rrInitialLanguage='en';
+try{rrInitialLanguage=localStorage.getItem(rrLanguageKey)||'en'}catch(_){}
+rrSetLanguage(rrInitialLanguage);
+
 </script>
 </body>
 </html>
