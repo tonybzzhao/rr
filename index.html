@@ -2366,9 +2366,10 @@ function drawMap(){
   const activeColors=selected&&selectedPath.length?(colors.length?colors:[passedTrainColor&&!current&&passedStationNames.has(s.name)?passedTrainColor:routeColor]):[];
   const transferMarker=selected&&selectedPath.length?interchangeMarkers.get(s.name):null;
   if(selected&&(selectedTrain||selectedJourney)&&activeColors.length){
-   // A transfer's name uses its onward leg; the station ring still shows
-   // the separate incoming/outgoing service colours.
-   selectedLabelColors.set(s.name,activeColors.at(-1));
+   // A mixed-colour interchange has a neutral name; the split station ring
+   // preserves each connecting service colour. Same-colour names stay coloured.
+   const mixedServiceInterchange=transferMarker?.colors.length>1;
+   selectedLabelColors.set(s.name,mixedServiceInterchange?RR_UI_CSS_COLOR('--ink'):activeColors.at(-1));
   }
   if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
   if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.join(','));
@@ -2415,7 +2416,9 @@ function drawMap(){
  }
  for(const name of priorities){
   const s=byVisible.get(name);if(!s)continue;
-  const important=LABELS.includes(name),fontSize=15.625,weight=important?700:500,lh=18.125;
+  const important=LABELS.includes(name);
+  const mixedServiceInterchange=!!(selectedJourney&&selectedPath.length&&selectedSet.has(name)&&interchangeMarkers.get(name)?.colors.length>1);
+  const fontSize=15.625,weight=important||mixedServiceInterchange?700:500,lh=18.125;
   ctx.font=`${weight} ${fontSize}px Frutiger,Arial`;
   const splits=splitName(name);
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
@@ -2459,6 +2462,10 @@ function drawMap(){
   const routeNameColor=selectedLabelColors.get(name);
   if(routeNameColor){
    text.style.fill=routeNameColor;
+   if(mixedServiceInterchange){
+    text.style.fontWeight='700';
+    text.setAttribute('data-interchange-label','mixed');
+   }
    text.setAttribute('data-route-label',selectedTrain&&passedStationNames.has(name)?'passed':'forthcoming');
   }
   chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});span.textContent=line;text.append(span)});
