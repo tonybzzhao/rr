@@ -2302,7 +2302,7 @@ function rrIcon(name,cls='rr-picto'){
  return `<svg class="${cls}" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#rr-picto-${name}"></use></svg>`;
 }
 function rrRole(t,car){
- if(car.role==='First'||car.role==='First sleeper')return 'First Class';
+ if(car.role==='First sleeper')return 'First Class sleeper';if(car.role==='First')return 'First Class';
  return ({Standard:'Standard',Café:'Café',Dining:'Dining',
   Seated:'Seated accommodation',Couchette:'Couchette',Sleeper:'Sleeper'})[car.role]||car.role;
 }
@@ -3354,7 +3354,7 @@ const rrFrenchExact=Object.freeze({
  'Coach formation & on-board facilities':'Composition du train et services à bord',
  'Train formation':'Composition du train',
  'Standard':'Classe Standard','First Class':'Première classe',
- 'First Class seats':'Places de première classe','First Class sleeper':'Voiture-lits Première',
+ 'First Class seats':'Places de première classe','First Class sleeper':'Voiture-lits Première','First sleeper':'Voiture-lits Première',
  'Seated accommodation':'Voiture à places assises',
  'Dining':'Voiture-restaurant','Café':'Café','Quiet Zone':'Espace calme',
  'Quiet zone':'Espace calme','Family Zone':'Espace famille','Family zone':'Espace famille',
@@ -3430,7 +3430,7 @@ function rrFrenchText(source){
   .replace(/\bScheduled ([^;]+); revised (.+)/g,'Heure prévue : $1 ; heure estimée : $2')
   .replace(/\bShow departures at (.+)/g,'Afficher les départs de $1')
   .replace(/\bAppearance: (Light|Dark|System)\b/g,(_,v)=>'Apparence : '+rrFrenchExact[v])
-  .replace(/\bLanguage: English\b/g,'Langue : English')
+  .replace(/\bLanguage: (English|Français)\b/g,(_,name)=>'Langue : '+name)
   .replace(/\b(\d+)h (\d{2})m\b/g,'$1 h $2')
   .replace(/\bNo (high-speed )?(direct )?services found between these stations in the current timetable\./g,
    (_,high,direct)=>'Aucun trajet'+(high?' à grande vitesse':'')+(direct?' sans correspondance':'')+' trouvé entre ces gares dans les horaires disponibles.')
