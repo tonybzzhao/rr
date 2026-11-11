@@ -1491,7 +1491,7 @@ body{font-size:14.5px}
 @media(min-width:751px){
  .app.detail-open>.details{margin-top:var(--head);min-height:0}
  .app:not(.detail-open) .map-header{padding-right:120px}
- .app.detail-open>.rr-site-settings{border-left:1px solid var(--hair)}
+ .app.detail-open>.rr-site-settings{border-left:0}
 }
 @media(min-width:1261px){.app.detail-open>.rr-site-settings{width:362px}}
 @media(min-width:991px) and (max-width:1260px){.app.detail-open>.rr-site-settings{width:clamp(270px,27vw,345px)}}
@@ -1507,6 +1507,222 @@ body{font-size:14.5px}
 @media(max-width:390px){
  .rr-site-settings{width:101px;padding:0 9px;gap:4px}
  .side-header,.app.folded .side-header{padding-right:106px}
+}
+
+/* v57: original user-provided SF Pro SVGs, with existing vector symbols only as
+   fallbacks when their private-use font glyphs cannot render on the device. */
+.rr-site-settings .appearance-menu{padding:6px}
+.rr-site-settings .appearance-option{min-height:36px}
+.rr-site-settings .rr-icon-slot{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:17px;height:17px;flex:0 0 17px;position:relative
+}
+.rr-site-settings .rr-icon-slot.rr-pref-icon{width:20px;height:20px;flex:0 0 20px}
+.rr-site-settings .rr-icon-slot img,
+.rr-site-settings .rr-icon-slot svg{
+ display:block;width:100%!important;height:100%!important;flex:none;object-fit:contain
+}
+.rr-site-settings .rr-icon-slot .rr-upload-icon{display:none}
+.rr-site-settings .rr-icon-slot .rr-fallback-icon{display:block}
+:root.rr-symbol-font-ready .rr-site-settings .rr-icon-slot .rr-upload-icon{display:block}
+:root.rr-symbol-font-ready .rr-site-settings .rr-icon-slot .rr-fallback-icon{display:none}
+:root[data-theme="dark"] .rr-site-settings .rr-icon-slot .rr-upload-icon{filter:invert(1)}
+.rr-site-settings .appearance-option .appearance-check{display:inline-flex}
+.rr-site-settings .appearance-option .appearance-check .rr-upload-icon,
+.rr-site-settings .appearance-option .appearance-check .rr-fallback-icon{
+ visibility:inherit
+}
+.rr-site-settings .rr-language-note .rr-icon-slot{
+ width:14px;height:14px;flex:0 0 14px
+}
+.rr-site-settings #rrAppearanceToggle>.rr-pref-icon{
+ width:20px;height:20px;display:block;stroke:currentColor;fill:none
+}
+
+/* Site preference controls use exactly the Swap button's visual language:
+   matching surface, border, radius, foreground, hover and icon artboard. */
+.rr-site-settings{width:116px;padding:0 12px;gap:6px}
+.rr-site-settings .appearance-picker{flex:0 0 36px}
+.rr-site-settings .appearance-toggle{
+ box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+ width:36px;height:36px;min-height:36px;padding:0;
+ border:1px solid var(--stroke);border-radius:4px;
+ background:var(--surface);color:var(--ink-strong)
+}
+.rr-site-settings #rrLanguageToggle,
+.rr-site-settings #rrAppearanceToggle{color:var(--ink-strong)}
+.rr-site-settings #rrLanguageToggle:hover,
+.rr-site-settings #rrAppearanceToggle:hover,
+.rr-site-settings #rrLanguageToggle[aria-expanded="true"],
+.rr-site-settings #rrAppearanceToggle[aria-expanded="true"]{
+ background:var(--hover-blue);border-color:var(--accent-stroke);color:var(--main-deep)
+}
+.rr-site-settings .appearance-toggle:active{background:var(--pressed)}
+.rr-site-settings #rrAppearanceToggle>.rr-pref-icon{
+ width:23px;height:23px;display:block;flex:0 0 23px;stroke:currentColor;fill:none
+}
+.rr-site-settings .rr-icon-slot.rr-pref-icon{
+ width:23px;height:23px;flex:0 0 23px;color:inherit
+}
+.rr-site-settings .rr-icon-slot:not(.rr-pref-icon){
+ width:19.125px;height:19.125px;flex:0 0 19.125px
+}
+.rr-site-settings .appearance-option .appearance-check{
+ width:19.125px;height:19.125px;flex:0 0 19.125px
+}
+.rr-site-settings .appearance-option{height:40px;min-height:40px;gap:9px}
+.rr-site-settings .appearance-menu{min-width:209px}
+.rr-site-settings .rr-language-note .rr-icon-slot{
+ width:15.75px;height:15.75px;flex:0 0 15.75px
+}
+/* Original uploaded SVG symbols supply the mask, so their ink matches
+   the same currentColor used by both controls in light and dark modes. */
+.rr-site-settings .rr-icon-slot .rr-upload-icon{display:none!important}
+.rr-site-settings .rr-icon-slot::after{
+ content:"";position:absolute;inset:0;display:none;background:currentColor;
+ -webkit-mask-image:var(--rr-icon-source);mask-image:var(--rr-icon-source);
+ -webkit-mask-position:center;mask-position:center;
+ -webkit-mask-size:contain;mask-size:contain;
+ -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
+}
+:root.rr-symbol-font-ready .rr-site-settings .rr-icon-slot::after{display:block}
+:root.rr-symbol-font-ready .rr-site-settings .rr-icon-slot .rr-fallback-icon{display:none!important}
+/* Keep the visual, not just container, heights of the two header symbols
+   equal: the uploaded 32px SF Pro globe has smaller interior glyph bounds
+   than the CSS-drawn 24px half-circle. The fallback SVG has larger bounds. */
+:root.rr-symbol-font-ready .rr-site-settings #rrLanguageToggle .rr-icon-slot.rr-pref-icon::after{
+ transform:scale(1.22);
+ transform-origin:center
+}
+:root:not(.rr-symbol-font-ready) .rr-site-settings #rrLanguageToggle .rr-icon-slot.rr-pref-icon .rr-fallback-icon{
+ transform:scale(.933333);
+ transform-origin:center
+}
+/* Preserve the horizontal header edge; only the upper vertical split is removed. */
+@media(min-width:751px){.app:not(.detail-open) .map-header{padding-right:124px}}
+@media(max-width:750px){
+ .rr-site-settings{width:113px;padding:0 12px;gap:5px}
+ .rr-site-settings .appearance-picker{flex-basis:34px}
+ .rr-site-settings .appearance-toggle{width:34px;height:32px;min-height:32px}
+ .rr-site-settings #rrAppearanceToggle>.rr-pref-icon,
+ .rr-site-settings .rr-icon-slot.rr-pref-icon{
+  width:21px;height:21px;flex:0 0 21px
+ }
+ .side-header,.app.folded .side-header{padding-right:118px}
+}
+@media(max-width:390px){
+ .rr-site-settings{width:108px;padding:0 10px;gap:4px}
+ .side-header,.app.folded .side-header{padding-right:113px}
+}
+/* Supplied swap.svg with a fallback when its private-use glyph is absent. */
+.map-tools #swapStations .rr-swap-icon{
+ display:block;width:23px;height:23px;flex:0 0 23px;position:relative;color:inherit
+}
+.map-tools #swapStations .rr-swap-icon img,
+.map-tools #swapStations .rr-swap-icon svg{
+ display:block;width:100%;height:100%;object-fit:contain
+}
+.map-tools #swapStations .rr-swap-icon .rr-upload-icon{display:none!important}
+.map-tools #swapStations .rr-swap-icon .rr-fallback-icon{display:block}
+.map-tools #swapStations .rr-swap-icon::after{
+ content:"";position:absolute;inset:0;display:none;background:currentColor;
+ -webkit-mask-image:var(--rr-icon-source);mask-image:var(--rr-icon-source);
+ -webkit-mask-position:center;mask-position:center;
+ -webkit-mask-size:contain;mask-size:contain;
+ -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat
+}
+:root.rr-symbol-font-ready .map-tools #swapStations .rr-swap-icon::after{display:block}
+:root.rr-symbol-font-ready .map-tools #swapStations .rr-swap-icon .rr-fallback-icon{display:none}
+@media(max-width:560px){
+ .map-tools #swapStations .rr-swap-icon{width:21px;height:21px;flex:0 0 21px;transform:rotate(90deg)}
+}
+
+/* Train details header height is independent of the 42px left tabs.
+   Preserve the 70px site masthead and all journey-action button sizes. */
+:root{--rr-subheader-height:56px;--rr-subheader-label-size:18px}
+.board-tabs{
+ box-sizing:border-box;height:var(--rr-subheader-height);
+ min-height:var(--rr-subheader-height)
+}
+.board-tab{
+ box-sizing:border-box;height:100%;
+ font-size:var(--rr-subheader-label-size);line-height:1.15;
+ padding:0 2px;letter-spacing:-.018em
+}
+.details-head{
+ box-sizing:border-box;
+ height:var(--rr-subheader-height);min-height:var(--rr-subheader-height);
+ flex:0 0 var(--rr-subheader-height);align-items:center
+}
+.details-head .details-heading{align-items:center}
+.details-head .details-heading h2{font-size:var(--rr-subheader-label-size)}
+.details-head .details-heading .rr-action-icon{
+ width:24px;height:24px;flex:0 0 24px
+}
+.details-head .details-actions{align-items:center}
+/* Keep the original plain close mark. No hover fill, border or colour change. */
+.app .details-head .close-detail{
+ display:none;box-sizing:border-box;align-items:center;justify-content:center;
+ flex:0 0 28px;width:28px;height:32px;min-height:32px;
+ margin:0;padding:0;border:0;border-radius:0;background:none;
+ color:var(--ink-strong);font-size:24px;font-weight:400;line-height:1
+}
+.app.detail-open .details-head .close-detail{display:inline-flex!important}
+/* Below desktop width, both header labels scale together to avoid clipping. */
+@media(min-width:751px) and (max-width:1260px){
+ :root{--rr-subheader-label-size:clamp(12.5px,1.5vw,18px)}
+}
+@media(max-width:370px){
+ :root{--rr-subheader-label-size:16px}
+ .details-head{
+  flex-wrap:nowrap;align-content:center;
+  gap:4px;padding:0 9px
+ }
+ .details-head .details-heading{flex:1 1 auto;width:auto;min-width:0}
+ .details-head .details-actions{flex:0 0 auto;width:auto;gap:4px}
+}
+
+/* v61: one typographic spacing standard for all left-panel content.
+   Frutiger Next's native kerning is used; ad-hoc negative/positive tracking
+   elsewhere in legacy rules must not squeeze tabs, station names, board
+   labels or journey text. Tabular numeral settings remain unchanged. */
+.side,.side *{
+ font-kerning:normal;
+ letter-spacing:normal!important
+}
+/* Align the detail-panel close glyph directly beneath Appearance's centre.
+   Both buttons are 36px wide with a 12px right inset (30px centre-to-edge).
+   No change to y-position, header height, or View route button dimensions. */
+.app .details-head{padding-right:12px}
+.app .details-head .close-detail{
+ flex:0 0 36px;width:36px;height:32px;min-height:32px
+}
+@media(max-width:750px){
+ /* Appearance is 34px wide on phones, with the same 12px edge inset. */
+ .app .details-head .close-detail{
+  flex-basis:34px;width:34px;height:32px;min-height:32px
+ }
+}
+@media(max-width:390px){
+ /* Match the mobile preference band's 10px inset. */
+ .app .details-head{padding-right:10px}
+}
+/* Compact left timetable tabs: 42px tall, 15px text on all screens.
+   Vertically centre the text within the tab, compensating for the 3px
+   active-tab underline with equal top padding. Train details stays at 56px. */
+:root{
+ --rr-board-tabs-height:42px;
+ --rr-board-tabs-font-size:15px
+}
+.board-tabs{
+ height:var(--rr-board-tabs-height);
+ min-height:var(--rr-board-tabs-height)
+}
+.board-tab{
+ display:flex;align-items:center;justify-content:center;
+ height:100%;padding:3px 2px 0;
+ font-size:var(--rr-board-tabs-font-size);
+ line-height:1.15
 }
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
@@ -1765,7 +1981,7 @@ body{font-size:14.5px}
   </aside>
   <section class="map-area">
     <header class="map-header">
-      <div class="map-tools"><label for="fromInput">From</label><select id="from"></select><button id="swapStations" class="swap-stations" type="button" aria-label="Swap From and To stations" title="Swap From and To stations"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg></button><label for="toInput">To</label><select id="to"></select><div class="map-actions"><button id="trace" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-find"></use></svg><span>Find trains</span></button><button id="clear" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-reset"></use></svg><span>Reset</span></button></div></div>
+      <div class="map-tools"><label for="fromInput">From</label><select id="from"></select><button id="swapStations" class="swap-stations" type="button" aria-label="Swap From and To stations" title="Swap From and To stations"><span class="rr-swap-icon" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/swap.svg')"><img class="rr-upload-icon" src="./assets/preferences/swap.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg></span></button><label for="toInput">To</label><select id="to"></select><div class="map-actions"><button id="trace" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-find"></use></svg><span>Find trains</span></button><button id="clear" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-reset"></use></svg><span>Reset</span></button></div></div>
     </header>
     <div class="map-container" id="mapContainer">
       <svg id="map" role="img" aria-label="Interactive RR Info railway map"><g id="world"><path id="hslTrack" class="rail hsl"/><path id="mlTrack" class="rail ml"/><g id="routeWorld"></g></g><g id="stationLayer"></g><g id="labelLayer"></g></svg>
@@ -1781,23 +1997,22 @@ body{font-size:14.5px}
   </aside>
 
   <!-- Shared top-band controls, independent of the details panel. -->
-  <nav class="rr-site-settings" aria-label="Site preferences">
+  
+<nav class="rr-site-settings" aria-label="Site preferences">
     <div class="appearance-picker language-picker" id="rrLanguagePicker">
-      <button id="rrLanguageToggle" class="appearance-toggle" type="button" aria-label="Language: English" title="Language" aria-haspopup="true" aria-expanded="false" aria-controls="rrLanguageMenu"><svg class="rr-pref-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-globe"></use></svg></button>
+      <button id="rrLanguageToggle" class="appearance-toggle" type="button" aria-label="Language: English" title="Language" aria-haspopup="true" aria-expanded="false" aria-controls="rrLanguageMenu"><span class="rr-icon-slot rr-pref-icon" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/globe.svg')"><img class="rr-upload-icon" src="./assets/preferences/globe.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-globe"></use></svg></span></button>
       <div id="rrLanguageMenu" class="appearance-menu language-menu" role="group" aria-label="Language" hidden>
-        <div class="appearance-heading">Language</div>
-        <button class="appearance-option" data-language-choice="en" type="button" aria-pressed="true"><span>English</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
+        <button class="appearance-option" data-language-choice="en" type="button" aria-pressed="true"><span>English</span><span class="rr-icon-slot appearance-check" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/checkmark.svg')"><img class="rr-upload-icon" src="./assets/preferences/checkmark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-checkmark"></use></svg></span></button>
         <button class="appearance-option" data-language-choice="fr" type="button" disabled aria-disabled="true" aria-pressed="false" title="French edition in preparation"><span>Français</span><span class="rr-coming-soon">Soon</span></button>
-        <div class="rr-language-note"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-warning"></use></svg><span>French edition in preparation</span></div>
+        <div class="rr-language-note"><span class="rr-icon-slot" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/warning.svg')"><img class="rr-upload-icon" src="./assets/preferences/warning.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-warning"></use></svg></span><span>French edition in preparation</span></div>
       </div>
     </div>
     <div class="appearance-picker" id="rrAppearancePicker">
-      <button id="rrAppearanceToggle" class="appearance-toggle" type="button" aria-label="Appearance: System" title="Appearance: System" aria-haspopup="true" aria-expanded="false" aria-controls="rrAppearanceMenu"><svg class="rr-pref-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-system"></use></svg></button>
+      <button id="rrAppearanceToggle" class="appearance-toggle" type="button" aria-label="Appearance: System" title="Appearance: System" aria-haspopup="true" aria-expanded="false" aria-controls="rrAppearanceMenu"><svg class="rr-pref-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.4"/><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" stroke="none"/></svg></button>
       <div id="rrAppearanceMenu" class="appearance-menu" role="group" aria-label="Appearance" hidden>
-        <div class="appearance-heading">Appearance</div>
-        <button class="appearance-option" data-appearance-choice="light" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-light"></use></svg><span>Light</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
-        <button class="appearance-option" data-appearance-choice="dark" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-dark"></use></svg><span>Dark</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
-        <button class="appearance-option" data-appearance-choice="system" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-system"></use></svg><span>System</span><svg class="appearance-check" viewBox="0 0 24 24" aria-hidden="true"><use href="#rr-settings-checkmark"></use></svg></button>
+        <button class="appearance-option" data-appearance-choice="light" type="button" aria-pressed="false"><span class="rr-icon-slot" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/light.svg')"><img class="rr-upload-icon" src="./assets/preferences/light.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-light"></use></svg></span><span>Light</span><span class="rr-icon-slot appearance-check" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/checkmark.svg')"><img class="rr-upload-icon" src="./assets/preferences/checkmark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-checkmark"></use></svg></span></button>
+        <button class="appearance-option" data-appearance-choice="dark" type="button" aria-pressed="false"><span class="rr-icon-slot" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/dark.svg')"><img class="rr-upload-icon" src="./assets/preferences/dark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-dark"></use></svg></span><span>Dark</span><span class="rr-icon-slot appearance-check" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/checkmark.svg')"><img class="rr-upload-icon" src="./assets/preferences/checkmark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-checkmark"></use></svg></span></button>
+        <button class="appearance-option" data-appearance-choice="system" type="button" aria-pressed="true"><span class="rr-icon-slot" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/system.svg')"><img class="rr-upload-icon" src="./assets/preferences/system.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-system"></use></svg></span><span>System</span><span class="rr-icon-slot appearance-check" aria-hidden="true" style="--rr-icon-source:url('./assets/preferences/checkmark.svg')"><img class="rr-upload-icon" src="./assets/preferences/checkmark.svg" alt=""><svg class="rr-fallback-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#rr-settings-checkmark"></use></svg></span></button>
       </div>
     </div>
   </nav>
@@ -1816,9 +2031,16 @@ const RR_UI_CSS_COLOR=token=>getComputedStyle(document.documentElement).getPrope
 const C={Max:RR_UI_CSS_COLOR('--main'),VIA:RR_UI_CSS_COLOR('--via'),InterCity:RR_UI_CSS_COLOR('--main'),Nightline:RR_UI_CSS_COLOR('--night')};
 function rrReadableRouteLabelColor(color){
  if(document.documentElement.dataset.theme!=='dark')return color;
- if(color===C.Max)return RR_UI_CSS_COLOR('--service-text-max');
- if(color===C.VIA)return RR_UI_CSS_COLOR('--service-text-via');
- if(color===C.Nightline)return RR_UI_CSS_COLOR('--service-text-night');
+ // Dark-mode names must match the railway lines they identify.
+ // Forthcoming names follow the actual service line with the minimum
+ // lightening needed for small-text contrast; passed names follow the
+ // lighter travelled line. Preserve the blue/pink/purple relationships.
+ if(Object.values(RR_TRAVELLED_C).includes(color)){
+  return `color-mix(in srgb, ${color} 75%, var(--ink-strong) 25%)`;
+ }
+ if(Object.values(C).includes(color)){
+  return `color-mix(in srgb, ${color} 65%, var(--ink-strong) 35%)`;
+ }
  return color;
 }
 const RR_TRAVELLED_C=Object.freeze({
@@ -3059,7 +3281,6 @@ function rrSetAppearance(selected,persist=false){
  document.documentElement.style.colorScheme=dark?'dark':'light';
  rrAppearanceToggle.setAttribute('aria-label','Appearance: '+choice[0].toUpperCase()+choice.slice(1));
  rrAppearanceToggle.title='Appearance: '+choice[0].toUpperCase()+choice.slice(1);
- rrAppearanceToggle.querySelector('use').setAttribute('href','#rr-settings-'+choice);
  rrAppearanceMenu.querySelectorAll('[data-appearance-choice]').forEach(button=>{
    button.setAttribute('aria-pressed',String(button.dataset.appearanceChoice===choice));
  });
@@ -3153,6 +3374,28 @@ let rrInitialLanguage='en';
 try{rrInitialLanguage=localStorage.getItem(rrLanguageKey)||'en'}catch(_){}
 rrSetLanguage(rrInitialLanguage);
 
+
+/* The uploaded SVGs contain SF Pro private-use text, not path outlines.
+   If the native font cannot render them, retain the compatible vector fallback. */
+(function rrResolveUploadedIconSupport(){
+ const glyphProbe=new Image();
+ const useFallback=()=>document.documentElement.classList.remove('rr-symbol-font-ready');
+ glyphProbe.onload=()=>{
+  try{
+   const canvas=document.createElement('canvas');
+   canvas.width=32;canvas.height=32;
+   const ctx=canvas.getContext('2d',{willReadFrequently:true});
+   ctx.drawImage(glyphProbe,0,0,32,32);
+   const pixels=ctx.getImageData(0,0,32,32).data;
+   let drawn=0;
+   for(let i=3;i<pixels.length;i+=4)if(pixels[i]>40)drawn++;
+   if(drawn>=8)document.documentElement.classList.add('rr-symbol-font-ready');
+   else useFallback();
+  }catch(_){useFallback()}
+ };
+ glyphProbe.onerror=useFallback;
+ glyphProbe.src='./assets/preferences/light.svg';
+})();
 </script>
 </body>
 </html>
