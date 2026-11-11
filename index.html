@@ -1888,6 +1888,27 @@ body{font-size:14.5px}
  flex:1 1 auto;min-width:0;white-space:nowrap
 }
 /* End v67. */
+
+/* v68: A site-wide footer on desktop/tablet that does not depend on
+   sidebar width, folding state or the train details panel. Mobile keeps
+   its existing in-page footer position and dimensions unchanged. */
+.desktop-site-footer{display:none}
+@media(min-width:751px){
+ :root{--rr-footer-height:40px}
+ .app,.app.folded{
+  height:calc(100dvh - var(--rr-footer-height));
+  min-height:calc(520px - var(--rr-footer-height));
+ }
+ .desktop-site-footer{
+  display:flex;align-items:center;width:100%;
+  height:var(--rr-footer-height);min-height:var(--rr-footer-height);
+  padding:0 17px;background:var(--surface);
+  border-top:1px solid var(--hair);color:var(--muted);
+  font-size:12.5px;line-height:1.35;font-weight:400;
+  white-space:nowrap;overflow:hidden;
+ }
+}
+/* End v68 full-width copyright footer. */
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -2143,7 +2164,6 @@ body{font-size:14.5px}
       <div class="boardhead"><span>Time</span><span>Train</span><span id="boardRouteHeader">Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
     </div>
-    <footer class="side-foot" title="© Radelish Railways plc 2026"><span class="copyright-full">© Radelish Railways plc 2026</span><span class="copyright-compact">© RR 2026</span></footer>
   </aside>
   <section class="map-area">
     <header class="map-header">
@@ -2182,6 +2202,7 @@ body{font-size:14.5px}
   </nav>
   <footer class="mobile-site-footer">© Radelish Railways plc 2026</footer>
 </div>
+<footer class="desktop-site-footer" aria-label="Copyright">© Radelish Railways plc 2026</footer>
 <script>
 'use strict';
 const STATIONS=[{"name":"North Chungsia","x":2059,"y":753,"attach":[2059.0,753.0]},{"name":"Linhai-Pu’an","x":2345,"y":753,"attach":[2337.97,753.0]},{"name":"Yenchia Main","x":2644,"y":753,"attach":[2649.01,753.0]},{"name":"Yungang","x":2886,"y":753,"attach":[2886.0,753.0]},{"name":"Chiangkou","x":2765,"y":819,"attach":[2765.0,821.5]},{"name":"Chankow","x":1380,"y":828,"attach":[1380.0,828.0]},{"name":"Chungsia","x":2059,"y":858,"attach":[2059.0,856.29]},{"name":"Sianning","x":1824,"y":868,"attach":[1828.52,863.48]},{"name":"Yuchow Airport","x":349,"y":964,"attach":[349.0,964.0]},{"name":"Yuchow Central","x":505,"y":964,"attach":[512.23,964.0]},{"name":"Peiting New Town","x":1244,"y":964,"attach":[1239.34,964.0]},{"name":"Peiting Central","x":1380,"y":964,"attach":[1380.0,964.0]},{"name":"Quanguan","x":1516,"y":964,"attach":[1521.28,964.0]},{"name":"Songqiao Airport","x":1652,"y":964,"attach":[1652.0,964.0]},{"name":"Tongshan","x":1941,"y":964,"attach":[1935.34,964.0]},{"name":"Hengchu","x":2727,"y":964,"attach":[2729.85,961.15]},{"name":"Hantsin","x":2617,"y":1074,"attach":[2617.0,1074.0]},{"name":"Meiyin","x":901,"y":1120,"attach":[901.0,1112.97]},{"name":"Zhennanguan","x":2522,"y":1169,"attach":[2518.96,1172.04]},{"name":"Rossdale South","x":2793,"y":1313,"attach":[2793.0,1314.6]},{"name":"Rushmere","x":1204,"y":1479,"attach":[1209.67,1479.0]},{"name":"Somerfield St John","x":1380,"y":1479,"attach":[1380.0,1479.0]},{"name":"Sancerre","x":1795,"y":1479,"attach":[1792.22,1479.0]},{"name":"Batavie","x":2059,"y":1479,"attach":[2059.0,1479.0]},{"name":"Aéroport Parnay","x":2234,"y":1479,"attach":[2240.33,1479.0]},{"name":"Touraine-Central","x":2410,"y":1479,"attach":[2410.0,1479.0]},{"name":"Nouvelle-Touraine","x":2586,"y":1479,"attach":[2583.88,1479.0]},{"name":"Prinsburg Central","x":2793,"y":1479,"attach":[2793.0,1479.0]},{"name":"Farinport Central","x":349,"y":1643,"attach":[349.0,1643.0]},{"name":"Alderford Airport","x":515,"y":1643,"attach":[513.41,1643.0]},{"name":"Hiltsbury","x":735,"y":1643,"attach":[737.05,1643.0]},{"name":"Amptonside Central","x":901,"y":1643,"attach":[901.0,1642.09]},{"name":"Pinehurst","x":2410,"y":1643,"attach":[2410.0,1644.98]},{"name":"Canterbury","x":2793,"y":1645,"attach":[2793.0,1642.31]},{"name":"Amptonside Canal","x":1012,"y":1719,"attach":[1012.79,1719.79]},{"name":"Belwich East","x":1380,"y":1807,"attach":[1380.0,1807.0]},{"name":"Grafton Central","x":1795,"y":1807,"attach":[1796.41,1807.0]},{"name":"Flancourt-Est","x":2059,"y":1807,"attach":[2059.0,1807.0]},{"name":"Cranford West","x":2234,"y":1807,"attach":[2239.91,1807.0]},{"name":"Cranford Central","x":2410,"y":1807,"attach":[2410.0,1807.0]},{"name":"Chatham","x":2606,"y":1807,"attach":[2613.26,1807.0]},{"name":"Ashton","x":2410,"y":1953,"attach":[2410.46,1954.85]},{"name":"Norbourne","x":1795,"y":2019,"attach":[1795.0,2019.51]},{"name":"Königstadt","x":901,"y":2080,"attach":[901.0,2081.27]},{"name":"Springford","x":2549,"y":2133,"attach":[2550.95,2134.95]},{"name":"Havenbolme Hbf","x":595,"y":2228,"attach":[595.0,2228.0]},{"name":"Findel","x":751,"y":2228,"attach":[755.29,2228.0]},{"name":"Merlaut","x":2059,"y":2305,"attach":[2059.0,2298.33]},{"name":"Binchester","x":901,"y":2376,"attach":[901.0,2376.0]},{"name":"Whitehurst","x":1380,"y":2376,"attach":[1380.0,2376.0]},{"name":"Ribeauvillé","x":1795,"y":2376,"attach":[1795.0,2376.0]},{"name":"Netherwood","x":2549,"y":2376,"attach":[2554.64,2376.0]},{"name":"Brunswick","x":2792,"y":2376,"attach":[2792.0,2376.0]},{"name":"Outrepont","x":2059,"y":2441,"attach":[2059.0,2434.86]},{"name":"Johnston","x":1028,"y":2529,"attach":[1021.0,2529.0]},{"name":"Kelvinport","x":1204,"y":2529,"attach":[1200.5,2529.0]},{"name":"Mapleriver Central","x":1380,"y":2529,"attach":[1380.0,2529.0]},{"name":"Newport","x":1516,"y":2529,"attach":[1513.39,2529.0]},{"name":"Hervilly","x":2059,"y":2577,"attach":[2058.54,2577.85]},{"name":"Maidstone","x":2967,"y":2639,"attach":[2967.0,2644.05]},{"name":"Bayarfort","x":2967,"y":2795,"attach":[2967.0,2788.55]},{"name":"Port-du-Roi","x":2059,"y":2924,"attach":[2059.0,2924.0]},{"name":"Vindelle-Central","x":2185,"y":2924,"attach":[2180.24,2923.0]},{"name":"Cartier","x":2301,"y":2924,"attach":[2298.77,2923.0]},{"name":"Kingsbury","x":2557,"y":2924,"attach":[2550.66,2923.0]},{"name":"Sulgen","x":2823,"y":2924,"attach":[2817.37,2923.0]},{"name":"Beauvoir Docklands","x":1795,"y":3063,"attach":[1795.0,3063.88]},{"name":"Melbridge Central","x":1795,"y":3179,"attach":[1795.0,3179.0]},{"name":"Oakmouth","x":2059,"y":3179,"attach":[2059.0,3179.0]},{"name":"Cosgrove","x":2059,"y":3485,"attach":[2059.0,3490.96]},{"name":"Medway Central","x":1795,"y":3621,"attach":[1795.0,3626.17]},{"name":"Victoria Central","x":2059,"y":3621,"attach":[2059.0,3625.24]},{"name":"Medway Airport","x":1795,"y":3737,"attach":[1795.0,3729.74]},{"name":"Wardour","x":2059,"y":3837,"attach":[2059.0,3836.13]},{"name":"Marlbury","x":2059,"y":4033,"attach":[2059.0,4029.42]},{"name":"Rotherham","x":1863,"y":4099,"attach":[1860.73,4096.73]},{"name":"Atlantic Airport","x":2059,"y":4300,"attach":[2059.0,4297.05]},{"name":"Southend","x":2059,"y":4416,"attach":[2059.0,4416.0]}];
@@ -3495,7 +3516,7 @@ const rrEnglishText=new WeakMap();
 const rrTranslatedText=new WeakMap();
 const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
-const rrUIRegions='.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings';
+const rrUIRegions='.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
  'Departures':'Départs','Arrivals':'Arrivées','Journeys':'Trajets',
  'Available trains':'Trajets disponibles','Station information':'Informations sur la gare',
@@ -3572,7 +3593,8 @@ const rrFrenchExact=Object.freeze({
  'Family area · toddler space':'Espace famille · espace jeunes enfants',
  'Wheelchair accommodation · accessible toilet':'Emplacement PMR · toilettes accessibles',
  'French edition in preparation':'Version française en préparation',
- 'Soon':'Bientôt'
+ 'Soon':'Bientôt',
+  '© Radelish Railways plc 2026':'© 2026 Société des chemins de fer de Radegne'
 });
 function rrFrenchText(source){
  if(!source || !source.trim())return source;
