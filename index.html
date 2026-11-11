@@ -3,6 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#FFFFFF">
+<script>
+/* Apply the persisted or system appearance before rendering to avoid a flash. */
+(function(){
+  const choices=['light','dark','system'];
+  let selected='system';
+  try{
+    const stored=localStorage.getItem('rr-info-appearance');
+    if(choices.includes(stored))selected=stored;
+  }catch(_){}
+  const dark=selected==='dark'||(selected==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.appearance=selected;
+  document.documentElement.dataset.theme=dark?'dark':'light';
+  document.documentElement.style.colorScheme=dark?'dark':'light';
+})();
+</script>
 <title>RR Info</title>
 <link rel="preload" href="https://tonybzzhao.github.io/rr/fonts/FrutigerNext-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="https://tonybzzhao.github.io/rr/fonts/FrutigerNext-Medium.woff2" as="font" type="font/woff2" crossorigin>
@@ -21,7 +37,7 @@
  /* Operators, travelled paths, railway lines and first class. */
  --main:#0057B8;--via:#D162C0;--night:#394779;--rr:#00783C;
  --travel-main:#4D8EE9;--travel-via:#F08ADF;--travel-night:#7080B1;
- --rail:#9DC8EE;--first-class:#FAC800;
+ --rail:#9DC8EE;--first-class:#FAC800;--first-class-ink:#23364E;--on-accent:#FFFFFF;
  /* Text: primary neutral, strong navy, softer navy, grey and two subdued levels. */
  --ink:#1D1D1D;--ink-strong:#23364E;--ink-soft:#34495E;
  --muted:#666666;--muted-slate:#667588;--text-faint:#8795A5;
@@ -184,7 +200,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .map-tools>button{padding:0 13px}
 .map-tools>button:hover,.station-info-button:hover,.zoom-control button:hover{background:var(--hover-blue);border-color:var(--accent-stroke);color:var(--main-deep)}
 .map-tools>button:active,.station-info-button:active,.zoom-control button:active{background:var(--pressed)}
-.map-tools #trace{background:var(--main);border-color:var(--main);color:var(--surface)}
+.map-tools #trace{background:var(--main);border-color:var(--main);color:var(--on-accent)}
 .map-tools #trace:hover{background:var(--main-hover)}
 .zoom-control{border-radius:5px;overflow:hidden;border-color:var(--stroke);box-shadow:0 1px 5px var(--shadow)}
 .zoom-control button{border-radius:0;border:0;border-right:1px solid var(--stroke-soft);min-height:34px}
@@ -218,7 +234,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .status-cancelled{background:var(--status-cancelled-bg);color:var(--status-cancelled)}
 .status-neutral{background:var(--hover);color:var(--ink-soft)}
 .rowstatus{line-height:1.3;margin-top:6px}
-.station-name-band{display:block;width:fit-content;max-width:100%;background:var(--station-blue);color:var(--surface);padding:11px 15px;font-weight:700;font-size:21px;line-height:1.22;overflow-wrap:anywhere}
+.station-name-band{display:block;width:fit-content;max-width:100%;background:var(--station-blue);color:var(--on-accent);padding:11px 15px;font-weight:700;font-size:21px;line-height:1.22;overflow-wrap:anywhere}
 .station-picto-grid{margin-top:24px}
 /* On medium layouts the detail section docks below the route map, never over it. */
 @media(max-width:1260px) and (min-width:751px){
@@ -266,7 +282,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .rowstatus{margin-top:6px}
 .service-title{gap:0}
 .service-square{display:none}
-.train-number{display:inline-block;width:fit-content;max-width:100%;font-size:23px;line-height:1.15;letter-spacing:.005em;font-weight:700;color:var(--surface)!important;background:var(--service-color);padding:9px 13px 8px;border-radius:2px}
+.train-number{display:inline-block;width:fit-content;max-width:100%;font-size:23px;line-height:1.15;letter-spacing:.005em;font-weight:700;color:var(--on-accent)!important;background:var(--service-color);padding:9px 13px 8px;border-radius:2px}
 .station-name-band{font-size:21px;font-weight:700;color:var(--ink);padding:0;margin:2px 0 5px;background:transparent;max-width:100%;width:auto;line-height:1.2}
 .station-picto-grid{margin-top:24px}
 .stop-name.stop-station{font:inherit;font-size:13px;font-weight:500;line-height:1.35;padding:12px 0;background:none;border:0;border-radius:0;color:var(--main-hover);text-align:left;cursor:pointer;text-decoration:none;align-self:center;min-width:0;word-break:normal}
@@ -343,7 +359,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .service{
  display:inline-flex;align-items:center;justify-content:center;max-width:100%;width:max-content;
  padding:4px 6px 3px;background:var(--service-color);border-radius:2px;
- color:var(--surface)!important;font-size:11px;font-weight:700;line-height:1.25;
+ color:var(--on-accent)!important;font-size:11px;font-weight:700;line-height:1.25;
  letter-spacing:0;white-space:nowrap;font-variant-numeric:tabular-nums;
 }
 .boardhead,.trainrow{grid-template-columns:42px 73px minmax(0,1fr) 50px;column-gap:7px}
@@ -912,7 +928,7 @@ body{font-size:14.5px}
 .rr-selected-type{width:32px;height:32px;flex:0 0 32px;color:var(--rr-strong)}
 .rr-selected-main strong{font-size:27px;font-weight:700;line-height:1.12;font-variant-numeric:tabular-nums;color:var(--rr-strong)}
 .rr-selected-role{font-size:14px;font-weight:600;line-height:1.3;color:var(--rr-strong)}
-.rr-selected-role.rr-first-label{display:inline-flex;align-items:center;background:var(--first-class);color:var(--ink-strong);padding:4px 8px;border-radius:2px;white-space:nowrap}
+.rr-selected-role.rr-first-label{display:inline-flex;align-items:center;background:var(--first-class);color:var(--first-class-ink);padding:4px 8px;border-radius:2px;white-space:nowrap}
 .rr-section-info{color:var(--rr-muted);font-size:12px;margin-left:41px}
 .rr-facility-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .rr-fac-item{display:flex;align-items:center;gap:10px;font-size:13px;line-height:1.25;color:var(--rr-strong)}
@@ -928,7 +944,7 @@ body{font-size:14.5px}
 /* RR interface pictograms — Station pictogram library + four purpose-built actions. */
 .rr-action-icon{display:block;width:18px;height:18px;flex:0 0 18px;color:inherit;fill:currentColor;overflow:visible}
 #trace,#clear,#focusRoute,#showTrainDetails{display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
-#trace .rr-action-icon{color:var(--surface)}
+#trace .rr-action-icon{color:var(--on-accent)}
 #focusRoute{gap:6px}
 /* CSS display:inline-flex must not override the HTML hidden attribute. */
 #focusRoute[hidden]{display:none!important}
@@ -1182,8 +1198,8 @@ body{font-size:14.5px}
  background:var(--surface);color:var(--ink-strong);font-size:13px;font-weight:500;line-height:1.2;
  white-space:nowrap;cursor:pointer
 }
-.map-tools .map-actions #trace{background:var(--main);border-color:var(--main);color:var(--surface)}
-.map-tools .map-actions #trace:hover{background:var(--main-hover);border-color:var(--main-hover);color:var(--surface)}
+.map-tools .map-actions #trace{background:var(--main);border-color:var(--main);color:var(--on-accent)}
+.map-tools .map-actions #trace:hover{background:var(--main-hover);border-color:var(--main-hover);color:var(--on-accent)}
 .map-tools .map-actions #clear{position:static;top:auto;right:auto;justify-self:auto}
 .map-tools .map-actions #clear:hover{background:var(--hover-blue);border-color:var(--accent-stroke);color:var(--main-deep)}
 .map-tools #swapStations{
@@ -1381,6 +1397,73 @@ body{font-size:14.5px}
  color:var(--ink);font-weight:700
 }
 
+
+/* RR Info appearance: one semantic dark palette, not one-off component colours.
+   Official service, travelled-route and First Class colours remain untouched. */
+:root[data-theme="dark"]{
+ --ink:#EDF1F6;--ink-strong:#F6F8FA;--ink-soft:#D7E1EC;
+ --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#95A7BA;
+ --surface:#181F29;--map:#111923;--hair:#354353;
+ --stroke:#4E6175;--stroke-strong:#697D93;--stroke-soft:#324050;
+ --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
+ --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
+ --shadow:#00000066;--focus-ring:#8ABDF74A;
+ --rail:#56728D;--station-blue:#244E86;
+ --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
+ --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
+ --service-text-max:#96C7FF;--service-text-via:#F6AFE8;--service-text-night:#C0CAF6;
+}
+:root[data-theme="dark"] .service{
+ color:color-mix(in srgb,var(--service-color) 56%,white);
+}
+:root[data-theme="dark"] .rr-service-logo{
+ color:color-mix(in srgb,var(--rr-service-identity-color) 56%,white);
+}
+:root[data-theme="dark"] .station-fac-link,
+:root[data-theme="dark"] .station-fac-link:hover,
+:root[data-theme="dark"] .map-train-toggle,
+:root[data-theme="dark"] .fold-button:hover{color:var(--main-deep)}
+:root[data-theme="dark"] .rr-selected-role.rr-first-label{color:var(--first-class-ink)}
+/* Embedded light logos are preserved; dark SVGs have transparent backgrounds. */
+.longmark img.logo-dark,.shortmark img.logo-dark{display:none}
+:root[data-theme="dark"] .longmark img.logo-light,
+:root[data-theme="dark"] .shortmark img.logo-light{display:none}
+:root[data-theme="dark"] .longmark img.logo-dark,
+:root[data-theme="dark"] .shortmark img.logo-dark{display:block}
+/* Compact appearance menu lives in the global header and remains accessible
+   when departures are collapsed and on the mobile timetable view. */
+.side-header{position:relative;z-index:75}
+.appearance-picker{position:relative;flex:0 0 auto}
+.appearance-toggle{
+ display:flex;align-items:center;justify-content:center;width:32px;height:32px;
+ padding:0;border:1px solid transparent;border-radius:4px;background:transparent;
+ color:var(--ink-soft);cursor:pointer
+}
+.appearance-toggle:hover,.appearance-toggle[aria-expanded="true"]{
+ background:var(--hover-blue);border-color:var(--stroke);color:var(--ink)
+}
+.appearance-toggle svg{width:19px;height:19px;display:block;fill:none;stroke:currentColor;stroke-width:1.6}
+.appearance-menu{
+ position:absolute;top:calc(100% + 9px);right:0;z-index:150;min-width:176px;
+ padding:6px;background:var(--surface);border:1px solid var(--stroke);
+ border-radius:5px;box-shadow:0 8px 22px var(--shadow)
+}
+.appearance-menu[hidden]{display:none!important}
+.appearance-heading{padding:7px 9px 6px;color:var(--muted-slate);font-size:11px;font-weight:500}
+.appearance-option{
+ display:flex;align-items:center;gap:9px;width:100%;height:36px;padding:0 10px;
+ background:transparent;border:0;border-radius:3px;color:var(--ink-strong);
+ text-align:left;font-size:13px;font-weight:500;cursor:pointer
+}
+.appearance-option:hover,.appearance-option:focus-visible{background:var(--hover-blue)}
+.appearance-option[aria-pressed="true"]{background:var(--selected)}
+.appearance-option .appearance-check{margin-left:auto;visibility:hidden;color:var(--main-deep);font-size:15px}
+.appearance-option[aria-pressed="true"] .appearance-check{visibility:visible}
+.appearance-option svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.folded .appearance-toggle{width:28px;height:24px}
+.folded .appearance-toggle svg{width:17px;height:17px}
+.folded .appearance-menu{right:auto;left:calc(100% + 10px);top:-12px}
+@media(max-width:750px){.appearance-toggle{width:34px;height:34px}}
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -1611,8 +1694,19 @@ body{font-size:14.5px}
 <div class="app" id="app">
   <aside class="side">
     <div class="side-header">
-      <div class="longmark"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEwcHgiIGhlaWdodD0iNjBweCIgdmlld0JveD0iMCAwIDQxMCA2MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDx0aXRsZT5SUiBNYWlubGluZTwvdGl0bGU+CiAgICA8ZyBpZD0i8J+ahlJSLU1hc3RlciIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPHJlY3QgaWQ9IlJlY3RhbmdsZS0zIiBmaWxsPSIjRkZGRkZGIiB4PSItNzYiIHk9Ii0xMzgiIHdpZHRoPSI5MDYiIGhlaWdodD0iOTYwIj48L3JlY3Q+CiAgICAgICAgPHBhdGggZD0ibSAxNDUuMzQ2MDIsNTUgaCAtNy4zNSBWIDQuOTc1IGggMTIuMyBsIDE1LjQ1LDQxLjEgMTUuMywtNDEuMSBoIDEyLjM3NSBWIDU1IGggLTcuNzI1IFYgMTAuODI1IEwgMTY5LjI3MTAyLDU1IGggLTcuNDI1IGwgLTE2LjUsLTQ0LjE3NSB6IG0gODAuMTAwMDUsLTE4LjM3NSBoIC0yLjAyNSBxIC0zLjE1LDAgLTUuNDc1LDAuMyAtMi4zMjUsMC4zIC00LjU3NSwxLjA1IC0yLjE3NSwwLjc1IC0zLjM3NSwyLjMyNSAtMS4xMjUsMS41NzUgLTEuMTI1LDMuOTc1IDAsMy4wNzUgMS44LDQuNTc1IDEuODc1LDEuNSA1LjAyNSwxLjUgNC44NzUsMCA3LjI3NSwtMy4zIDIuNDc1LC0zLjMgMi40NzUsLTguNCB6IG0gNy44LDE4LjM3NSBoIC03LjM1IGwgLTAuMjI1LC01LjkyNSBxIC0zLjc1LDYuNzUgLTExLjc3NSw2Ljc1IC01LjQ3NSwwIC05LC0yLjc3NSAtMy40NSwtMi43NzUgLTMuNDUsLTguMzI1IDAsLTEyLjc1IDE5LjgsLTEyLjc1IDMuMDc1LDAgNC4yLDAuMDc1IHYgLTEuNTc1IHEgMCwtOC40NzUgLTguNTUsLTguNDc1IC02LjIyNSwwIC0xMS4wMjUsMyBsIC0wLjQ1LC01Ljc3NSBxIDYuMTUsLTIuNDc1IDEyLjE1LC0yLjQ3NSAxNS4yMjUsMCAxNS4yMjUsMTQuMjUgdiAxNS42NzUgcSAwLDQuNDI1IDAuNDUsOC4zMjUgeiBNIDI1MC4xOTYwOSw5Ljc3NSBoIC03LjUgViAyLjUgaCA3LjUgeiBtIDAsNDUuMjI1IGggLTcuNSBWIDE3LjUgaCA3LjUgeiBtIDE3LjQ3NDk2LDAgaCAtNy41IFYgMjYuMTI1IHEgMCwtNC45NSAtMC4zNzUsLTguNjI1IGggNy4wNSBsIDAuMjI1LDYuNDUgcSAzLjk3NSwtNy4yIDEyLjE1LC03LjIgMTIuNiwwIDEyLjYsMTQuNTUgViA1NSBoIC03LjU3NSBWIDMyLjg3NSBxIDAsLTQuNzI1IC0xLjU3NSwtNy41IC0xLjUsLTIuNzc1IC01Ljg1LC0yLjc3NSAtNC44LDAgLTYuOTc1LDMuNDUgLTIuMTc1LDMuNDUgLTIuMTc1LDguNTUgeiBtIDQxLjYyNSwwIGggLTcuNSBWIDAuOTI1IGggNy41IHogTSAzMjYuNzcxMDEsOS43NzUgaCAtNy41IFYgMi41IGggNy41IHogbSAwLDQ1LjIyNSBoIC03LjUgViAxNy41IGggNy41IHogbSAxNy40NzQ5NywwIGggLTcuNSBWIDI2LjEyNSBxIDAsLTQuOTUgLTAuMzc1LC04LjYyNSBoIDcuMDUgbCAwLjIyNSw2LjQ1IHEgMy45NzUsLTcuMiAxMi4xNSwtNy4yIDEyLjYsMCAxMi42LDE0LjU1IFYgNTUgaCAtNy41NzUgViAzMi44NzUgcSAwLC00LjcyNSAtMS41NzUsLTcuNSAtMS41LC0yLjc3NSAtNS44NSwtMi43NzUgLTQuOCwwIC02Ljk3NSwzLjQ1IC0yLjE3NSwzLjQ1IC0yLjE3NSw4LjU1IHogbSAzOS41MjUsLTIxLjc1IGggMTggcSAwLC0xMS4zMjUgLTguNCwtMTEuMzI1IC00LjQyNSwwIC02LjksMy40NSAtMi40NzUsMy4zNzUgLTIuNyw3Ljg3NSB6IG0gMjUuMiw0LjY1IGggLTI1LjEyNSBxIDAsNS40NzUgMy4zLDkuMDc1IDMuMywzLjYgOS4yMjUsMy42IDUuNywwIDEwLjEyNSwtMi4zMjUgbCAwLjQ1LDUuNTUgcSAtNS4wMjUsMi4wMjUgLTExLjYyNSwyLjAyNSAtOS4zLDAgLTE0LjI1LC01LjMyNSAtNC45NSwtNS40IC00Ljk1LC0xNC40IDAsLTguMDI1IDQuNjUsLTEzLjY1IDQuNzI1LC01LjcgMTIuNTI1LC01LjcgMTUuNjc1LDAgMTUuNjc1LDE4LjkgeiIgaWQ9Ik1haW5saW5lIiBmaWxsPSIjMTgxODE4IiBhcmlhLWxhYmVsPSJNYWlubGluZSIgLz4KICAgICAgICA8cGF0aCBkPSJNNTAuNDg0ODQzMyw1IEw2My4wOTg3Mjg4LDUgTDk3LjkzMDU1ODIsMzkuOTA2MzAyNSBMOTcuOTMwNTU4Miw1LjE1ODMwNTc2IEwxMDcuMTg5NTQyLDE0LjQzMDkwMDMgTDEwNy4xODk1NDIsNTUgTDgxLjU1MjA3MTEsNTUgQzc1LjUzMzYzOTksNTUgNjkuNzYzMzYwNCw1Mi42MDE0NjUgNjUuNTE4Mjc5MSw0OC4zMzUyMjU1IEwzNi42NTM3NjM4LDE5LjMyNjg0NDUgQzMzLjUyNDcxOTgsMTYuMTgyMjA0OSAyOS4yNzExMTI3LDE0LjQxNDc3MjcgMjQuODM0OTM0OSwxNC40MTU5NTg3IEwxNi4yMjk4OTA2LDE0LjQxODI1OTMgTDU2LjcwNDcwMTksNTUgTDQ0LjA5MDc1NjEsNTUgTDkuMjU4OTI2NjYsMjAuMDkzNjk3NSBMOS4yNTg5MjY2Niw1NC44NDE2OTMxIEwwLDQ1LjU2OTA5OTkgTDAsNSBMMjUuNjY5ODM2MSw1IEMzMS42ODg5NTc3LDUgMzcuNDU5ODQwNCw3LjM5OTA4Mzc4IDQxLjcwNTAzMjksMTEuNjY2MTg2NSBMNzAuNTYxNDQ4MSw0MC42NzE1MzQ5IEM3My42OTA1NzU5LDQzLjgxNjgxMjYgNzcuOTQ0NjMwNyw0NS41ODQ2NDk0IDgyLjM4MTMxOTksNDUuNTgzNDYxMiBMOTAuOTU5NjU0Myw0NS41ODExNjM4IEw1MC40ODQ4NDMzLDUgWiIgaWQ9IkNsaXAtMTc1IiBmaWxsPSIjMDA1N0I4Ij48L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPgo=" width="410" height="60" alt="RR Mainline"></div>
-      <div class="shortmark"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4cHgiIGhlaWdodD0iNTBweCIgdmlld0JveD0iMCAwIDEwOCA1MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDx0aXRsZT5SUiBtYXJrPC90aXRsZT4KICAgIDxnIGlkPSLwn5qGUlItTWFzdGVyIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8cmVjdCBpZD0iUmVjdGFuZ2xlLTMiIGZpbGw9IiNGRkZGRkYiIHg9Ii03NiIgeT0iLTE0MyIgd2lkdGg9IjkwNiIgaGVpZ2h0PSI5NjAiPjwvcmVjdD4KICAgICAgICA8cGF0aCBkPSJNNTAuNDg0ODQzMywwIEw2My4wOTg3Mjg4LDAgTDk3LjkzMDU1ODIsMzQuOTA2MzAyNSBMOTcuOTMwNTU4MiwwLjE1ODMwNTc2MSBMMTA3LjE4OTU0Miw5LjQzMDkwMDI3IEwxMDcuMTg5NTQyLDUwIEw4MS41NTIwNzExLDUwIEM3NS41MzM2Mzk5LDUwIDY5Ljc2MzM2MDQsNDcuNjAxNDY1IDY1LjUxODI3OTEsNDMuMzM1MjI1NSBMMzYuNjUzNzYzOCwxNC4zMjY4NDQ1IEMzMy41MjQ3MTk4LDExLjE4MjIwNDkgMjkuMjcxMTEyNyw5LjQxNDc3MjY2IDI0LjgzNDkzNDksOS40MTU5NTg2OSBMMTYuMjI5ODkwNiw5LjQxODI1OTI4IEw1Ni43MDQ3MDE5LDUwIEw0NC4wOTA3NTYxLDUwIEw5LjI1ODkyNjY2LDE1LjA5MzY5NzUgTDkuMjU4OTI2NjYsNDkuODQxNjkzMSBMMCw0MC41NjkwOTk5IEwwLDAgTDI1LjY2OTgzNjEsMCBDMzEuNjg4OTU3NywwIDM3LjQ1OTg0MDQsMi4zOTkwODM3OCA0MS43MDUwMzI5LDYuNjY2MTg2NDYgTDcwLjU2MTQ0ODEsMzUuNjcxNTM0OSBDNzMuNjkwNTc1OSwzOC44MTY4MTI2IDc3Ljk0NDYzMDcsNDAuNTg0NjQ5NCA4Mi4zODEzMTk5LDQwLjU4MzQ2MTIgTDkwLjk1OTY1NDMsNDAuNTgxMTYzOCBMNTAuNDg0ODQzMywwIFoiIGlkPSJDbGlwLTE3NSIgZmlsbD0iIzAwNTdCOCI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4K" width="108" height="50" alt="RR"></div>
+      <div class="longmark"><img class="logo-light" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEwcHgiIGhlaWdodD0iNjBweCIgdmlld0JveD0iMCAwIDQxMCA2MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDx0aXRsZT5SUiBNYWlubGluZTwvdGl0bGU+CiAgICA8ZyBpZD0i8J+ahlJSLU1hc3RlciIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPHJlY3QgaWQ9IlJlY3RhbmdsZS0zIiBmaWxsPSIjRkZGRkZGIiB4PSItNzYiIHk9Ii0xMzgiIHdpZHRoPSI5MDYiIGhlaWdodD0iOTYwIj48L3JlY3Q+CiAgICAgICAgPHBhdGggZD0ibSAxNDUuMzQ2MDIsNTUgaCAtNy4zNSBWIDQuOTc1IGggMTIuMyBsIDE1LjQ1LDQxLjEgMTUuMywtNDEuMSBoIDEyLjM3NSBWIDU1IGggLTcuNzI1IFYgMTAuODI1IEwgMTY5LjI3MTAyLDU1IGggLTcuNDI1IGwgLTE2LjUsLTQ0LjE3NSB6IG0gODAuMTAwMDUsLTE4LjM3NSBoIC0yLjAyNSBxIC0zLjE1LDAgLTUuNDc1LDAuMyAtMi4zMjUsMC4zIC00LjU3NSwxLjA1IC0yLjE3NSwwLjc1IC0zLjM3NSwyLjMyNSAtMS4xMjUsMS41NzUgLTEuMTI1LDMuOTc1IDAsMy4wNzUgMS44LDQuNTc1IDEuODc1LDEuNSA1LjAyNSwxLjUgNC44NzUsMCA3LjI3NSwtMy4zIDIuNDc1LC0zLjMgMi40NzUsLTguNCB6IG0gNy44LDE4LjM3NSBoIC03LjM1IGwgLTAuMjI1LC01LjkyNSBxIC0zLjc1LDYuNzUgLTExLjc3NSw2Ljc1IC01LjQ3NSwwIC05LC0yLjc3NSAtMy40NSwtMi43NzUgLTMuNDUsLTguMzI1IDAsLTEyLjc1IDE5LjgsLTEyLjc1IDMuMDc1LDAgNC4yLDAuMDc1IHYgLTEuNTc1IHEgMCwtOC40NzUgLTguNTUsLTguNDc1IC02LjIyNSwwIC0xMS4wMjUsMyBsIC0wLjQ1LC01Ljc3NSBxIDYuMTUsLTIuNDc1IDEyLjE1LC0yLjQ3NSAxNS4yMjUsMCAxNS4yMjUsMTQuMjUgdiAxNS42NzUgcSAwLDQuNDI1IDAuNDUsOC4zMjUgeiBNIDI1MC4xOTYwOSw5Ljc3NSBoIC03LjUgViAyLjUgaCA3LjUgeiBtIDAsNDUuMjI1IGggLTcuNSBWIDE3LjUgaCA3LjUgeiBtIDE3LjQ3NDk2LDAgaCAtNy41IFYgMjYuMTI1IHEgMCwtNC45NSAtMC4zNzUsLTguNjI1IGggNy4wNSBsIDAuMjI1LDYuNDUgcSAzLjk3NSwtNy4yIDEyLjE1LC03LjIgMTIuNiwwIDEyLjYsMTQuNTUgViA1NSBoIC03LjU3NSBWIDMyLjg3NSBxIDAsLTQuNzI1IC0xLjU3NSwtNy41IC0xLjUsLTIuNzc1IC01Ljg1LC0yLjc3NSAtNC44LDAgLTYuOTc1LDMuNDUgLTIuMTc1LDMuNDUgLTIuMTc1LDguNTUgeiBtIDQxLjYyNSwwIGggLTcuNSBWIDAuOTI1IGggNy41IHogTSAzMjYuNzcxMDEsOS43NzUgaCAtNy41IFYgMi41IGggNy41IHogbSAwLDQ1LjIyNSBoIC03LjUgViAxNy41IGggNy41IHogbSAxNy40NzQ5NywwIGggLTcuNSBWIDI2LjEyNSBxIDAsLTQuOTUgLTAuMzc1LC04LjYyNSBoIDcuMDUgbCAwLjIyNSw2LjQ1IHEgMy45NzUsLTcuMiAxMi4xNSwtNy4yIDEyLjYsMCAxMi42LDE0LjU1IFYgNTUgaCAtNy41NzUgViAzMi44NzUgcSAwLC00LjcyNSAtMS41NzUsLTcuNSAtMS41LC0yLjc3NSAtNS44NSwtMi43NzUgLTQuOCwwIC02Ljk3NSwzLjQ1IC0yLjE3NSwzLjQ1IC0yLjE3NSw4LjU1IHogbSAzOS41MjUsLTIxLjc1IGggMTggcSAwLC0xMS4zMjUgLTguNCwtMTEuMzI1IC00LjQyNSwwIC02LjksMy40NSAtMi40NzUsMy4zNzUgLTIuNyw3Ljg3NSB6IG0gMjUuMiw0LjY1IGggLTI1LjEyNSBxIDAsNS40NzUgMy4zLDkuMDc1IDMuMywzLjYgOS4yMjUsMy42IDUuNywwIDEwLjEyNSwtMi4zMjUgbCAwLjQ1LDUuNTUgcSAtNS4wMjUsMi4wMjUgLTExLjYyNSwyLjAyNSAtOS4zLDAgLTE0LjI1LC01LjMyNSAtNC45NSwtNS40IC00Ljk1LC0xNC40IDAsLTguMDI1IDQuNjUsLTEzLjY1IDQuNzI1LC01LjcgMTIuNTI1LC01LjcgMTUuNjc1LDAgMTUuNjc1LDE4LjkgeiIgaWQ9Ik1haW5saW5lIiBmaWxsPSIjMTgxODE4IiBhcmlhLWxhYmVsPSJNYWlubGluZSIgLz4KICAgICAgICA8cGF0aCBkPSJNNTAuNDg0ODQzMyw1IEw2My4wOTg3Mjg4LDUgTDk3LjkzMDU1ODIsMzkuOTA2MzAyNSBMOTcuOTMwNTU4Miw1LjE1ODMwNTc2IEwxMDcuMTg5NTQyLDE0LjQzMDkwMDMgTDEwNy4xODk1NDIsNTUgTDgxLjU1MjA3MTEsNTUgQzc1LjUzMzYzOTksNTUgNjkuNzYzMzYwNCw1Mi42MDE0NjUgNjUuNTE4Mjc5MSw0OC4zMzUyMjU1IEwzNi42NTM3NjM4LDE5LjMyNjg0NDUgQzMzLjUyNDcxOTgsMTYuMTgyMjA0OSAyOS4yNzExMTI3LDE0LjQxNDc3MjcgMjQuODM0OTM0OSwxNC40MTU5NTg3IEwxNi4yMjk4OTA2LDE0LjQxODI1OTMgTDU2LjcwNDcwMTksNTUgTDQ0LjA5MDc1NjEsNTUgTDkuMjU4OTI2NjYsMjAuMDkzNjk3NSBMOS4yNTg5MjY2Niw1NC44NDE2OTMxIEwwLDQ1LjU2OTA5OTkgTDAsNSBMMjUuNjY5ODM2MSw1IEMzMS42ODg5NTc3LDUgMzcuNDU5ODQwNCw3LjM5OTA4Mzc4IDQxLjcwNTAzMjksMTEuNjY2MTg2NSBMNzAuNTYxNDQ4MSw0MC42NzE1MzQ5IEM3My42OTA1NzU5LDQzLjgxNjgxMjYgNzcuOTQ0NjMwNyw0NS41ODQ2NDk0IDgyLjM4MTMxOTksNDUuNTgzNDYxMiBMOTAuOTU5NjU0Myw0NS41ODExNjM4IEw1MC40ODQ4NDMzLDUgWiIgaWQ9IkNsaXAtMTc1IiBmaWxsPSIjMDA1N0I4Ij48L3BhdGg+CiAgICA8L2c+Cjwvc3ZnPgo=" width="410" height="60" alt="RR Mainline"><img class="logo-dark" src="./assets/rr-mainline-logo-dark.svg" width="410" height="60" alt="RR Mainline"></div>
+      <div class="shortmark"><img class="logo-light" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4cHgiIGhlaWdodD0iNTBweCIgdmlld0JveD0iMCAwIDEwOCA1MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDx0aXRsZT5SUiBtYXJrPC90aXRsZT4KICAgIDxnIGlkPSLwn5qGUlItTWFzdGVyIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8cmVjdCBpZD0iUmVjdGFuZ2xlLTMiIGZpbGw9IiNGRkZGRkYiIHg9Ii03NiIgeT0iLTE0MyIgd2lkdGg9IjkwNiIgaGVpZ2h0PSI5NjAiPjwvcmVjdD4KICAgICAgICA8cGF0aCBkPSJNNTAuNDg0ODQzMywwIEw2My4wOTg3Mjg4LDAgTDk3LjkzMDU1ODIsMzQuOTA2MzAyNSBMOTcuOTMwNTU4MiwwLjE1ODMwNTc2MSBMMTA3LjE4OTU0Miw5LjQzMDkwMDI3IEwxMDcuMTg5NTQyLDUwIEw4MS41NTIwNzExLDUwIEM3NS41MzM2Mzk5LDUwIDY5Ljc2MzM2MDQsNDcuNjAxNDY1IDY1LjUxODI3OTEsNDMuMzM1MjI1NSBMMzYuNjUzNzYzOCwxNC4zMjY4NDQ1IEMzMy41MjQ3MTk4LDExLjE4MjIwNDkgMjkuMjcxMTEyNyw5LjQxNDc3MjY2IDI0LjgzNDkzNDksOS40MTU5NTg2OSBMMTYuMjI5ODkwNiw5LjQxODI1OTI4IEw1Ni43MDQ3MDE5LDUwIEw0NC4wOTA3NTYxLDUwIEw5LjI1ODkyNjY2LDE1LjA5MzY5NzUgTDkuMjU4OTI2NjYsNDkuODQxNjkzMSBMMCw0MC41NjkwOTk5IEwwLDAgTDI1LjY2OTgzNjEsMCBDMzEuNjg4OTU3NywwIDM3LjQ1OTg0MDQsMi4zOTkwODM3OCA0MS43MDUwMzI5LDYuNjY2MTg2NDYgTDcwLjU2MTQ0ODEsMzUuNjcxNTM0OSBDNzMuNjkwNTc1OSwzOC44MTY4MTI2IDc3Ljk0NDYzMDcsNDAuNTg0NjQ5NCA4Mi4zODEzMTk5LDQwLjU4MzQ2MTIgTDkwLjk1OTY1NDMsNDAuNTgxMTYzOCBMNTAuNDg0ODQzMywwIFoiIGlkPSJDbGlwLTE3NSIgZmlsbD0iIzAwNTdCOCI+PC9wYXRoPgogICAgPC9nPgo8L3N2Zz4K" width="108" height="50" alt="RR"><img class="logo-dark" src="./assets/rr-mark-dark.svg" width="108" height="50" alt="RR"></div>
+      <div class="appearance-picker" id="rrAppearancePicker">
+        <button id="rrAppearanceToggle" class="appearance-toggle" type="button" aria-label="Appearance: System" title="Appearance: System" aria-haspopup="true" aria-expanded="false" aria-controls="rrAppearanceMenu">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.4"/><path d="M12 3.6a8.4 8.4 0 0 1 0 16.8Z" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div id="rrAppearanceMenu" class="appearance-menu" role="group" aria-label="Appearance" hidden>
+          <div class="appearance-heading">Appearance</div>
+          <button class="appearance-option" data-appearance-choice="light" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.5 1.5m11.2 11.2 1.5 1.5M2 12h2m16 0h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5"/></svg><span>Light</span><span class="appearance-check" aria-hidden="true">✓</span></button>
+          <button class="appearance-option" data-appearance-choice="dark" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.5A8.5 8.5 0 0 1 8.5 3.7 8.5 8.5 0 1 0 20.3 15.5Z"/></svg><span>Dark</span><span class="appearance-check" aria-hidden="true">✓</span></button>
+          <button class="appearance-option" data-appearance-choice="system" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8m-4-4v4"/></svg><span>System</span><span class="appearance-check" aria-hidden="true">✓</span></button>
+        </div>
+      </div>
       <button id="collapse" class="fold-button" type="button" title="Collapse departures" aria-label="Collapse departures" aria-controls="sidebarContent" aria-expanded="true">
         <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 18l-6-6 6-6"/></svg>
       </button>
@@ -1655,6 +1749,13 @@ const LABEL_HINTS={"Yuchow Central": [0, -24, "middle"], "Peiting Central": [0, 
 
 const RR_UI_CSS_COLOR=token=>getComputedStyle(document.documentElement).getPropertyValue(token).trim();
 const C={Max:RR_UI_CSS_COLOR('--main'),VIA:RR_UI_CSS_COLOR('--via'),InterCity:RR_UI_CSS_COLOR('--main'),Nightline:RR_UI_CSS_COLOR('--night')};
+function rrReadableRouteLabelColor(color){
+ if(document.documentElement.dataset.theme!=='dark')return color;
+ if(color===C.Max)return RR_UI_CSS_COLOR('--service-text-max');
+ if(color===C.VIA)return RR_UI_CSS_COLOR('--service-text-via');
+ if(color===C.Nightline)return RR_UI_CSS_COLOR('--service-text-night');
+ return color;
+}
 const RR_TRAVELLED_C=Object.freeze({
  [C.Max]:RR_UI_CSS_COLOR('--travel-main'),[C.VIA]:RR_UI_CSS_COLOR('--travel-via'),
  [C.Nightline]:RR_UI_CSS_COLOR('--travel-night')
@@ -2369,7 +2470,7 @@ function drawMap(){
    // A mixed-colour interchange has a neutral name; the split station ring
    // preserves each connecting service colour. Same-colour names stay coloured.
    const mixedServiceInterchange=transferMarker?.colors.length>1;
-   selectedLabelColors.set(s.name,mixedServiceInterchange?RR_UI_CSS_COLOR('--ink'):activeColors.at(-1));
+   selectedLabelColors.set(s.name,mixedServiceInterchange?RR_UI_CSS_COLOR('--ink'):rrReadableRouteLabelColor(activeColors.at(-1)));
   }
   if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
   if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.join(','));
@@ -2874,6 +2975,63 @@ if (document.fonts && document.fonts.load) {
     document.fonts.load('700 15.625px Frutiger')
   ]).then(()=>{if(W&&H)updateWorld()}).catch(()=>{});
 }
+
+/* Appearance is a site preference; System tracks OS changes even after load. */
+const rrAppearanceKey='rr-info-appearance';
+const rrAppearancePicker=document.getElementById('rrAppearancePicker');
+const rrAppearanceToggle=document.getElementById('rrAppearanceToggle');
+const rrAppearanceMenu=document.getElementById('rrAppearanceMenu');
+const rrAppearanceMedia=window.matchMedia('(prefers-color-scheme: dark)');
+function rrCloseAppearance(){
+ rrAppearanceMenu.hidden=true;
+ rrAppearanceToggle.setAttribute('aria-expanded','false');
+}
+function rrSetAppearance(selected,persist=false){
+ const choice=['light','dark','system'].includes(selected)?selected:'system';
+ const dark=choice==='dark'||(choice==='system'&&rrAppearanceMedia.matches);
+ document.documentElement.dataset.appearance=choice;
+ document.documentElement.dataset.theme=dark?'dark':'light';
+ document.documentElement.style.colorScheme=dark?'dark':'light';
+ rrAppearanceToggle.setAttribute('aria-label','Appearance: '+choice[0].toUpperCase()+choice.slice(1));
+ rrAppearanceToggle.title='Appearance: '+choice[0].toUpperCase()+choice.slice(1);
+ rrAppearanceMenu.querySelectorAll('[data-appearance-choice]').forEach(button=>{
+   button.setAttribute('aria-pressed',String(button.dataset.appearanceChoice===choice));
+ });
+ const themeMeta=document.querySelector('meta[name="theme-color"]');
+ if(themeMeta)themeMeta.content=RR_UI_CSS_COLOR('--surface');
+ if(persist){try{localStorage.setItem(rrAppearanceKey,choice)}catch(_){}}
+ if(W&&H)drawMap(); // Refresh inline SVG station fills and selected label contrast.
+}
+rrAppearanceToggle.addEventListener('click',()=>{
+ const opening=rrAppearanceMenu.hidden;
+ rrAppearanceMenu.hidden=!opening;
+ rrAppearanceToggle.setAttribute('aria-expanded',String(opening));
+});
+rrAppearanceMenu.querySelectorAll('[data-appearance-choice]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  rrSetAppearance(button.dataset.appearanceChoice,true);
+  rrCloseAppearance();
+  rrAppearanceToggle.focus();
+ });
+});
+document.addEventListener('pointerdown',event=>{
+ if(!rrAppearanceMenu.hidden&&!rrAppearancePicker.contains(event.target))rrCloseAppearance();
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!rrAppearanceMenu.hidden){
+  rrCloseAppearance();rrAppearanceToggle.focus();
+ }
+});
+if(rrAppearanceMedia.addEventListener)rrAppearanceMedia.addEventListener('change',()=>{
+ if(document.documentElement.dataset.appearance==='system')rrSetAppearance('system');
+});
+else rrAppearanceMedia.addListener(()=>{
+ if(document.documentElement.dataset.appearance==='system')rrSetAppearance('system');
+});
+window.addEventListener('storage',event=>{
+ if(event.key===rrAppearanceKey)rrSetAppearance(event.newValue||'system');
+});
+rrSetAppearance(document.documentElement.dataset.appearance||'system');
 </script>
 </body>
 </html>
