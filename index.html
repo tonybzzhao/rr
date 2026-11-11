@@ -1799,6 +1799,28 @@ body{font-size:14.5px}
 }
 /* End v62 responsive French typography & bilingual logos. */
 
+
+/* v63: when French route details compete for a compact 270-320px panel,
+   keep the existing action button and close control at their full sizes.
+   Two tidy rows are preferable to tiny multi-line title fragments. */
+@media (min-width:751px) and (max-width:1210px), (max-width:370px){
+ html[lang="fr"] .app .details-head:has(#focusRoute:not([hidden])){
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px 34px;
+  align-content:center;row-gap:0;height:64px;min-height:64px;
+  flex:0 0 64px;padding-top:3px;padding-bottom:3px
+ }
+ html[lang="fr"] .app .details-head:has(#focusRoute:not([hidden])) .details-heading{
+  grid-column:1;grid-row:1;width:100%;max-width:100%;min-width:0
+ }
+ html[lang="fr"] .app .details-head:has(#focusRoute:not([hidden])) .details-heading h2{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+ }
+ html[lang="fr"] .app .details-head:has(#focusRoute:not([hidden])) .details-actions{
+  grid-column:1;grid-row:2;justify-self:end;margin-left:0
+ }
+}
+/* End v63 French narrow-panel header adaptation. */
+
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -3522,7 +3544,7 @@ function rrLocalizeTextNode(node,reset=false){
  const current=node.nodeValue;
  const previous=rrTranslatedText.get(node);
  if(!reset&&previous!==undefined&&previous===current)return;
- if(!reset||!rrEnglishText.has(node))rrEnglishText.set(node,current);
+ if(!reset||!rrEnglishText.has(node)||(previous!==undefined&&previous!==current))rrEnglishText.set(node,current);
  const original=rrEnglishText.get(node);
  const wanted=rrActiveLocale==='fr'?rrFrenchText(original):original;
  rrTranslatedText.set(node,wanted);
@@ -3534,7 +3556,7 @@ function rrLocalizeAttrs(el,reset=false){
   if(!el.hasAttribute(attr))continue;
   const current=el.getAttribute(attr),all=rrEnglishAttrs.get(el)||new Map(),last=rrTranslatedAttrs.get(el)||new Map();
   if(!reset&&last.has(attr)&&last.get(attr)===current)continue;
-  if(!reset||!all.has(attr))all.set(attr,current);
+  if(!reset||!all.has(attr)||(last.has(attr)&&last.get(attr)!==current))all.set(attr,current);
   rrEnglishAttrs.set(el,all);
   const wanted=rrActiveLocale==='fr'?rrFrenchText(all.get(attr)):all.get(attr);
   last.set(attr,wanted);rrTranslatedAttrs.set(el,last);
