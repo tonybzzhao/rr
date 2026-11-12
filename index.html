@@ -1910,18 +1910,25 @@ body{font-size:14.5px}
 }
 /* End v68 full-width copyright footer. */
 
-/* InterCity uses the outlined Mainline badge, while Max stays solid.
-   An inset stroke preserves existing badge measurements at every breakpoint. */
+/* InterCity: light timetable outline, heavier detail outline.
+   Keep the original Mainline blue in both themes and preserve badge dimensions. */
 .service.rr-ic-outline,
 .train-number.rr-ic-outline{
   background:var(--surface);
   color:var(--service-color)!important;
-  box-shadow:inset 0 0 0 2px var(--service-color);
 }
+.service.rr-ic-outline{
+  box-shadow:inset 0 0 0 1px var(--service-color);
+}
+.train-number.rr-ic-outline{
+  box-shadow:inset 0 0 0 3px var(--service-color);
+}
+/* Original blue is too dark for text on the dark panel (2.41:1).
+   Give IC a light inset field so the original blue remains readable (6.46:1). */
 :root[data-theme="dark"] .service.rr-ic-outline,
 :root[data-theme="dark"] .train-number.rr-ic-outline{
-  color:var(--main-deep)!important;
-  box-shadow:inset 0 0 0 2px var(--main-deep);
+  background:var(--ink-strong);
+  color:var(--service-color)!important;
 }
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
