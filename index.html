@@ -1964,6 +1964,95 @@ body{font-size:14.5px}
  background:var(--rr-fill-main-hover);border-color:var(--rr-fill-main-hover);
  color:var(--on-accent);
 }
+
+/* v69: tablet three-panel alignment. Opening details must not change the
+   left sidebar or its logo. The From/To toolbar occupies the continuous
+   masthead above map and details, as on desktop, not the narrow map column. */
+@media(min-width:751px) and (max-width:1260px){
+ .app{
+  --rr-tablet-side-width:clamp(225px,24vw,290px);
+  --rr-tablet-detail-width:clamp(270px,27vw,345px);
+ }
+ .app:not(.folded):not(.detail-open){
+  grid-template-columns:var(--rr-tablet-side-width) minmax(0,1fr);
+ }
+ .app.detail-open:not(.folded){
+  grid-template-columns:var(--rr-tablet-side-width) minmax(0,1fr) var(--rr-tablet-detail-width);
+ }
+ .app.folded.detail-open{
+  grid-template-columns:88px minmax(0,1fr) var(--rr-tablet-detail-width);
+ }
+ .app .map-header{
+  box-sizing:border-box;height:var(--head);min-height:var(--head);
+  padding:0 124px 0 12px;
+  align-items:center;align-content:center;flex-wrap:nowrap;gap:0;
+ }
+ .app .map-tools,.app.detail-open .map-tools{
+  display:flex;align-items:center;justify-content:flex-start;
+  width:auto;max-width:100%;min-width:0;
+  flex-wrap:nowrap;column-gap:6px;row-gap:0;
+ }
+ .app .map-tools>label{flex:0 0 auto;white-space:nowrap}
+ .app .map-tools>.search-picker,.app.detail-open .map-tools>.search-picker{
+  grid-column:auto;
+  width:clamp(80px,11.7vw,145px);min-width:80px;max-width:145px;
+  flex:0 0 auto;
+ }
+ .app .map-tools #swapStations{
+  flex:0 0 32px;width:32px;height:36px;
+ }
+ .app .map-tools .map-actions{
+  display:flex;flex:0 0 auto;align-items:center;gap:6px;min-width:0;
+ }
+ .app .map-tools .map-actions>button{flex:0 0 auto;white-space:nowrap}
+ .app.detail-open .map-header{
+  position:absolute;top:0;left:var(--rr-tablet-side-width);right:0;z-index:70;
+ }
+ .app.folded.detail-open .map-header{left:88px}
+ .app.detail-open .map-area{padding-top:var(--head)}
+ .app.detail-open>.details{
+  height:calc(100% - var(--head));max-height:calc(100% - var(--head));
+  margin-top:var(--head);min-height:0;
+ }
+ /* Preferences retain their existing 112px controls in the top-right
+    rather than blocking the extended From/To masthead with an empty panel. */
+ .app.detail-open>.rr-site-settings{width:112px}
+}
+@media(min-width:751px) and (max-width:990px){
+ .app.detail-open:not(.folded){
+  grid-template-columns:var(--rr-tablet-side-width) minmax(0,1fr) 278px;
+ }
+ .app.folded.detail-open{grid-template-columns:88px minmax(0,1fr) 278px}
+ .app .map-tools,.app.detail-open .map-tools{column-gap:5px}
+ .app .map-tools label{font-size:12px}
+ .app .map-tools>.search-picker,.app.detail-open .map-tools>.search-picker{
+  width:clamp(78px,calc(11.6vw - 19px),105px);
+  min-width:78px;max-width:105px;
+ }
+ .app .map-tools .map-actions{gap:5px}
+ .app .map-tools .map-actions>button{font-size:12px;padding-inline:6px;gap:4px}
+ .app .map-tools .map-actions .rr-action-icon{width:15px;height:15px;flex-basis:15px}
+ .app .map-tools #swapStations{flex-basis:30px;width:30px}
+}
+@media(min-width:751px) and (max-width:870px){
+ .app .map-header{padding-left:8px;padding-right:112px}
+ .app .map-tools,.app.detail-open .map-tools{column-gap:4px}
+ .app .map-tools>.search-picker,.app.detail-open .map-tools>.search-picker{
+  width:76px;min-width:76px;max-width:76px;
+ }
+ .app .map-tools #swapStations{flex-basis:28px;width:28px}
+ .app .map-tools .map-actions{gap:4px}
+ .app .map-tools .map-actions>button{font-size:11.5px;padding-inline:4px;gap:3px}
+ .app .map-tools .map-actions .rr-action-icon{width:14px;height:14px;flex-basis:14px}
+}
+/* The tablet RR logo must not shrink solely because details opened. */
+@media(min-width:751px) and (max-width:1120px){
+ .app.detail-open .longmark img{height:31px}
+}
+@media(min-width:751px) and (max-width:990px){
+ .app.detail-open .longmark img{height:29px}
+}
+/* End v69 tablet alignment. */
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
