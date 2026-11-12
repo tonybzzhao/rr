@@ -1909,6 +1909,20 @@ body{font-size:14.5px}
  }
 }
 /* End v68 full-width copyright footer. */
+
+/* InterCity uses the outlined Mainline badge, while Max stays solid.
+   An inset stroke preserves existing badge measurements at every breakpoint. */
+.service.rr-ic-outline,
+.train-number.rr-ic-outline{
+  background:var(--surface);
+  color:var(--service-color)!important;
+  box-shadow:inset 0 0 0 2px var(--service-color);
+}
+:root[data-theme="dark"] .service.rr-ic-outline,
+:root[data-theme="dark"] .train-number.rr-ic-outline{
+  color:var(--main-deep)!important;
+  box-shadow:inset 0 0 0 2px var(--main-deep);
+}
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -2353,7 +2367,7 @@ function drawBoard(){
   row.type='button';
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
   row.style.setProperty('--service-color',C[t.type]);
-  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(stopStatus(t,t.hereIndex))}</span></span><span class="platform">${t.platforms?.[currentStation]||t.plat||'–'}</span>`;
+  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(stopStatus(t,t.hereIndex))}</span></span><span class="platform">${t.platforms?.[currentStation]||t.plat||'–'}</span>`;
   row.addEventListener('click',()=>chooseTrain(t));
   board.append(row);
  }
@@ -2692,7 +2706,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c};--route-travelled:${rrTraveledColor(c)}">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c};--route-travelled:${rrTraveledColor(c)}">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -3326,7 +3340,7 @@ function renderJourneyResults(){
  for(const j of list.slice(0,journeyShown)){
   const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
   el.style.setProperty('--journey-color',C[j.legs[0].train.type]);
-  const badges=j.legs.map(l=>`<span class="service" style="--service-color:${C[l.train.type]}">${l.train.id}</span>`).join('');
+  const badges=j.legs.map(l=>`<span class="service${l.train.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${C[l.train.type]}">${l.train.id}</span>`).join('');
   const depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx);
   el.innerHTML=`<div class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></div><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
   el.addEventListener('click',()=>chooseJourney(j));board.append(el);
@@ -3375,7 +3389,7 @@ function fillJourneyDetails(j){
  j.legs.forEach((leg,index)=>{
   const t=leg.train,c=C[t.type],stations=t.route.slice(leg.fromIdx,leg.toIdx+1);
   const rows=stations.map(([name,time],i)=>`<div class="stop${name===from?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,leg.fromIdx+i)}</div><button type="button" class="stop-name stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button></div>`).join('');
-  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service" style="--service-color:${c}">${t.id}</span>${rrServiceLabel(t.type)}${statusTag(stopStatus(t,leg.fromIdx))}</h3><div class="leg-ends">${leg.from} → ${leg.to}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${rows}</div>${rrCoachFormation(t,leg.from,leg.to)}</section>`;
+  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${c}">${t.id}</span>${rrServiceLabel(t.type)}${statusTag(stopStatus(t,leg.fromIdx))}</h3><div class="leg-ends">${leg.from} → ${leg.to}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${rows}</div>${rrCoachFormation(t,leg.from,leg.to)}</section>`;
   if(index<j.legs.length-1){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=t.platforms?.[station]||t.plat||'—';
