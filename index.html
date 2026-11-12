@@ -1810,10 +1810,9 @@ body{font-size:14.5px}
 /* End v62 responsive French typography & bilingual logos. */
 
 
-/* v63: when French route details compete for a compact 270-320px panel,
-   keep the existing action button and close control at their full sizes.
-   Two tidy rows are preferable to tiny multi-line title fragments. */
-@media (min-width:751px) and (max-width:1210px), (max-width:370px){
+/* Narrowest phones retain their two-row French details header.
+   Tablets use the same one-row flex treatment as desktop in v70 below. */
+@media(max-width:370px){
  html[lang="fr"] .app .details-head:has(#focusRoute:not([hidden])){
   display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:24px 34px;
   align-content:center;row-gap:0;height:64px;min-height:64px;
@@ -1965,23 +1964,24 @@ body{font-size:14.5px}
  color:var(--on-accent);
 }
 
-/* v69: tablet three-panel alignment. Opening details must not change the
-   left sidebar or its logo. The From/To toolbar occupies the continuous
-   masthead above map and details, as on desktop, not the narrow map column. */
+/* v70: audited tablet layout. One shared EN/FR desktop-style structure.
+   Full-width From/To masthead stays horizontal. The left sidebar and logo
+   never resize when the right details panel is opened. */
 @media(min-width:751px) and (max-width:1260px){
  .app{
   --rr-tablet-side-width:clamp(225px,24vw,290px);
-  --rr-tablet-detail-width:clamp(270px,27vw,345px);
+  --rr-tablet-detail-width:340px;
  }
  .app:not(.folded):not(.detail-open){
   grid-template-columns:var(--rr-tablet-side-width) minmax(0,1fr);
  }
  .app.detail-open:not(.folded){
-  grid-template-columns:var(--rr-tablet-side-width) minmax(0,1fr) var(--rr-tablet-detail-width);
+  grid-template-columns:var(--rr-tablet-side-width) minmax(160px,1fr) var(--rr-tablet-detail-width);
  }
  .app.folded.detail-open{
-  grid-template-columns:88px minmax(0,1fr) var(--rr-tablet-detail-width);
+  grid-template-columns:88px minmax(160px,1fr) var(--rr-tablet-detail-width);
  }
+ /* The From/To band spans map and details, stopping before preferences. */
  .app .map-header{
   box-sizing:border-box;height:var(--head);min-height:var(--head);
   padding:0 124px 0 12px;
@@ -1998,9 +1998,7 @@ body{font-size:14.5px}
   width:clamp(80px,11.7vw,145px);min-width:80px;max-width:145px;
   flex:0 0 auto;
  }
- .app .map-tools #swapStations{
-  flex:0 0 32px;width:32px;height:36px;
- }
+ .app .map-tools #swapStations{flex:0 0 32px;width:32px;height:36px}
  .app .map-tools .map-actions{
   display:flex;flex:0 0 auto;align-items:center;gap:6px;min-width:0;
  }
@@ -2014,15 +2012,45 @@ body{font-size:14.5px}
   height:calc(100% - var(--head));max-height:calc(100% - var(--head));
   margin-top:var(--head);min-height:0;
  }
- /* Preferences retain their existing 112px controls in the top-right
-    rather than blocking the extended From/To masthead with an empty panel. */
  .app.detail-open>.rr-site-settings{width:112px}
+ /* Desktop-style right-panel title for both English and French.
+    No French-only 64px grid, split headline, or floating action row. */
+ .app .details-head{
+  display:flex;box-sizing:border-box;
+  height:var(--rr-subheader-height);min-height:var(--rr-subheader-height);
+  flex:0 0 var(--rr-subheader-height);
+  align-items:center;gap:5px;padding:0 12px 0 9px;
+ }
+ .app .details-head .details-heading{
+  flex:1 1 auto;min-width:0;width:auto;max-width:100%;gap:6px;
+ }
+ .app .details-head .details-heading .rr-action-icon{
+  width:19px;height:19px;flex:0 0 19px;
+ }
+ .app .details-head .details-heading h2{
+  font-size:15px;line-height:1.16;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;hyphens:none;
+ }
+ .app .details-head .details-actions{
+  display:flex;flex:0 0 auto;align-items:center;
+  gap:4px;margin-left:auto;
+ }
+ .app .details-head .details-actions #focusRoute{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:0 6px;height:30px;min-height:30px;
+  font-size:11px;white-space:nowrap;
+ }
+ .app .details-head .details-actions #focusRoute[hidden]{display:none!important}
+ .app .details-head .details-actions #focusRoute .rr-action-icon{
+  width:15px;height:15px;flex:0 0 15px;
+ }
+ /* Existing French descriptions and facility names remain free to wrap
+    inside the details body; only header titles are one line. */
+ .app .details-body{min-width:0;overflow-x:hidden;overflow-y:auto}
+ .app .details-body .fact-row,
+ .app .details-body .journey-leg{min-width:0}
 }
 @media(min-width:751px) and (max-width:990px){
- .app.detail-open:not(.folded){
-  grid-template-columns:var(--rr-tablet-side-width) minmax(0,1fr) 278px;
- }
- .app.folded.detail-open{grid-template-columns:88px minmax(0,1fr) 278px}
  .app .map-tools,.app.detail-open .map-tools{column-gap:5px}
  .app .map-tools label{font-size:12px}
  .app .map-tools>.search-picker,.app.detail-open .map-tools>.search-picker{
@@ -2031,7 +2059,9 @@ body{font-size:14.5px}
  }
  .app .map-tools .map-actions{gap:5px}
  .app .map-tools .map-actions>button{font-size:12px;padding-inline:6px;gap:4px}
- .app .map-tools .map-actions .rr-action-icon{width:15px;height:15px;flex-basis:15px}
+ .app .map-tools .map-actions .rr-action-icon{
+  width:15px;height:15px;flex-basis:15px;
+ }
  .app .map-tools #swapStations{flex-basis:30px;width:30px}
 }
 @media(min-width:751px) and (max-width:870px){
@@ -2042,17 +2072,24 @@ body{font-size:14.5px}
  }
  .app .map-tools #swapStations{flex-basis:28px;width:28px}
  .app .map-tools .map-actions{gap:4px}
- .app .map-tools .map-actions>button{font-size:11.5px;padding-inline:4px;gap:3px}
- .app .map-tools .map-actions .rr-action-icon{width:14px;height:14px;flex-basis:14px}
+ .app .map-tools .map-actions>button{
+  font-size:11.5px;padding-inline:4px;gap:3px;
+ }
+ .app .map-tools .map-actions .rr-action-icon{
+  width:14px;height:14px;flex-basis:14px;
+ }
+ /* When the map column is narrow, keep the legend away from zoom controls. */
+ .app.detail-open .map-legend{
+  bottom:78px;left:8px;right:auto;max-width:calc(100% - 16px);
+ }
 }
-/* The tablet RR logo must not shrink solely because details opened. */
 @media(min-width:751px) and (max-width:1120px){
  .app.detail-open .longmark img{height:31px}
 }
 @media(min-width:751px) and (max-width:990px){
  .app.detail-open .longmark img{height:29px}
 }
-/* End v69 tablet alignment. */
+/* End v70 audited tablet layout. */
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
