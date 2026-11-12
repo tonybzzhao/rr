@@ -1417,7 +1417,7 @@ body{font-size:14.5px}
  color:color-mix(in srgb,var(--service-color) 56%,white);
 }
 :root[data-theme="dark"] .rr-service-logo{
- color:color-mix(in srgb,var(--rr-service-identity-color) 56%,white);
+ color:var(--rr-service-aa-color,var(--rr-service-identity-color));
 }
 :root[data-theme="dark"] .station-fac-link,
 :root[data-theme="dark"] .station-fac-link:hover,
@@ -1910,8 +1910,9 @@ body{font-size:14.5px}
 }
 /* End v68 full-width copyright footer. */
 
-/* InterCity: light timetable outline, heavier detail outline.
-   Keep the original Mainline blue in both themes and preserve badge dimensions. */
+/* IC: 1px timetable outline and 3px train-detail outline. No light
+   background fill in dark mode; use the actual dark panel surface and the
+   closest accessible Mainline-blue shade for text and borders. */
 .service.rr-ic-outline,
 .train-number.rr-ic-outline{
   background:var(--surface);
@@ -1923,12 +1924,16 @@ body{font-size:14.5px}
 .train-number.rr-ic-outline{
   box-shadow:inset 0 0 0 3px var(--service-color);
 }
-/* Original blue is too dark for text on the dark panel (2.41:1).
-   Give IC a light inset field so the original blue remains readable (6.46:1). */
 :root[data-theme="dark"] .service.rr-ic-outline,
 :root[data-theme="dark"] .train-number.rr-ic-outline{
-  background:var(--ink-strong);
-  color:var(--service-color)!important;
+  background:var(--surface);
+  color:var(--rr-aa-main-panel)!important;
+}
+:root[data-theme="dark"] .service.rr-ic-outline{
+  box-shadow:inset 0 0 0 1px var(--rr-aa-main-panel);
+}
+:root[data-theme="dark"] .train-number.rr-ic-outline{
+  box-shadow:inset 0 0 0 3px var(--rr-aa-main-panel);
 }
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
@@ -2235,19 +2240,67 @@ const LABEL_HINTS={"Yuchow Central": [0, -24, "middle"], "Peiting Central": [0, 
 
 const RR_UI_CSS_COLOR=token=>getComputedStyle(document.documentElement).getPropertyValue(token).trim();
 const C={Max:RR_UI_CSS_COLOR('--main'),VIA:RR_UI_CSS_COLOR('--via'),InterCity:RR_UI_CSS_COLOR('--main'),Nightline:RR_UI_CSS_COLOR('--night')};
-function rrReadableRouteLabelColor(color){
+/* For dark-on-light accents on dark backgrounds, retain the exact service
+   colour if it meets WCAG AA for normal text. Otherwise only increase HSL
+   lightness (not hue or saturation), stopping at a 4.52:1 contrast ratio. */
+function rrHexRgb(hex){
+ if(!/^#[0-9a-f]{6}$/i.test(hex))return null;
+ return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
+}
+function rrSrgbLuminance(hex){
+ const values=rrHexRgb(hex);
+ if(!values)return null;
+ const linear=values.map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));
+ return 0.2126*linear[0]+0.7152*linear[1]+0.0722*linear[2];
+}
+function rrContrastRatio(foreground,background){
+ const fg=rrSrgbLuminance(foreground),bg=rrSrgbLuminance(background);
+ if(fg===null||bg===null)return 0;
+ return (Math.max(fg,bg)+0.05)/(Math.min(fg,bg)+0.05);
+}
+function rrHslHex(h,s,l){
+ const a=s*Math.min(l,1-l);
+ const channel=n=>{
+  const k=(n+12*h)%12;
+  return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))));
+ };
+ return '#'+[channel(0),channel(8),channel(4)].map(n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+function rrClosestAAAccent(color,background){
  if(document.documentElement.dataset.theme!=='dark')return color;
- // Dark-mode names must match the railway lines they identify.
- // Forthcoming names follow the actual service line with the minimum
- // lightening needed for small-text contrast; passed names follow the
- // lighter travelled line. Preserve the blue/pink/purple relationships.
- if(Object.values(RR_TRAVELLED_C).includes(color)){
-  return `color-mix(in srgb, ${color} 75%, var(--ink-strong) 25%)`;
+ const rgb=rrHexRgb(color);
+ if(!rgb||!rrHexRgb(background))return color;
+ const minContrast=4.52;
+ if(rrContrastRatio(color,background)>=minContrast)return color;
+ const [r,g,b]=rgb,high=Math.max(r,g,b),low=Math.min(r,g,b),delta=high-low;
+ const lightness=(high+low)/2;
+ const saturation=delta===0?0:delta/(1-Math.abs(2*lightness-1));
+ let hue=0;
+ if(delta!==0){
+  if(high===r)hue=((g-b)/delta)%6;
+  else if(high===g)hue=(b-r)/delta+2;
+  else hue=(r-g)/delta+4;
+  hue=(hue/6+1)%1;
  }
- if(Object.values(C).includes(color)){
-  return `color-mix(in srgb, ${color} 65%, var(--ink-strong) 35%)`;
+ let lower=lightness,upper=1;
+ for(let i=0;i<28;i++){
+  const mid=(lower+upper)/2;
+  if(rrContrastRatio(rrHslHex(hue,saturation,mid),background)>=minContrast)upper=mid;
+  else lower=mid;
  }
- return color;
+ return rrHslHex(hue,saturation,upper);
+}
+/* Service marks and IC outlines share accessible palette tokens, recalculated
+   when the user switches light/dark/system appearance. */
+function rrRefreshAATextAccents(){
+ const surface=RR_UI_CSS_COLOR('--surface'),root=document.documentElement;
+ root.style.setProperty('--rr-aa-main-panel',rrClosestAAAccent(C.Max,surface));
+ root.style.setProperty('--rr-aa-via-panel',rrClosestAAAccent(C.VIA,surface));
+ root.style.setProperty('--rr-aa-night-panel',rrClosestAAAccent(C.Nightline,surface));
+}
+rrRefreshAATextAccents();
+function rrReadableRouteLabelColor(color){
+ return rrClosestAAAccent(color,RR_UI_CSS_COLOR('--map'));
 }
 const RR_TRAVELLED_C=Object.freeze({
  [C.Max]:RR_UI_CSS_COLOR('--travel-main'),[C.VIA]:RR_UI_CSS_COLOR('--travel-via'),
@@ -2260,7 +2313,9 @@ function rrDetailsHeading(title,mark='rr-ui-train-information'){
 }
 function rrServiceLabel(type){
  const c=C[type]||RR_UI_CSS_COLOR('--ink-strong');
- return `<span class="rr-service-identity" style="--rr-service-identity-color:${c}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type)}</span></span>`;
+ const contrastToken=({Max:'--rr-aa-main-panel',InterCity:'--rr-aa-main-panel',VIA:'--rr-aa-via-panel',Nightline:'--rr-aa-night-panel'})[type];
+ const readable=contrastToken?`var(${contrastToken})`:c;
+ return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type)}</span></span>`;
 }
 function isHighSpeed(train){return train.type==='Max'||train.type==='VIA'}
 const P=GRAPH.pts, E=GRAPH.edges;
@@ -3486,6 +3541,7 @@ function rrSetAppearance(selected,persist=false){
  document.documentElement.dataset.appearance=choice;
  document.documentElement.dataset.theme=dark?'dark':'light';
  document.documentElement.style.colorScheme=dark?'dark':'light';
+ rrRefreshAATextAccents();
  rrAppearanceToggle.setAttribute('aria-label','Appearance: '+choice[0].toUpperCase()+choice.slice(1));
  rrAppearanceToggle.title='Appearance: '+choice[0].toUpperCase()+choice.slice(1);
  rrAppearanceMenu.querySelectorAll('[data-appearance-choice]').forEach(button=>{
