@@ -2557,7 +2557,7 @@ const RR_FACILITY_LABEL={
  'priority-seat':'Priority seats','quiet':'Quiet zone','family':'Family zone',
  'toddler':'Parent-and-child compartment','baby':'Baby changing',
  'cycle':'Bicycle spaces','luggage':'Luggage','cafe':'Café','restaurant':'Dining',
- 'sleeper':'Sleeper','deluxe-sleeper':'First Class sleeper','first':'First Class seats','couchette':'Couchette',
+ 'sleeper':'Sleeper','deluxe-sleeper':'First Sleeper','first':'First Class seats','couchette':'Couchette',
  'shower':'Shower','reserved-seat':'Reserved seats','cabin':'Sleeper cabin',
  'power':'Power sockets','wifi':'Wi-Fi'
 };
@@ -2573,7 +2573,7 @@ function rrIcon(name,cls='rr-picto'){
  return `<svg class="${cls}" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#rr-picto-${name}"></use></svg>`;
 }
 function rrRole(t,car){
- if(car.role==='First sleeper')return 'First Class sleeper';if(car.role==='First')return 'First Class';
+ if(car.role==='First sleeper')return 'First Sleeper';if(car.role==='First')return 'First Class';
  return ({Standard:'Standard',Café:'Café',Dining:'Dining',
   Seated:'Seated accommodation',Couchette:'Couchette',Sleeper:'Sleeper'})[car.role]||car.role;
 }
@@ -3626,7 +3626,7 @@ const rrFrenchExact=Object.freeze({
  'Coach formation & on-board facilities':'Composition du train et services à bord',
  'Train formation':'Composition du train',
  'Standard':'Classe Standard','First Class':'Première classe',
- 'First Class seats':'Places de première classe','First Class sleeper':'Voiture-lits Première','First sleeper':'Voiture-lits Première',
+ 'First Class seats':'Places de première classe','First Sleeper':'Voiture-lits Première','First sleeper':'Voiture-lits Première',
  'Seated accommodation':'Voiture à places assises',
  'Dining':'Voiture-restaurant','Café':'Café','Quiet Zone':'Espace calme',
  'Quiet zone':'Espace calme','Family Zone':'Espace famille','Family zone':'Espace famille',
@@ -3709,7 +3709,7 @@ function rrFrenchText(source){
    (_,high,direct)=>'Aucun trajet'+(high?' à grande vitesse':'')+(direct?' sans correspondance':'')+' trouvé entre ces gares dans les horaires disponibles.')
   .replace(/\bRR InterCity\b/g,'RR Intercités')
   .replace(/\bRR Nightline\b/g,'RR Nocturne')
-  .replace(/\bFirst Class sleeper\b/g,'Voiture-lits Première')
+  .replace(/\bFirst Sleeper\b/g,'Voiture-lits Première')
   .replace(/\bFirst Class\b/g,'Première classe')
   .replace(/\bPower car\b/g,'Motrice')
   .replace(/\bLocomotive\b/g,'Motrice');
