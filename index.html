@@ -35,8 +35,13 @@
 /* RR Info palette: all UI colours are defined here rather than per component. */
 :root{
  /* Operators, travelled paths, railway lines and first class. */
- --main:#0057B8;--via:#D162C0;--night:#394779;--rr:#00783C;
- --travel-main:#4D8EE9;--travel-via:#F08ADF;--travel-night:#7080B1;
+ /* Immutable source colours are used only to identify service types in data. */
+ --rr-base-main:#0057B8;--rr-base-via:#D162C0;--rr-base-night:#394779;
+ --rr-base-travel-main:#4D8EE9;--rr-base-travel-via:#F08ADF;--rr-base-travel-night:#7080B1;
+ /* Exactly one visible colour per service in each appearance.
+    Light VIA and travelled shades are AA-adjusted for text on light surfaces. */
+ --main:var(--rr-base-main);--via:#C53BB0;--night:var(--rr-base-night);--rr:#00783C;
+ --travel-main:#2373E4;--travel-via:#D41BB6;--travel-night:#6374AA;
  --rail:#9DC8EE;--first-class:#FAC800;--first-class-ink:#23364E;--on-accent:#FFFFFF;
  /* Text: primary neutral, strong navy, softer navy, grey and two subdued levels. */
  --ink:#1D1D1D;--ink-strong:#23364E;--ink-soft:#34495E;
@@ -1401,6 +1406,9 @@ body{font-size:14.5px}
 /* RR Info appearance: one semantic dark palette, not one-off component colours.
    Official service, travelled-route and First Class colours remain untouched. */
 :root[data-theme="dark"]{
+ /* One-to-one dark equivalents for the six light-mode railway accents. */
+ --main:#1584FF;--via:#D162C0;--night:#7384BD;--rr:#009A4D;
+ --travel-main:#77A9ED;--travel-via:#F2A6E6;--travel-night:#929EC3;
  --ink:#EDF1F6;--ink-strong:#F6F8FA;--ink-soft:#D7E1EC;
  --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#95A7BA;
  --surface:#181F29;--map:#111923;--hair:#354353;
@@ -1411,7 +1419,6 @@ body{font-size:14.5px}
  --rail:#56728D;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
  --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
- --service-text-max:#96C7FF;--service-text-via:#F6AFE8;--service-text-night:#C0CAF6;
 }
 :root[data-theme="dark"] .rr-service-logo{
  color:var(--rr-service-aa-color,var(--rr-service-identity-color));
@@ -1924,13 +1931,13 @@ body{font-size:14.5px}
 :root[data-theme="dark"] .service.rr-ic-outline,
 :root[data-theme="dark"] .train-number.rr-ic-outline{
   background:var(--surface);
-  color:var(--rr-aa-main-panel)!important;
+  color:var(--main)!important;
 }
 :root[data-theme="dark"] .service.rr-ic-outline{
-  box-shadow:inset 0 0 0 1px var(--rr-aa-main-panel);
+  box-shadow:inset 0 0 0 1px var(--main);
 }
 :root[data-theme="dark"] .train-number.rr-ic-outline{
-  box-shadow:inset 0 0 0 3px var(--rr-aa-main-panel);
+  box-shadow:inset 0 0 0 3px var(--main);
 }
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
@@ -2236,94 +2243,42 @@ const LABELS=["Yuchow Central","Peiting Central","North Chungsia","Yenchia Main"
 const LABEL_HINTS={"Yuchow Central": [0, -24, "middle"], "Peiting Central": [0, 26, "middle"], "North Chungsia": [0, -24, "middle"], "Yenchia Main": [0, -24, "middle"], "Somerfield St John": [0, -24, "middle"], "Batavie": [0, -22, "middle"], "Touraine-Central": [0, -24, "middle"], "Prinsburg Central": [18, 0, "start"], "Cranford Central": [0, 26, "middle"], "Amptonside Central": [0, -24, "middle"], "Farinport Central": [-20, 0, "end"], "Havenbolme Hbf": [-18, 0, "end"], "Binchester": [0, 24, "middle"], "Mapleriver Central": [0, 28, "middle"], "Grafton Central": [0, 24, "middle"], "Ribeauvillé": [0, 26, "middle"], "Brunswick": [18, 0, "start"], "Bayarfort": [18, 0, "start"], "Vindelle-Central": [0, 26, "middle"], "Melbridge Central": [0, 28, "middle"], "Victoria Central": [18, 0, "start"], "Southend": [0, 28, "middle"], "Songqiao Airport": [18, 0, "start"], "Atlantic Airport": [18, 0, "start"]};
 
 const RR_UI_CSS_COLOR=token=>getComputedStyle(document.documentElement).getPropertyValue(token).trim();
-const C={Max:RR_UI_CSS_COLOR('--main'),VIA:RR_UI_CSS_COLOR('--via'),InterCity:RR_UI_CSS_COLOR('--main'),Nightline:RR_UI_CSS_COLOR('--night')};
-/* For dark-on-light accents on dark backgrounds, retain the exact service
-   colour if it meets WCAG AA for normal text. Otherwise only increase HSL
-   lightness (not hue or saturation), stopping at a 4.52:1 contrast ratio. */
-function rrHexRgb(hex){
- if(!/^#[0-9a-f]{6}$/i.test(hex))return null;
- return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
-}
-function rrSrgbLuminance(hex){
- const values=rrHexRgb(hex);
- if(!values)return null;
- const linear=values.map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4));
- return 0.2126*linear[0]+0.7152*linear[1]+0.0722*linear[2];
-}
-function rrContrastRatio(foreground,background){
- const fg=rrSrgbLuminance(foreground),bg=rrSrgbLuminance(background);
- if(fg===null||bg===null)return 0;
- return (Math.max(fg,bg)+0.05)/(Math.min(fg,bg)+0.05);
-}
-function rrHslHex(h,s,l){
- const a=s*Math.min(l,1-l);
- const channel=n=>{
-  const k=(n+12*h)%12;
-  return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1))));
- };
- return '#'+[channel(0),channel(8),channel(4)].map(n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();
-}
-function rrClosestAAAccent(color,background){
- if(document.documentElement.dataset.theme!=='dark')return color;
- const rgb=rrHexRgb(color);
- if(!rgb||!rrHexRgb(background))return color;
- const minContrast=4.52;
- if(rrContrastRatio(color,background)>=minContrast)return color;
- const [r,g,b]=rgb,high=Math.max(r,g,b),low=Math.min(r,g,b),delta=high-low;
- const lightness=(high+low)/2;
- const saturation=delta===0?0:delta/(1-Math.abs(2*lightness-1));
- let hue=0;
- if(delta!==0){
-  if(high===r)hue=((g-b)/delta)%6;
-  else if(high===g)hue=(b-r)/delta+2;
-  else hue=(r-g)/delta+4;
-  hue=(hue/6+1)%1;
- }
- let lower=lightness,upper=1;
- for(let i=0;i<28;i++){
-  const mid=(lower+upper)/2;
-  if(rrContrastRatio(rrHslHex(hue,saturation,mid),background)>=minContrast)upper=mid;
-  else lower=mid;
- }
- return rrHslHex(hue,saturation,upper);
-}
-/* Service marks and IC outlines share accessible palette tokens, recalculated
-   when the user switches light/dark/system appearance. */
-function rrRefreshAATextAccents(){
- const surface=RR_UI_CSS_COLOR('--surface'),root=document.documentElement;
- root.style.setProperty('--rr-aa-main-panel',rrClosestAAAccent(C.Max,surface));
- root.style.setProperty('--rr-aa-via-panel',rrClosestAAAccent(C.VIA,surface));
- root.style.setProperty('--rr-aa-night-panel',rrClosestAAAccent(C.Nightline,surface));
-}
-rrRefreshAATextAccents();
+const C={Max:RR_UI_CSS_COLOR('--rr-base-main'),VIA:RR_UI_CSS_COLOR('--rr-base-via'),InterCity:RR_UI_CSS_COLOR('--rr-base-main'),Nightline:RR_UI_CSS_COLOR('--rr-base-night')};
+/* The actual light and dark accent colours are defined once in CSS :root.
+   No on-the-fly tinting: every consumer uses the same per-system token. */
 /* One accessible accent per service, shared by both panels and the map.
    Contrast is calculated on the lighter dark panel (the stricter background);
    travelled/passed colours remain an intentionally lighter separate palette. */
 function rrServiceAccentToken(type){
- return ({Max:'--rr-aa-main-panel',InterCity:'--rr-aa-main-panel',
-  VIA:'--rr-aa-via-panel',Nightline:'--rr-aa-night-panel'})[type]||null;
+ return ({Max:'--main',InterCity:'--main',VIA:'--via',Nightline:'--night'})[type]||null;
 }
 function rrCssServiceAccent(type){
  const token=rrServiceAccentToken(type);
  return token?`var(${token})`:RR_UI_CSS_COLOR('--ink-strong');
 }
+function rrCssTravelAccent(type){
+ return `var(${({Max:'--travel-main',InterCity:'--travel-main',
+  VIA:'--travel-via',Nightline:'--travel-night'})[type]||'--travel-main'})`;
+}
 function rrVisibleServiceAccent(color){
- if(document.documentElement.dataset.theme!=='dark')return color;
- if(color===C.Max)return RR_UI_CSS_COLOR('--rr-aa-main-panel');
- if(color===C.VIA)return RR_UI_CSS_COLOR('--rr-aa-via-panel');
- if(color===C.Nightline)return RR_UI_CSS_COLOR('--rr-aa-night-panel');
+ // Map a source colour to exactly the same themed colour used by badges,
+ // logos, buttons and call-point diagrams.
+ if(color===C.Max)return RR_UI_CSS_COLOR('--main');
+ if(color===C.VIA)return RR_UI_CSS_COLOR('--via');
+ if(color===C.Nightline)return RR_UI_CSS_COLOR('--night');
+ if(color===RR_TRAVELLED_C[C.Max])return RR_UI_CSS_COLOR('--travel-main');
+ if(color===RR_TRAVELLED_C[C.VIA])return RR_UI_CSS_COLOR('--travel-via');
+ if(color===RR_TRAVELLED_C[C.Nightline])return RR_UI_CSS_COLOR('--travel-night');
  return color;
 }
 function rrReadableRouteLabelColor(color){
- // Past stations remain in their existing lighter travelled-route shades.
- if(document.documentElement.dataset.theme==='dark'&&Object.values(RR_TRAVELLED_C).includes(color)){
-  return `color-mix(in srgb, ${color} 75%, var(--ink-strong) 25%)`;
- }
+ // Passed labels keep their separate, lighter travelled accent,
+ // now identical to the corresponding route stroke within each mode.
  return rrVisibleServiceAccent(color);
 }
 const RR_TRAVELLED_C=Object.freeze({
- [C.Max]:RR_UI_CSS_COLOR('--travel-main'),[C.VIA]:RR_UI_CSS_COLOR('--travel-via'),
- [C.Nightline]:RR_UI_CSS_COLOR('--travel-night')
+ [C.Max]:RR_UI_CSS_COLOR('--rr-base-travel-main'),[C.VIA]:RR_UI_CSS_COLOR('--rr-base-travel-via'),
+ [C.Nightline]:RR_UI_CSS_COLOR('--rr-base-travel-night')
 });
 function serviceName(type){return ({Max:'RR Max',VIA:'RR Via',InterCity:'RR InterCity',Nightline:'RR Nightline'})[type]||('RR '+type)}
 function rrDetailsHeading(title,mark='rr-ui-train-information'){
@@ -2787,7 +2742,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrTraveledColor(c)}">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrCssTravelAccent(t.type)}">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -2837,7 +2792,7 @@ function drawRoute(){
    // matching node elsewhere on a route that revisits the same tracks.
    routeWorld.append(
     se('path',{d:makePath(selectedPath),class:'rail-under'}),
-    se('path',{d:makePath(selectedPath.slice(0,boundary+1)),class:'route-line',stroke:rrTraveledColor(routeColor)}),
+    se('path',{d:makePath(selectedPath.slice(0,boundary+1)),class:'route-line',stroke:rrVisibleServiceAccent(rrTraveledColor(routeColor))}),
     se('path',{d:makePath(selectedPath.slice(boundary)),class:'route-line',stroke:rrVisibleServiceAccent(routeColor)})
    );
    return;
@@ -2984,7 +2939,7 @@ function appendInterchangeDot(group,x,y,r,marker){
  group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:RR_UI_CSS_COLOR('--surface'),'pointer-events':'none'}));
  if(colors.length<2){
   group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'none',
-   stroke:colors[0]||C.Max,'stroke-width':edge,'pointer-events':'none'}));
+   stroke:colors[0]||rrVisibleServiceAccent(C.Max),'stroke-width':edge,'pointer-events':'none'}));
   return;
  }
  const a=marker.startAngle;
@@ -3561,7 +3516,6 @@ function rrSetAppearance(selected,persist=false){
  document.documentElement.dataset.appearance=choice;
  document.documentElement.dataset.theme=dark?'dark':'light';
  document.documentElement.style.colorScheme=dark?'dark':'light';
- rrRefreshAATextAccents();
  rrAppearanceToggle.setAttribute('aria-label','Appearance: '+choice[0].toUpperCase()+choice.slice(1));
  rrAppearanceToggle.title='Appearance: '+choice[0].toUpperCase()+choice.slice(1);
  rrAppearanceMenu.querySelectorAll('[data-appearance-choice]').forEach(button=>{
