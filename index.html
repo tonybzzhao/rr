@@ -1406,15 +1406,16 @@ body{font-size:14.5px}
  --surface:#181F29;--map:#111923;--hair:#354353;
  --stroke:#4E6175;--stroke-strong:#697D93;--stroke-soft:#324050;
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
- --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
+ --main-hover:#276EBB;--main-deep:var(--rr-aa-main-panel);--accent-stroke:#7C9CBE;
  --shadow:#00000066;--focus-ring:#8ABDF74A;
  --rail:#56728D;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
  --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
  --service-text-max:#96C7FF;--service-text-via:#F6AFE8;--service-text-night:#C0CAF6;
 }
-:root[data-theme="dark"] .service{
- color:color-mix(in srgb,var(--service-color) 56%,white);
+:root[data-theme="dark"] .service:not(.rr-ic-outline),
+:root[data-theme="dark"] .train-number:not(.rr-ic-outline){
+ color:var(--surface)!important;
 }
 :root[data-theme="dark"] .rr-service-logo{
  color:var(--rr-service-aa-color,var(--rr-service-identity-color));
@@ -1935,6 +1936,36 @@ body{font-size:14.5px}
 :root[data-theme="dark"] .train-number.rr-ic-outline{
   box-shadow:inset 0 0 0 3px var(--rr-aa-main-panel);
 }
+
+/* Dark-mode RR service colours: identical AA accent across the two panels,
+   highlighted routes, selected station names, and the RR service symbol.
+   Passed routes intentionally keep the established lighter travelled palette. */
+:root[data-theme="dark"] .board-tab.active{
+ color:var(--rr-aa-main-panel);
+ border-bottom-color:var(--rr-aa-main-panel);
+}
+:root[data-theme="dark"] .station-fac-link,
+:root[data-theme="dark"] .station-fac-link:hover,
+:root[data-theme="dark"] .station-info-button{
+ color:var(--rr-aa-main-panel);
+}
+:root[data-theme="dark"] .picker-option[aria-selected="true"],
+:root[data-theme="dark"] .search-picker .picker-option[aria-selected="true"]{
+ border-left-color:var(--rr-aa-main-panel);
+}
+:root[data-theme="dark"] .direct-filter input{accent-color:var(--rr-aa-main-panel)}
+:root[data-theme="dark"] .map-tools #trace,
+:root[data-theme="dark"] .map-tools .map-actions #trace{
+ background:var(--rr-aa-main-panel);
+ border-color:var(--rr-aa-main-panel);
+ color:var(--surface);
+}
+:root[data-theme="dark"] .map-tools #trace:hover,
+:root[data-theme="dark"] .map-tools .map-actions #trace:hover{
+ background:var(--rr-aa-main-panel);
+ border-color:var(--rr-aa-main-panel);
+ color:var(--surface);
+}
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -2299,13 +2330,30 @@ function rrRefreshAATextAccents(){
  root.style.setProperty('--rr-aa-night-panel',rrClosestAAAccent(C.Nightline,surface));
 }
 rrRefreshAATextAccents();
+/* One accessible accent per service, shared by both panels and the map.
+   Contrast is calculated on the lighter dark panel (the stricter background);
+   travelled/passed colours remain an intentionally lighter separate palette. */
+function rrServiceAccentToken(type){
+ return ({Max:'--rr-aa-main-panel',InterCity:'--rr-aa-main-panel',
+  VIA:'--rr-aa-via-panel',Nightline:'--rr-aa-night-panel'})[type]||null;
+}
+function rrCssServiceAccent(type){
+ const token=rrServiceAccentToken(type);
+ return token?`var(${token})`:RR_UI_CSS_COLOR('--ink-strong');
+}
+function rrVisibleServiceAccent(color){
+ if(document.documentElement.dataset.theme!=='dark')return color;
+ if(color===C.Max)return RR_UI_CSS_COLOR('--rr-aa-main-panel');
+ if(color===C.VIA)return RR_UI_CSS_COLOR('--rr-aa-via-panel');
+ if(color===C.Nightline)return RR_UI_CSS_COLOR('--rr-aa-night-panel');
+ return color;
+}
 function rrReadableRouteLabelColor(color){
- // Preserve the existing lighter, already-travelled station labels.
- // Only forthcoming labels need the minimum AA adjustment to their accent.
+ // Past stations remain in their existing lighter travelled-route shades.
  if(document.documentElement.dataset.theme==='dark'&&Object.values(RR_TRAVELLED_C).includes(color)){
   return `color-mix(in srgb, ${color} 75%, var(--ink-strong) 25%)`;
  }
- return rrClosestAAAccent(color,RR_UI_CSS_COLOR('--map'));
+ return rrVisibleServiceAccent(color);
 }
 const RR_TRAVELLED_C=Object.freeze({
  [C.Max]:RR_UI_CSS_COLOR('--travel-main'),[C.VIA]:RR_UI_CSS_COLOR('--travel-via'),
@@ -2318,7 +2366,7 @@ function rrDetailsHeading(title,mark='rr-ui-train-information'){
 }
 function rrServiceLabel(type){
  const c=C[type]||RR_UI_CSS_COLOR('--ink-strong');
- const contrastToken=({Max:'--rr-aa-main-panel',InterCity:'--rr-aa-main-panel',VIA:'--rr-aa-via-panel',Nightline:'--rr-aa-night-panel'})[type];
+ const contrastToken=rrServiceAccentToken(type);
  const readable=contrastToken?`var(${contrastToken})`:c;
  return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type)}</span></span>`;
 }
@@ -2433,7 +2481,7 @@ function drawBoard(){
   const row=document.createElement('button');
   row.type='button';
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
-  row.style.setProperty('--service-color',C[t.type]);
+  row.style.setProperty('--service-color',rrCssServiceAccent(t.type));
   row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(stopStatus(t,t.hereIndex))}</span></span><span class="platform">${t.platforms?.[currentStation]||t.plat||'–'}</span>`;
   row.addEventListener('click',()=>chooseTrain(t));
   board.append(row);
@@ -2773,7 +2821,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${c}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c};--route-travelled:${rrTraveledColor(c)}">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${t.platforms?.[currentStation]||t.plat||'—'}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrTraveledColor(c)}">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -2824,7 +2872,7 @@ function drawRoute(){
    routeWorld.append(
     se('path',{d:makePath(selectedPath),class:'rail-under'}),
     se('path',{d:makePath(selectedPath.slice(0,boundary+1)),class:'route-line',stroke:rrTraveledColor(routeColor)}),
-    se('path',{d:makePath(selectedPath.slice(boundary)),class:'route-line',stroke:routeColor})
+    se('path',{d:makePath(selectedPath.slice(boundary)),class:'route-line',stroke:rrVisibleServiceAccent(routeColor)})
    );
    return;
   }
@@ -2833,7 +2881,7 @@ function drawRoute(){
  if(!selectedJourney||segments.length<2){
   for(const {path,color} of segments){if(path.length<2)continue;
    routeWorld.append(se('path',{d:makePath(path),class:'rail-under'}),
-    se('path',{d:makePath(path),class:'route-line',stroke:color}));}
+    se('path',{d:makePath(path),class:'route-line',stroke:rrVisibleServiceAccent(color)}));}
   return;
  }
  rrJourneyEdges=rrJourneyEdgeIndex(segments);
@@ -2843,7 +2891,7 @@ function drawRoute(){
   const a=P[edge.a],b=P[edge.b],d=`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`;
   back.push(se('path',{d,class:'rail-under'}));
   const n=edge.colors.length;
-  if(n===1){coloured.push(se('path',{d,class:'route-line',stroke:edge.colors[0]}));continue;}
+  if(n===1){coloured.push(se('path',{d,class:'route-line',stroke:rrVisibleServiceAccent(edge.colors[0])}));continue;}
   // One full-width stroke, split into adjacent, equal-width colour bands.
   // Unlike independently offset short segments, a perpendicular hard-stop
   // gradient has no overlapping round caps or zigzag seams at graph nodes.
@@ -2856,12 +2904,12 @@ function drawRoute(){
   for(let i=0;i<n;i++){
    const color=edge.colors[i];
    const start=100*i/n,end=100*(i+1)/n;
-   gradient.append(se('stop',{offset:`${start}%`,'stop-color':color}),
-    se('stop',{offset:`${end}%`,'stop-color':color}));
+   gradient.append(se('stop',{offset:`${start}%`,'stop-color':rrVisibleServiceAccent(color)}),
+    se('stop',{offset:`${end}%`,'stop-color':rrVisibleServiceAccent(color)}));
   }
   gradients.append(gradient);
   coloured.push(se('path',{d,class:'route-line',stroke:`url(#${id})`,
-   'data-shared-colors':edge.colors.join(',')}));
+   'data-shared-colors':edge.colors.map(rrVisibleServiceAccent).join(',')}));
  }
  routeWorld.append(gradients,...back,...coloured);
 }
@@ -2966,7 +3014,7 @@ function journeyInterchangeMarkers(journey){
 // Draw two open, 180-degree strokes so the white centre has no dividing line.
 // Both strokes sit within the existing station-dot outer diameter.
 function appendInterchangeDot(group,x,y,r,marker){
- const colors=marker.colors,edge=2,innerRadius=r-edge/2;
+ const colors=marker.colors.map(rrVisibleServiceAccent),edge=2,innerRadius=r-edge/2;
  group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:RR_UI_CSS_COLOR('--surface'),'pointer-events':'none'}));
  if(colors.length<2){
   group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'none',
@@ -2985,6 +3033,7 @@ function appendInterchangeDot(group,x,y,r,marker){
 }
 // The translucent current-station halo uses the same angular split as the dot.
 function appendStationDisc(group,x,y,r,colors,opacity=1,startAngle=Math.PI/2){
+ colors=colors.map(rrVisibleServiceAccent);
  const attrs={'pointer-events':'none'};
  if(opacity!==1)attrs['fill-opacity']=opacity;
  if(colors.length===1){
@@ -3026,8 +3075,8 @@ function drawMap(){
    const mixedServiceInterchange=transferMarker?.colors.length>1;
    selectedLabelColors.set(s.name,mixedServiceInterchange?RR_UI_CSS_COLOR('--ink'):rrReadableRouteLabelColor(activeColors.at(-1)));
   }
-  if(activeColors.length)g.setAttribute('data-service-colors',activeColors.join(','));
-  if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.join(','));
+  if(activeColors.length)g.setAttribute('data-service-colors',activeColors.map(rrVisibleServiceAccent).join(','));
+  if(transferMarker)g.setAttribute('data-interchange-colors',transferMarker.colors.map(rrVisibleServiceAccent).join(','));
   // Interchange stroke and current-station halo meet their actual leg's line.
   if(current){
    const markerColors=activeColors.length?activeColors:[C.Max];
@@ -3406,8 +3455,8 @@ function renderJourneyResults(){
  if(!list.length){board.innerHTML=`<div class="empty">No ${$('highSpeedOnly').checked?'high-speed ':''}${onlyDirect?'direct ':''}services found between these stations in the current timetable.</div>`;return}
  for(const j of list.slice(0,journeyShown)){
   const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
-  el.style.setProperty('--journey-color',C[j.legs[0].train.type]);
-  const badges=j.legs.map(l=>`<span class="service${l.train.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${C[l.train.type]}">${l.train.id}</span>`).join('');
+  el.style.setProperty('--journey-color',rrCssServiceAccent(j.legs[0].train.type));
+  const badges=j.legs.map(l=>`<span class="service${l.train.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(l.train.type)}">${l.train.id}</span>`).join('');
   const depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx);
   el.innerHTML=`<div class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></div><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
   el.addEventListener('click',()=>chooseJourney(j));board.append(el);
@@ -3456,7 +3505,7 @@ function fillJourneyDetails(j){
  j.legs.forEach((leg,index)=>{
   const t=leg.train,c=C[t.type],stations=t.route.slice(leg.fromIdx,leg.toIdx+1);
   const rows=stations.map(([name,time],i)=>`<div class="stop${name===from?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,leg.fromIdx+i)}</div><button type="button" class="stop-name stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button></div>`).join('');
-  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${c}">${t.id}</span>${rrServiceLabel(t.type)}${statusTag(stopStatus(t,leg.fromIdx))}</h3><div class="leg-ends">${leg.from} → ${leg.to}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${c}">${rows}</div>${rrCoachFormation(t,leg.from,leg.to)}</section>`;
+  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)}">${t.id}</span>${rrServiceLabel(t.type)}${statusTag(stopStatus(t,leg.fromIdx))}</h3><div class="leg-ends">${leg.from} → ${leg.to}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)}">${rows}</div>${rrCoachFormation(t,leg.from,leg.to)}</section>`;
   if(index<j.legs.length-1){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=t.platforms?.[station]||t.plat||'—';
@@ -3555,7 +3604,7 @@ function rrSetAppearance(selected,persist=false){
  const themeMeta=document.querySelector('meta[name="theme-color"]');
  if(themeMeta)themeMeta.content=RR_UI_CSS_COLOR('--surface');
  if(persist){try{localStorage.setItem(rrAppearanceKey,choice)}catch(_){}}
- if(W&&H)drawMap(); // Refresh inline SVG station fills and selected label contrast.
+ if(W&&H){drawRoute();drawMap()} // Refresh all map route strokes and station colours.
 }
 rrAppearanceToggle.addEventListener('click',()=>{
  rrCloseLanguage();
