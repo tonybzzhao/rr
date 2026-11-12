@@ -2300,6 +2300,11 @@ function rrRefreshAATextAccents(){
 }
 rrRefreshAATextAccents();
 function rrReadableRouteLabelColor(color){
+ // Preserve the existing lighter, already-travelled station labels.
+ // Only forthcoming labels need the minimum AA adjustment to their accent.
+ if(document.documentElement.dataset.theme==='dark'&&Object.values(RR_TRAVELLED_C).includes(color)){
+  return `color-mix(in srgb, ${color} 75%, var(--ink-strong) 25%)`;
+ }
  return rrClosestAAAccent(color,RR_UI_CSS_COLOR('--map'));
 }
 const RR_TRAVELLED_C=Object.freeze({
