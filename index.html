@@ -1406,16 +1406,12 @@ body{font-size:14.5px}
  --surface:#181F29;--map:#111923;--hair:#354353;
  --stroke:#4E6175;--stroke-strong:#697D93;--stroke-soft:#324050;
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
- --main-hover:#276EBB;--main-deep:var(--rr-aa-main-panel);--accent-stroke:#7C9CBE;
+ --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
  --shadow:#00000066;--focus-ring:#8ABDF74A;
  --rail:#56728D;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
  --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
  --service-text-max:#96C7FF;--service-text-via:#F6AFE8;--service-text-night:#C0CAF6;
-}
-:root[data-theme="dark"] .service:not(.rr-ic-outline),
-:root[data-theme="dark"] .train-number:not(.rr-ic-outline){
- color:var(--surface)!important;
 }
 :root[data-theme="dark"] .rr-service-logo{
  color:var(--rr-service-aa-color,var(--rr-service-identity-color));
@@ -1935,36 +1931,6 @@ body{font-size:14.5px}
 }
 :root[data-theme="dark"] .train-number.rr-ic-outline{
   box-shadow:inset 0 0 0 3px var(--rr-aa-main-panel);
-}
-
-/* Dark-mode RR service colours: identical AA accent across the two panels,
-   highlighted routes, selected station names, and the RR service symbol.
-   Passed routes intentionally keep the established lighter travelled palette. */
-:root[data-theme="dark"] .board-tab.active{
- color:var(--rr-aa-main-panel);
- border-bottom-color:var(--rr-aa-main-panel);
-}
-:root[data-theme="dark"] .station-fac-link,
-:root[data-theme="dark"] .station-fac-link:hover,
-:root[data-theme="dark"] .station-info-button{
- color:var(--rr-aa-main-panel);
-}
-:root[data-theme="dark"] .picker-option[aria-selected="true"],
-:root[data-theme="dark"] .search-picker .picker-option[aria-selected="true"]{
- border-left-color:var(--rr-aa-main-panel);
-}
-:root[data-theme="dark"] .direct-filter input{accent-color:var(--rr-aa-main-panel)}
-:root[data-theme="dark"] .map-tools #trace,
-:root[data-theme="dark"] .map-tools .map-actions #trace{
- background:var(--rr-aa-main-panel);
- border-color:var(--rr-aa-main-panel);
- color:var(--surface);
-}
-:root[data-theme="dark"] .map-tools #trace:hover,
-:root[data-theme="dark"] .map-tools .map-actions #trace:hover{
- background:var(--rr-aa-main-panel);
- border-color:var(--rr-aa-main-panel);
- color:var(--surface);
 }
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
