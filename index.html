@@ -3592,6 +3592,31 @@ function searchJourneys(autoSelect=false){
  const first=journeyResults.find(j=>(!query.directOnly||j.change===0)&&(!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train))));
  if(autoSelect&&first)chooseJourney(first);
 }
+// Filters work immediately on the last submitted station pair. Changing the
+// From/To form still requires Find trains before results switch to a new route.
+function refreshJourneyFilters(){
+ if(!appliedJourneyQuery)return;
+ const query=appliedJourneyQuery;
+ query.directOnly=$('directOnly').checked;
+ query.highSpeedOnly=$('highSpeedOnly').checked;
+ journeyResults=findJourneys(query.from,query.to,query.highSpeedOnly);
+ journeyShown=12;
+ const previous=selectedJourney;
+ const stillAvailable=previous&&journeyResults.find(j=>
+  j.key===previous.key&&(!query.directOnly||j.change===0)&&
+  (!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train)))
+ );
+ if(previous&&!stillAvailable){
+  selectedJourney=null;selectedTrain=null;selectedPath=[];selectedLegPaths=[];
+  selectedNames=[query.from,query.to];manualTrace=false;
+  routeWorld.replaceChildren();
+  rrDetailsHeading('Journey details','rr-ui-info');
+  detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
+  $('focusRoute').hidden=true;app.classList.remove('detail-open');
+  drawMap();requestAnimationFrame(resize);
+ }else if(stillAvailable)selectedJourney=stillAvailable;
+ renderJourneyResults();board.scrollTop=0;
+}
 function getSegmentPath(t,a,b){
  const start=t.route.findIndex(p=>p[0]===a),end=t.route.findIndex(p=>p[0]===b);
  if(start<0||end<=start)return[];
@@ -3638,7 +3663,9 @@ function fillJourneyDetails(j){
 $('departuresTab').addEventListener('click',()=>setViewMode('departures'));
 $('arrivalsTab').addEventListener('click',()=>setViewMode('arrivals'));
 $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
-// Station choices and filters are drafts until Find trains is pressed.
+// Filter existing results immediately; new stations still require Find trains.
+$('directOnly').addEventListener('change',refreshJourneyFilters);
+$('highSpeedOnly').addEventListener('change',refreshJourneyFilters);
 $('trace').onclick=()=>searchJourneys();
 $('clear').onclick=()=>{
  appliedJourneyQuery=null;journeyResults=[];
