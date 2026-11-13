@@ -3366,7 +3366,7 @@ $('zoomIn').onclick=()=>zoomAt(1.25);$('zoomOut').onclick=()=>zoomAt(.8);$('zoom
 
 // Passenger journey planning. A connection must be formed by trains actually
 // calling at both stations in the correct order, with enough time to change.
-let viewMode='departures',journeyResults=[],selectedJourney=null,journeyShown=12,selectedLegPaths=[];
+let viewMode='departures',journeyResults=[],selectedJourney=null,journeyShown=12,selectedLegPaths=[],appliedJourneyQuery=null;
 const JOURNEY_MAX_RESULTS=260;
 function fmtDuration(n){const h=Math.floor(n/60),m=n%60;return h?`${h}h ${String(m).padStart(2,'0')}m`:`${m} min`}
 function timeMarkup(s){
@@ -3523,16 +3523,33 @@ function updateBoardTabs(){
   $(id).setAttribute('aria-selected',String(active));
  }
 }
-function setViewMode(mode){viewMode=mode;updateBoardTabs();if(mode==='journeys')renderJourneyResults();else setCurrentStation(currentStation)}
+function setViewMode(mode){
+ if(mode!=='journeys'){viewMode=mode;updateBoardTabs();setCurrentStation(currentStation);return}
+ // Opening Journeys shows the last submitted search, without running another.
+ selectedJourney=null;selectedTrain=null;selectedPath=[];selectedLegPaths=[];
+ selectedNames=appliedJourneyQuery?[appliedJourneyQuery.from,appliedJourneyQuery.to]:[];
+ manualTrace=false;viewMode='journeys';updateBoardTabs();renderJourneyResults();
+ routeWorld.replaceChildren();drawMap();rrDetailsHeading('Journey details','rr-ui-info');
+ detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
+ $('focusRoute').hidden=true;app.classList.remove('detail-open');
+ requestAnimationFrame(resize);
+}
 function renderJourneyResults(){
- const from=$('from').value,to=$('to').value;
+ // The form is a draft. Results always reflect the last Find trains action.
+ const query=appliedJourneyQuery;
+ const from=query?.from??$('from').value,to=query?.to??$('to').value;
  $('journeyFromName').textContent=from;$('journeyToName').textContent=to;
- const onlyDirect=$('directOnly').checked;
- const list=journeyResults.filter(j=>(!onlyDirect||j.change===0)&&(!$('highSpeedOnly').checked||j.legs.every(l=>isHighSpeed(l.train))));
- $('journeyCount').textContent=list.length+' '+(list.length===1?'service':'services');
  board.replaceChildren();
+ if(!query){
+  $('journeyCount').textContent='';
+  board.innerHTML='<div class="empty">Choose stations, then press Find trains.</div>';
+  return;
+ }
+ const onlyDirect=query.directOnly;
+ const list=journeyResults.filter(j=>(!onlyDirect||j.change===0)&&(!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train))));
+ $('journeyCount').textContent=list.length+' '+(list.length===1?'service':'services');
  if(from===to){board.innerHTML='<div class="empty">Choose two different stations.</div>';return}
- if(!list.length){board.innerHTML=`<div class="empty">No ${$('highSpeedOnly').checked?'high-speed ':''}${onlyDirect?'direct ':''}services found between these stations in the current timetable.</div>`;return}
+ if(!list.length){board.innerHTML=`<div class="empty">No ${query.highSpeedOnly?'high-speed ':''}${onlyDirect?'direct ':''}services found between these stations in the current timetable.</div>`;return}
  for(const j of list.slice(0,journeyShown)){
   const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
   el.style.setProperty('--journey-color',rrCssServiceAccent(j.legs[0].train.type));
@@ -3544,19 +3561,15 @@ function renderJourneyResults(){
  if(journeyShown<list.length){const more=document.createElement('button');more.type='button';more.className='journey-more';more.textContent='Show more trains';more.addEventListener('click',()=>{journeyShown+=12;renderJourneyResults()});board.append(more)}
 }
 function searchJourneys(autoSelect=false){
- const from=$('from').value,to=$('to').value;
- journeyResults=findJourneys(from,to,$('highSpeedOnly').checked);
- journeyShown=12;selectedJourney=null;
- viewMode='journeys';updateBoardTabs();renderJourneyResults();board.scrollTop=0;
- const first=journeyResults.find(j=>(!$('directOnly').checked||j.change===0)&&(!$('highSpeedOnly').checked||j.legs.every(l=>isHighSpeed(l.train))));
- if(autoSelect&&first){chooseJourney(first)}
- else{
-  selectedTrain=null;selectedPath=[];selectedLegPaths=[];selectedNames=[from,to];
-  routeWorld.replaceChildren();drawMap();rrDetailsHeading('Journey details','rr-ui-info');
-  detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
-  $('focusRoute').hidden=true;app.classList.remove('detail-open');
-  requestAnimationFrame(resize);
- }
+ appliedJourneyQuery={
+  from:$('from').value,to:$('to').value,
+  directOnly:$('directOnly').checked,highSpeedOnly:$('highSpeedOnly').checked
+ };
+ const query=appliedJourneyQuery;
+ journeyResults=findJourneys(query.from,query.to,query.highSpeedOnly);
+ journeyShown=12;setViewMode('journeys');board.scrollTop=0;
+ const first=journeyResults.find(j=>(!query.directOnly||j.change===0)&&(!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train))));
+ if(autoSelect&&first)chooseJourney(first);
 }
 function getSegmentPath(t,a,b){
  const start=t.route.findIndex(p=>p[0]===a),end=t.route.findIndex(p=>p[0]===b);
@@ -3603,21 +3616,19 @@ function fillJourneyDetails(j){
 }
 $('departuresTab').addEventListener('click',()=>setViewMode('departures'));
 $('arrivalsTab').addEventListener('click',()=>setViewMode('arrivals'));
-$('journeysTab').addEventListener('click',()=>searchJourneys());
-$('directOnly').addEventListener('change',()=>searchJourneys());
-$('highSpeedOnly').addEventListener('change',()=>searchJourneys());
-$('from').addEventListener('change',()=>searchJourneys());
-$('to').addEventListener('change',()=>searchJourneys());
-
-$('trace').onclick=()=>searchJourneys();$('clear').onclick=()=>{viewMode='departures';updateBoardTabs();selectedJourney=null;selectedLegPaths=[];clear()};
-// Swap station values in the original selects and both searchable picker inputs.
-// Refresh the journey search only once, after both values have been exchanged.
+$('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
+// Station choices and filters are drafts until Find trains is pressed.
+$('trace').onclick=()=>searchJourneys();
+$('clear').onclick=()=>{
+ appliedJourneyQuery=null;journeyResults=[];
+ viewMode='departures';updateBoardTabs();selectedJourney=null;selectedLegPaths=[];clear();
+};
+// Swap the draft station values without changing the displayed results.
 $('swapStations').addEventListener('click',()=>{
  const from=$('from'),to=$('to'),previousFrom=from.value;
  from.value=to.value;to.value=previousFrom;
  pickerViews.get('from')?.sync();
  pickerViews.get('to')?.sync();
- searchJourneys();
 });
 
 stationSelect.addEventListener('change',e=>setCurrentStation(e.target.value));
@@ -3746,6 +3757,7 @@ const rrFrenchExact=Object.freeze({
  'Select a train to view details.':'Sélectionnez un train pour voir les détails.',
  'Select a journey to see train-specific facilities.':'Sélectionnez un trajet pour consulter les équipements à bord.',
  'Choose two different stations.':'Choisissez deux gares différentes.',
+ 'Choose stations, then press Find trains.':'Choisissez les gares, puis cliquez sur Rechercher.',
  'No matching stations':'Aucune gare trouvée',
  'Standard facilities':'Équipements et services',
  'Additional station facilities':'Services complémentaires',
