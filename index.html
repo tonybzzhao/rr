@@ -2089,7 +2089,28 @@ body{font-size:14.5px}
 @media(min-width:751px) and (max-width:990px){
  .app.detail-open .longmark img{height:29px}
 }
-/* End v70 audited tablet layout. */
+/* v71: keep the map key in exactly two left-aligned rows at every width. */
+.map-legend,
+.app.detail-open .map-legend{
+ display:flex;
+ flex-direction:column;
+ flex-wrap:nowrap;
+ align-items:flex-start;
+ justify-content:flex-start;
+ gap:6px 0;
+ text-align:left;
+ width:max-content;
+ max-width:calc(100% - 24px);
+}
+.map-legend .key{
+ display:flex;
+ align-items:center;
+ justify-content:flex-start;
+ flex:0 0 auto;
+ white-space:nowrap;
+}
+.map-legend .keymark{flex:0 0 23px}
+/* End v71 map legend alignment. */
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
