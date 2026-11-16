@@ -1568,7 +1568,7 @@ const rrFrenchExact=Object.freeze({
  'Departures':'Départs','Arrivals':'Arrivées','Journeys':'Trajets',
  'Available journeys':'Trajets disponibles','Station information':'Informations sur la gare',
  'Train details':'Détails du train','Journey details':'Détails du trajet',
- 'Train information':'Informations sur le train','View route':'Voir le parcours',
+ 'Train information':'Informations sur le train','View route':'Itinéraire',
  'Find trains':'Rechercher','Reset':'Effacer','From':'De','To':'À',
  'Direct only':'Sans correspondance','High-speed only':'Grande vitesse uniquement',
  'Time':'Heure','Train':'Train','Destination':'Destination',
