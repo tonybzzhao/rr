@@ -2111,6 +2111,61 @@ body{font-size:14.5px}
 }
 .map-legend .keymark{flex:0 0 23px}
 /* End v71 map legend alignment. */
+/* Journey details: one continuous route spine across every leg and change. */
+.jt-timeline,.jt-leg-list,.jt-calls-list{list-style:none;margin:0;padding:0}
+.jt-timeline{margin-top:18px;--jt-dot-color:var(--text-faint)}
+.jt-row{display:grid;grid-template-columns:58px 24px minmax(0,1fr) auto;column-gap:10px;align-items:center;position:relative}
+.jt-time{font-size:14px;font-weight:600;color:var(--ink-strong);line-height:1.2;font-variant-numeric:tabular-nums}
+.jt-time .time-delayed{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.jt-time .scheduled-time{font-size:11px;font-weight:500;color:var(--text-faint);text-decoration:line-through}
+.jt-time .retime-box{background:var(--hover-blue);color:var(--main-deep);font-weight:700;padding:2px 4px;border-radius:2px;white-space:nowrap}
+.jt-time .day-offset{font-size:10px;color:var(--text-faint)}
+.jt-spine{position:relative;align-self:stretch;min-height:100%}
+.jt-spine::before,.jt-spine::after{content:"";position:absolute;left:50%;width:4px;margin-left:-2px}
+.jt-spine::before{top:0;height:50%}
+.jt-spine::after{top:50%;bottom:0}
+.jt-in-solid::before,.jt-out-solid::after{background:var(--leg)}
+.jt-in-dot::before,.jt-out-dot::after{background:radial-gradient(circle,var(--jt-dot-color) 1.6px,transparent 2px) center top/4px 8px repeat-y}
+.jt-dot{position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--surface);border:4px solid var(--leg);box-sizing:border-box;z-index:1}
+.jt-tick{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--surface);border:2px solid var(--leg);box-sizing:border-box;z-index:1}
+.jt-node{min-height:48px}
+.jt-node .jt-station{font-size:15px;font-weight:700;color:var(--ink-strong)}
+.jt-station{font:inherit;background:none;border:0;padding:6px 0;text-align:left;cursor:pointer;color:var(--ink-strong);min-width:0;line-height:1.3}
+.jt-station:hover{color:var(--main-deep);text-decoration:underline;text-underline-offset:3px}
+.jt-station:focus-visible,.jt-calls-toggle:focus-visible,.jt-coach summary:focus-visible{outline:2px solid var(--main);outline-offset:2px;border-radius:2px}
+.jt-plat{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap;justify-self:end}
+.jt-call{min-height:36px}
+.jt-call .jt-time{font-size:12.5px;font-weight:500;color:var(--ink-soft)}
+.jt-call .jt-station{font-size:13px;font-weight:500;color:var(--ink-soft)}
+.jt-call .jt-plat{font-size:12px;font-weight:500;color:var(--muted-slate)}
+.jt-ride .jt-card{grid-column:3 / 5;margin:6px 0 10px;padding:12px 14px;background:var(--hover);border:1px solid var(--stroke-soft);border-left:3px solid var(--leg);border-radius:4px;min-width:0}
+.jt-card-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;font-size:12px;font-weight:500;color:var(--muted-slate)}
+.jt-card-head .service{font-size:12px;padding:5px 8px}
+.jt-towards{margin-top:9px;font-size:13.5px;font-weight:600;color:var(--ink-strong)}
+.jt-towards-label{font-weight:500;color:var(--muted-slate)}
+.jt-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
+.jt-sep{color:var(--text-faint)}
+.jt-calls-toggle{display:inline-flex;align-items:center;gap:5px;font:inherit;color:var(--main-deep);background:none;border:0;padding:2px 0;cursor:pointer;font-weight:600}
+.jt-calls-toggle:hover{text-decoration:underline;text-underline-offset:3px}
+.jt-chevron{display:inline-block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s;flex:none}
+.jt-calls-toggle[aria-expanded="true"] .jt-chevron,.jt-coach[open]>summary .jt-chevron{transform:translateY(1px) rotate(-135deg)}
+.jt-coach{margin-top:10px;border-top:1px solid var(--stroke-soft);padding-top:8px}
+.jt-coach>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;padding:4px 0;color:var(--ink-strong)}
+.jt-coach>summary::-webkit-details-marker{display:none}
+.jt-coach>summary .jt-chevron{color:var(--ink-soft)}
+.jt-coach-text{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:12.5px;min-width:0}
+.jt-coach-no{font-weight:700}
+.jt-coach-role{font-weight:600}
+.jt-coach-role.is-first{background:var(--first-class);color:var(--first-class-ink);padding:1px 5px;border-radius:2px}
+.jt-coach-section{color:var(--muted-slate)}
+.jt-coach .rr-formation{margin-top:8px}
+.jt-coach .rr-formation>h3{display:none}
+.jt-coach .rr-selected-summary{min-height:0}
+.jt-transfer{min-height:58px}
+.jt-transfer-box{grid-column:3 / 5;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:8px 0;font-size:12.5px;color:var(--muted-slate)}
+.jt-transfer-box strong{color:var(--ink-strong);font-size:13px}
+.jt-transfer-time{font-weight:600;color:var(--ink-soft)}
+@media(max-width:750px){.jt-row{grid-template-columns:50px 20px minmax(0,1fr) auto;column-gap:8px}.jt-ride .jt-card{padding:11px 12px}}
 </style>
 <meta name="rr-preview" content="full-site, unpublished concept">
 </head>
@@ -3637,29 +3692,75 @@ function chooseJourney(j){
  app.classList.add('detail-open');
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
+function rrPlatformAt(t,station){return t.platforms?.[station]||t.plat||''}
+function rrPlatformMarkup(p){return p?`<span class="jt-plat" aria-label="Platform ${p}">Pl. ${p}</span>`:'<span class="jt-plat"></span>'}
+function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
+ // kind: board | alight. spineIn/spineOut: none | solid | dot
+ return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name))}</li>`;
+}
+function rrJourneyCoachSummary(t,fromStation,toStation){
+ const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
+ const index=Math.min(form.highlight||0,form.cars.length-1),car=form.cars[index];
+ return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Coach ${index+1}</span><span class="jt-coach-role${rrFirst(car)?' is-first':''}">${rrRole(t,car)}</span><span class="jt-coach-section">${rrSectionStopText(t,form,index)}</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
+}
 function fillJourneyDetails(j){
  rrDetailsHeading('Journey details','rr-ui-info');$('focusRoute').hidden=false;
  const from=j.legs[0].from,to=j.legs[j.legs.length-1].to;
- let legs='';
+ let rows='';
  j.legs.forEach((leg,index)=>{
-  const t=leg.train,c=C[t.type],stations=t.route.slice(leg.fromIdx,leg.toIdx+1);
-  const rows=stations.map(([name,time],i)=>`<div class="stop${name===from?' current':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,leg.fromIdx+i)}</div><button type="button" class="stop-name stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button></div>`).join('');
-  legs+=`<section class="journey-leg"><h3 class="journey-leg-heading"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${t.id}</span>${rrServiceLabel(t.type)}${statusTag(stopStatus(t,leg.fromIdx))}</h3><div class="leg-ends">${leg.from} → ${leg.to}</div><div class="stops-heading">Calling at</div><div class="stop-list${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)}">${rows}</div>${rrCoachFormation(t,leg.from,leg.to)}</section>`;
-  if(index<j.legs.length-1){
+  const t=leg.train,last=index===j.legs.length-1;
+  const accent=`--leg:${rrCssServiceAccent(t.type)}`;
+  const calls=t.route.slice(leg.fromIdx+1,leg.toIdx);
+  const callsId=`jt-calls-${index}`;
+  const stopsLabel=calls.length?`${calls.length} ${calls.length===1?'stop':'stops'}`:'Non-stop';
+  rows+=`<li class="jt-leg" style="${accent}"><ol class="jt-leg-list">`;
+  rows+=rrJourneyNode(t,leg.fromIdx,leg.from,'board',index?'dot':'none','solid',index);
+  rows+=`<li class="jt-row jt-ride"><div class="jt-time"></div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"></div><div class="jt-card">
+   <h3 class="jt-card-head"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${t.id}</span><span class="jt-service">${rrServiceLabel(t.type)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>
+   <div class="jt-towards"><span class="jt-towards-label">towards</span> <span>${t.dest}</span></div>
+   <div class="jt-meta"><span>${fmtDuration(leg.arr-leg.dep)}</span><span class="jt-sep" aria-hidden="true">·</span>${calls.length?`<button type="button" class="jt-calls-toggle" aria-expanded="false" aria-controls="${callsId}"><span>${stopsLabel}</span><span class="jt-chevron" aria-hidden="true"></span></button>`:`<span>${stopsLabel}</span>`}</div>
+   ${rrJourneyCoachSummary(t,leg.from,leg.to)}
+  </div></li>`;
+  if(calls.length){
+   rows+=`<li class="jt-calls" id="${callsId}" hidden><ol class="jt-calls-list">${calls.map(([name],i)=>{
+    const k=leg.fromIdx+1+i;
+    return `<li class="jt-row jt-call"><div class="jt-time">${stopTimeMarkup(t,k)}</div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"><span class="jt-tick"></span></div><button type="button" class="jt-station stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(t.platforms?.[name]||'')}</li>`;
+   }).join('')}</ol></li>`;
+  }
+  rows+=rrJourneyNode(t,leg.toIdx,leg.to,'alight','solid',last?'none':'dot',index);
+  rows+=`</ol></li>`;
+  if(!last){
    const next=j.legs[index+1],station=leg.to;
-   const arrivalPlatform=t.platforms?.[station]||t.plat||'—';
-   const departurePlatform=next.train.platforms?.[station]||next.train.plat||'—';
-   legs+=`<div class="journey-transfer"><strong>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div>`;
+   const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
+   const samePlatform=arrivalPlatform===departurePlatform;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong>Change</strong><span class="jt-transfer-time">${next.dep-leg.arr} min</span><span class="jt-transfer-plat">${samePlatform?`Same platform ${arrivalPlatform}`:`Platform ${arrivalPlatform} → ${departurePlatform}`}</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
- detail.innerHTML=`<div class="journey-hero"><div class="journey-summary-time"><div><strong>${stopTimeMarkup(depFirst.train,depFirst.fromIdx)}</strong><small>Departs</small><span class="station">${from}</span></div><span class="arrow" aria-hidden="true">→</span><div class="journey-arrival"><strong>${stopTimeMarkup(arrLast.train,arrLast.toIdx)}</strong><small>Arrives</small><span class="station">${to}</span></div></div><div class="journey-summary-sub">${fmtDuration(j.arr-j.dep)} · ${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</div></div>${legs}`;
- requestAnimationFrame(rrEnsureCoachVisible);
+ detail.innerHTML=`<div class="journey-hero"><div class="journey-summary-time"><div><strong>${stopTimeMarkup(depFirst.train,depFirst.fromIdx)}</strong><small>Departs</small><span class="station">${from}</span></div><span class="arrow" aria-hidden="true">→</span><div class="journey-arrival"><strong>${stopTimeMarkup(arrLast.train,arrLast.toIdx)}</strong><small>Arrives</small><span class="station">${to}</span></div></div><div class="journey-summary-sub">${fmtDuration(j.arr-j.dep)} · ${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</div></div><ol class="jt-timeline" aria-label="Journey route">${rows}</ol>`;
+ detail.querySelectorAll('.jt-calls-toggle').forEach(btn=>btn.addEventListener('click',()=>{
+  const open=btn.getAttribute('aria-expanded')!=='true';
+  btn.setAttribute('aria-expanded',String(open));
+  document.getElementById(btn.getAttribute('aria-controls')).hidden=!open;
+ }));
+ detail.querySelectorAll('.jt-coach').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)requestAnimationFrame(rrEnsureCoachVisible)}));
  detail.querySelectorAll('.stop-station').forEach(btn=>btn.addEventListener('click',()=>{
   const name=decodeURIComponent(btn.dataset.name),returned=j;
   setCurrentStation(name);fillStationInfo(name,null,returned);
  }));
 }
+// Keep the collapsed coach summary in step with the coach chosen in the formation.
+detail.addEventListener('click',event=>{
+ const button=event.target.closest('.jt-coach .rr-car[data-rr-coach]');
+ if(!button||!/^\d+$/.test(button.dataset.rrCoach))return;
+ const wrap=button.closest('.rr-formation'),box=button.closest('.jt-coach');
+ const t=TRAINS.find(x=>x.id===wrap.dataset.rrTrain),form=RR_FORMATIONS[wrap.dataset.rrForm];
+ if(!t||!form)return;
+ const i=Number(button.dataset.rrCoach),car=form.cars[i];
+ box.querySelector('.jt-coach-no').textContent=`Coach ${i+1}`;
+ const role=box.querySelector('.jt-coach-role');role.textContent=rrRole(t,car);role.classList.toggle('is-first',rrFirst(car));
+ box.querySelector('.jt-coach-section').textContent=rrSectionStopText(t,form,i);
+});
 $('departuresTab').addEventListener('click',()=>setViewMode('departures'));
 $('arrivalsTab').addEventListener('click',()=>setViewMode('arrivals'));
 $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
@@ -3878,6 +3979,15 @@ function rrFrenchText(source){
   .replace(/\b(\d+) changes\b/g,(_,n)=>n+' correspondances')
   .replace(/\b1 change\b/g,'1 correspondance')
   .replace(/\bChange at ([^·]+?)(?=\s*·|$)/g,(_,name)=>'Correspondance à '+name.trim())
+  .replace(/^towards$/,'direction')
+  .replace(/^(\d+) stops$/,'$1 arrêts').replace(/^1 stop$/,'1 arrêt').replace(/^Non-stop$/,'Sans arrêt')
+  .replace(/^Coach (\d+)$/,'Voiture $1')
+  .replace(/^Change$/,'Correspondance')
+  .replace(/^Same platform (\S+)$/,'Même voie $1')
+  .replace(/^Platform (\S+) → (\S+)$/,'Voie $1 → $2')
+  .replace(/^Pl\. (\S+)$/,'Voie $1')
+  .replace(/^Platform (\S+)$/,'Voie $1')
+  .replace(/^Journey route$/,'Itinéraire du trajet')
   .replace(/\bArrive platform (\S+)/g,'Voie d’arrivée : $1')
   .replace(/\bDepart platform (\S+)/g,'Voie de départ : $1')
   .replace(/\bBack to journey\b/g,'Retour au trajet')
