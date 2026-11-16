@@ -3872,8 +3872,8 @@ function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
 }
 function rrJourneyCoachSummary(t,fromStation,toStation){
  const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
- const index=Math.min(form.highlight||0,form.cars.length-1),car=form.cars[index];
- return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Coach ${index+1}</span><span class="jt-coach-role${rrFirst(car)?' is-first':''}">${rrRole(t,car)}</span><span class="jt-coach-section">${rrSectionStopText(t,form,index)}</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
+ const n=form.cars.length;
+ return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Coach formation & on-board facilities</span><span class="jt-coach-section">${n} coaches</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
 }
 function fillJourneyDetails(j){
  rrDetailsHeading('Journey details','rr-ui-info');$('focusRoute').hidden=false;
@@ -3921,18 +3921,6 @@ function fillJourneyDetails(j){
   setCurrentStation(name);fillStationInfo(name,null,returned);
  }));
 }
-// Keep the collapsed coach summary in step with the coach chosen in the formation.
-detail.addEventListener('click',event=>{
- const button=event.target.closest('.jt-coach .rr-car[data-rr-coach]');
- if(!button||!/^\d+$/.test(button.dataset.rrCoach))return;
- const wrap=button.closest('.rr-formation'),box=button.closest('.jt-coach');
- const t=TRAINS.find(x=>x.id===wrap.dataset.rrTrain),form=RR_FORMATIONS[wrap.dataset.rrForm];
- if(!t||!form)return;
- const i=Number(button.dataset.rrCoach),car=form.cars[i];
- box.querySelector('.jt-coach-no').textContent=`Coach ${i+1}`;
- const role=box.querySelector('.jt-coach-role');role.textContent=rrRole(t,car);role.classList.toggle('is-first',rrFirst(car));
- box.querySelector('.jt-coach-section').textContent=rrSectionStopText(t,form,i);
-});
 $('departuresTab').addEventListener('click',()=>setViewMode('departures'));
 $('arrivalsTab').addEventListener('click',()=>setViewMode('arrivals'));
 $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
@@ -4175,6 +4163,7 @@ function rrFrenchText(source){
   .replace(/^Pl\. (\S+)$/,'Voie $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Journey route$/,'Itinéraire du trajet')
+  .replace(/^(\d+) coaches$/,'$1 voitures')
   .replace(/^Platform changed from (\S+)$/,'Voie modifiée (initialement $1)')
   .replace(/^Platform (\S+), changed from (\S+)$/,'Voie $1, initialement $2')
   .replace(/\bArrive platform (\S+)/g,'Voie d’arrivée : $1')
