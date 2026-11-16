@@ -2162,7 +2162,7 @@ body{font-size:14.5px}
 .jt-coach .rr-formation>h3{display:none}
 .jt-coach .rr-selected-summary{min-height:0}
 .jt-transfer{min-height:58px}
-.jt-transfer-box{grid-column:3 / 5;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:8px 0;font-size:12.5px;color:var(--muted-slate)}
+.jt-transfer-box{grid-column:3 / 5;display:flex;flex-direction:column;gap:3px;margin:8px 0;padding:9px 12px;background:var(--hover);border-left:3px solid var(--stroke-strong);font-size:12.5px;color:var(--muted-slate)}
 .jt-transfer-box strong{color:var(--ink-strong);font-size:13px}
 .jt-transfer-time{font-weight:600;color:var(--ink-soft)}
 @media(max-width:750px){.jt-row{grid-template-columns:50px 20px minmax(0,1fr) auto;column-gap:8px}.jt-ride .jt-card{padding:11px 12px}}
@@ -2172,14 +2172,24 @@ body{font-size:14.5px}
 /* Platform alteration: highlighted like a station display. */
 .rr-plat-changed{display:inline-block;background:var(--status-expected-bg,#FFF1DC);color:var(--status-expected,#9A4B00);padding:1px 5px;border-radius:2px;font-weight:700}
 .jt-plat.rr-plat-changed{font-size:12.5px}
-/* Journey time: Depart after / Arrive by. */
-.journey-when{display:flex;align-items:stretch;gap:6px;margin-top:12px;flex-wrap:wrap}
-.journey-when select,.journey-when input,.journey-when button{height:32px;border:1px solid var(--stroke-strong);border-radius:4px;background:var(--surface);color:var(--ink-strong);font:inherit;font-size:12.5px;padding:0 8px}
-.journey-when select{flex:1 1 110px;min-width:0}
-.journey-when input{flex:0 0 auto;width:118px;font-variant-numeric:tabular-nums;color-scheme:light}
-:root[data-theme="dark"] .journey-when input{color-scheme:dark}
-.journey-when button{flex:none;color:var(--main-deep);font-weight:700;cursor:pointer}
-.journey-when button:hover{background:var(--hover-blue)}
+/* Journey time: Depart after / Arrive by. Same control standard as the
+   station pickers (36px, 4px radius, stroke-strong border) and the map
+   buttons; the selected segment uses the picker's selected-option style. */
+.journey-when{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.rr-segmented{display:flex;height:36px;border:1px solid var(--stroke-strong);border-radius:4px;background:var(--surface);overflow:hidden}
+.rr-segment{flex:1 1 0;min-width:0;border:0;background:var(--surface);color:var(--ink-strong);font:inherit;font-size:13px;font-weight:500;cursor:pointer;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-segment+.rr-segment{border-left:1px solid var(--stroke-soft)}
+.rr-segment:hover{background:var(--hover-blue);color:var(--main-deep)}
+.rr-segment[aria-checked="true"]{background:var(--selected);color:var(--main-deep);font-weight:700;box-shadow:inset 0 -2px 0 var(--main)}
+.rr-segment:focus-visible{outline:2px solid var(--main);outline-offset:-2px}
+.journey-when-row{display:flex;gap:8px;align-items:stretch}
+.journey-when-row .rr-time-picker{flex:1 1 auto;width:auto;min-width:0}
+.rr-time-picker .picker-input{font-variant-numeric:tabular-nums}
+.rr-time-picker .picker-list{max-height:220px}
+.rr-when-now{flex:none;height:36px;padding:0 13px;border:1px solid var(--stroke);border-radius:4px;background:var(--surface);color:var(--ink-strong);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.rr-when-now:hover{background:var(--hover-blue);border-color:var(--accent-stroke);color:var(--main-deep)}
+.rr-when-now:active{background:var(--pressed)}
+.rr-when-now:focus-visible{outline:2px solid var(--main);outline-offset:2px}
 .journey-earlier{margin-bottom:6px!important}
 
 /* Wide screens with the details panel open: keep the search bar on one row
@@ -2472,7 +2482,7 @@ body{font-size:14.5px}
     <div class="side-content" id="sidebarContent">
       <div class="board-tabs" role="tablist" aria-label="Railway information"><button id="departuresTab" class="board-tab active" type="button" role="tab" aria-selected="true">Departures</button><button id="arrivalsTab" class="board-tab" type="button" role="tab" aria-selected="false">Arrivals</button><button id="journeysTab" class="board-tab" type="button" role="tab" aria-selected="false">Journeys</button></div>
       <div id="mobilePlannerSlot" class="mobile-planner-slot" aria-label="Journey planner"></div>
-      <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-info"></use></svg><span class="rr-station-fac-text">Station information</span><span class="rr-station-fac-chevron" aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><div class="journey-filters"><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct only</label><label class="direct-filter" title="Every leg must be operated by RR Max or RR Via"><input type="checkbox" id="highSpeedOnly"> High-speed only <span class="filter-hint">Max / Via</span></label></div><div class="journey-when"><select id="journeyWhenMode" aria-label="Search by"><option value="depart" data-rr-l10n>Depart after</option><option value="arrive" data-rr-l10n>Arrive by</option></select><input type="time" id="journeyWhenTime" aria-label="Time" step="60" required><button type="button" id="journeyWhenNow">Now</button></div></div></div>
+      <div class="side-controls"><div id="stationPanel"><div class="eyebrow" id="stationBoardTitle">Departures</div><h1 id="stationHeading">Mapleriver Central</h1><select id="stationSelect" aria-label="Current station"></select><button id="stationInfoLeft" class="station-fac-link" type="button"><svg class="rr-action-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-info"></use></svg><span class="rr-station-fac-text">Station information</span><span class="rr-station-fac-chevron" aria-hidden="true">›</span></button></div><div id="journeyPanel" hidden><div class="eyebrow">Available trains</div><div class="journey-pair"><strong id="journeyFromName">Mapleriver Central</strong><span aria-hidden="true">→</span><strong id="journeyToName">Peiting Central</strong></div><div id="journeyCount" class="journey-count"></div><div class="journey-filters"><label class="direct-filter"><input type="checkbox" id="directOnly"> Direct only</label><label class="direct-filter" title="Every leg must be operated by RR Max or RR Via"><input type="checkbox" id="highSpeedOnly"> High-speed only <span class="filter-hint">Max / Via</span></label></div><div class="journey-when"><select id="journeyWhenMode" class="native-select" aria-hidden="true" tabindex="-1"><option value="depart">Depart after</option><option value="arrive">Arrive by</option></select><div class="rr-segmented" role="radiogroup" aria-label="Search by"><button type="button" role="radio" class="rr-segment" data-mode="depart" aria-checked="true">Depart after</button><button type="button" role="radio" class="rr-segment" data-mode="arrive" aria-checked="false">Arrive by</button></div><div class="journey-when-row"><input type="hidden" id="journeyWhenTime"><div class="search-picker search-picker-main rr-time-picker" id="journeyTimePicker"><div class="picker-control"><input type="text" class="picker-input" id="journeyTimeInput" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="5" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="journeyTimeList" aria-label="Time" placeholder="hh:mm"><button type="button" class="picker-toggle" aria-label="Browse times"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg></button></div><div class="picker-list" id="journeyTimeList" role="listbox"></div></div><button type="button" id="journeyWhenNow" class="rr-when-now">Now</button></div></div></div></div>
       <div class="boardhead"><span>Time</span><span>Train</span><span id="boardRouteHeader">Destination</span><span>Platform</span></div>
       <div class="board" id="board"></div>
     </div>
@@ -3073,7 +3083,7 @@ function rrCoachFormation(t,fromStation=null,toStation=null){
  const dir=rrDirection(t,fromStation,toStation);
 
  return `<section class="rr-formation" style="--rr-direction-color:${color}" data-rr-form="${form.key}" data-rr-train="${t.id}">
-  <h3>Coach formation & on-board facilities</h3>
+  <h3>Train formation</h3>
   <div class="rr-formation-scroll" tabindex="0" aria-label="Train formation">
    <div class="rr-formation-content">
     <div class="rr-section-guide"><span class="rr-section-leading" style="--rr-section-offset:${metrics.offset}px"></span><div class="rr-sections" style="flex:0 0 ${allCoachWidth}px;width:${allCoachWidth}px">${widths}</div></div>
@@ -3865,7 +3875,7 @@ function chooseJourney(j){
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
 function rrPlatformAt(t,station){return t.platforms?.[station]||t.plat||''}
-function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}>Pl. ${p}</span>`:'<span class="jt-plat"></span>'}
+function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}>Platform ${p}</span>`:'<span class="jt-plat"></span>'}
 function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
  return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
@@ -3904,8 +3914,7 @@ function fillJourneyDetails(j){
   if(!last){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
-   const samePlatform=arrivalPlatform===departurePlatform;
-   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong>Change</strong><span class="jt-transfer-time">${next.dep-leg.arr} min</span><span class="jt-transfer-plat">${samePlatform?`Same platform ${arrivalPlatform}`:`Platform ${arrivalPlatform} → ${departurePlatform}`}</span></div></li>`;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
@@ -3927,11 +3936,53 @@ $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
 // Filter existing results immediately; new stations still require Find trains.
 $('directOnly').addEventListener('change',refreshJourneyFilters);
 $('highSpeedOnly').addEventListener('change',refreshJourneyFilters);
-$('journeyWhenTime').value=rrMinutesToInput(RR_NOW);
 function rrJourneyWhenChanged(){if(!appliedJourneyQuery)return;journeyShown=12;renderJourneyResults();board.scrollTop=rrJourneyWhen().mode==='arrive'?board.scrollHeight:0}
-$('journeyWhenMode').addEventListener('change',rrJourneyWhenChanged);
-$('journeyWhenTime').addEventListener('change',rrJourneyWhenChanged);
-$('journeyWhenNow').addEventListener('click',()=>{$('journeyWhenMode').value='depart';$('journeyWhenTime').value=rrMinutesToInput(rrNowMinutes());rrJourneyWhenChanged()});
+function rrSetJourneyMode(mode){
+ $('journeyWhenMode').value=mode;
+ document.querySelectorAll('.rr-segment').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.mode===mode)));
+}
+document.querySelectorAll('.rr-segment').forEach(b=>{
+ b.addEventListener('click',()=>{if($('journeyWhenMode').value===b.dataset.mode)return;rrSetJourneyMode(b.dataset.mode);rrJourneyWhenChanged()});
+ b.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();const other=[...document.querySelectorAll('.rr-segment')].find(x=>x!==b);other.focus();other.click()});
+});
+// Time picker: same combobox as the station pickers, with 24-hour times in
+// 15-minute steps. Any exact time can also be typed (e.g. 1418 or 14:18).
+(function setupTimePicker(){
+ const shell=$('journeyTimePicker'),input=$('journeyTimeInput'),list=$('journeyTimeList'),hidden=$('journeyWhenTime');
+ const toggle=shell.querySelector('.picker-toggle');
+ const times=Array.from({length:96},(_,i)=>rrMinutesToInput(i*15));
+ let open=false,items=[],active=0;
+ function parse(v){const m=String(v).trim().match(/^(\d{1,2})(?::?(\d{2}))?$/);if(!m)return null;const h=+m[1],mi=+(m[2]||0);return h<24&&mi<60?rrMinutesToInput(h*60+mi):null}
+ function sync(){input.value=hidden.value}
+ function shut(){open=false;shell.classList.remove('open');list.classList.remove('open');input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');sync()}
+ function choose(v){const changed=v!==hidden.value;hidden.value=v;shut();if(changed)rrJourneyWhenChanged()}
+ function mark(){const opts=[...list.querySelectorAll('.picker-option')];opts.forEach((o,i)=>{o.classList.toggle('active',i===active);o.setAttribute('aria-selected',String(items[i]===hidden.value))});if(opts[active]){input.setAttribute('aria-activedescendant',opts[active].id);opts[active].scrollIntoView({block:'nearest'})}}
+ function render(q=''){
+  const digits=q.replace(/\D/g,'');
+  const all=times.includes(hidden.value)?times:[...times,hidden.value].sort();
+  items=digits?all.filter(t=>t.replace(':','').startsWith(digits.padStart(digits.length>=3?4:digits.length,'0'))||t.replace(':','').startsWith(digits)):all;
+  const exact=parse(q);if(exact&&!items.includes(exact))items=[exact,...items];
+  const target=parse(q)||hidden.value,base=rrTimeInputMinutes(target);
+  active=items.indexOf(target);if(active<0)active=Math.max(0,items.findIndex(t=>rrTimeInputMinutes(t)>=base));
+  list.replaceChildren();
+  items.forEach((t,i)=>{const o=document.createElement('button');o.type='button';o.className='picker-option';o.id='journeyTimeOpt'+i;o.setAttribute('role','option');o.textContent=t;o.addEventListener('pointerdown',e=>e.preventDefault());o.addEventListener('click',()=>choose(t));list.append(o)});
+  mark();
+ }
+ function show(q=''){for(const [key,v] of pickerViews)if(key!=='journeyTime')v.shut();open=true;shell.classList.add('open');list.classList.add('open');input.setAttribute('aria-expanded','true');render(q)}
+ input.addEventListener('focus',()=>{show('');input.select()});
+ input.addEventListener('input',()=>show(input.value));
+ input.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!open)show('');else if(items.length){active=(active+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;mark()}}
+  else if(e.key==='Enter'){e.preventDefault();if(!open){show('');return}const typed=parse(input.value);if(typed&&input.value!==hidden.value&&!list.querySelector('.picker-option.active'))choose(typed);else if(items.length)choose(items[active]);else shut()}
+  else if(e.key==='Escape'){e.preventDefault();shut();input.blur()}
+  else if(e.key==='Tab'){const typed=parse(input.value);if(typed&&typed!==hidden.value)choose(typed);else shut()}
+ });
+ input.addEventListener('blur',()=>{if(!open)return;const typed=parse(input.value);if(typed&&typed!==hidden.value)choose(typed);else shut()});
+ toggle.addEventListener('click',()=>{if(open){shut();input.blur()}else{input.focus();show('');input.select()}});
+ pickerViews.set('journeyTime',{shell,shut,sync});
+ hidden.value=rrMinutesToInput(RR_NOW);sync();
+})();
+$('journeyWhenNow').addEventListener('click',()=>{rrSetJourneyMode('depart');$('journeyWhenTime').value=rrMinutesToInput(rrNowMinutes());pickerViews.get('journeyTime').sync();rrJourneyWhenChanged()});
 // Keep the clock moving: refresh live status every minute, and start a new
 // day's running pattern after midnight.
 setInterval(()=>{
@@ -4120,6 +4171,7 @@ const rrFrenchExact=Object.freeze({
  'RR Mainline':'RR Magistrale','RR InterCity':'RR Intercités','RR Nightline':'RR Nocturne',
  'No services found between these stations in the current timetable.':'Aucun trajet trouvé entre ces gares dans les horaires disponibles.',
  'Back to journey':'Retour au trajet',
+ 'Browse times':'Parcourir les horaires',
  'Tomorrow':'Demain','Depart after':'Départ après','Arrive by':'Arrivée avant','Now':'Maintenant','Search by':'Rechercher par',
  'Map':'Carte','List':'Liste',
  'Show earlier trains':'Afficher les trajets précédents','Arriving':'À l’approche',
@@ -4157,10 +4209,6 @@ function rrFrenchText(source){
   .replace(/^towards$/,'direction')
   .replace(/^(\d+) stops$/,'$1 arrêts').replace(/^1 stop$/,'1 arrêt').replace(/^Non-stop$/,'Sans arrêt')
   .replace(/^Coach (\d+)$/,'Voiture $1')
-  .replace(/^Change$/,'Correspondance')
-  .replace(/^Same platform (\S+)$/,'Même voie $1')
-  .replace(/^Platform (\S+) → (\S+)$/,'Voie $1 → $2')
-  .replace(/^Pl\. (\S+)$/,'Voie $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Journey route$/,'Itinéraire du trajet')
   .replace(/^(\d+) coaches$/,'$1 voitures')
