@@ -2162,7 +2162,7 @@ body{font-size:14.5px}
 .jt-coach .rr-formation>h3{display:none}
 .jt-coach .rr-selected-summary{min-height:0}
 .jt-transfer{min-height:58px}
-.jt-transfer-box{grid-column:3 / 5;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:8px 0;font-size:12.5px;color:var(--muted-slate)}
+.jt-transfer-box{grid-column:3 / 5;display:flex;flex-direction:column;gap:3px;margin:8px 0;padding:9px 12px;background:var(--hover);border-left:3px solid var(--stroke-strong);font-size:12.5px;color:var(--muted-slate)}
 .jt-transfer-box strong{color:var(--ink-strong);font-size:13px}
 .jt-transfer-time{font-weight:600;color:var(--ink-soft)}
 @media(max-width:750px){.jt-row{grid-template-columns:50px 20px minmax(0,1fr) auto;column-gap:8px}.jt-ride .jt-card{padding:11px 12px}}
@@ -3073,7 +3073,7 @@ function rrCoachFormation(t,fromStation=null,toStation=null){
  const dir=rrDirection(t,fromStation,toStation);
 
  return `<section class="rr-formation" style="--rr-direction-color:${color}" data-rr-form="${form.key}" data-rr-train="${t.id}">
-  <h3>Coach formation & on-board facilities</h3>
+  <h3>Train formation</h3>
   <div class="rr-formation-scroll" tabindex="0" aria-label="Train formation">
    <div class="rr-formation-content">
     <div class="rr-section-guide"><span class="rr-section-leading" style="--rr-section-offset:${metrics.offset}px"></span><div class="rr-sections" style="flex:0 0 ${allCoachWidth}px;width:${allCoachWidth}px">${widths}</div></div>
@@ -3865,7 +3865,7 @@ function chooseJourney(j){
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
 function rrPlatformAt(t,station){return t.platforms?.[station]||t.plat||''}
-function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}>Pl. ${p}</span>`:'<span class="jt-plat"></span>'}
+function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}>Platform ${p}</span>`:'<span class="jt-plat"></span>'}
 function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
  return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
@@ -3904,8 +3904,7 @@ function fillJourneyDetails(j){
   if(!last){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
-   const samePlatform=arrivalPlatform===departurePlatform;
-   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong>Change</strong><span class="jt-transfer-time">${next.dep-leg.arr} min</span><span class="jt-transfer-plat">${samePlatform?`Same platform ${arrivalPlatform}`:`Platform ${arrivalPlatform} → ${departurePlatform}`}</span></div></li>`;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
@@ -4157,10 +4156,6 @@ function rrFrenchText(source){
   .replace(/^towards$/,'direction')
   .replace(/^(\d+) stops$/,'$1 arrêts').replace(/^1 stop$/,'1 arrêt').replace(/^Non-stop$/,'Sans arrêt')
   .replace(/^Coach (\d+)$/,'Voiture $1')
-  .replace(/^Change$/,'Correspondance')
-  .replace(/^Same platform (\S+)$/,'Même voie $1')
-  .replace(/^Platform (\S+) → (\S+)$/,'Voie $1 → $2')
-  .replace(/^Pl\. (\S+)$/,'Voie $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Journey route$/,'Itinéraire du trajet')
   .replace(/^(\d+) coaches$/,'$1 voitures')
