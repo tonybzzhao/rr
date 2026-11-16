@@ -3873,7 +3873,7 @@ function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
 function rrJourneyCoachSummary(t,fromStation,toStation){
  const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
  const n=form.cars.length;
- return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Coach formation & on-board facilities</span><span class="jt-coach-section">${n} coaches</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
+ return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Train formation</span><span class="jt-coach-section">${n} coaches</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
 }
 function fillJourneyDetails(j){
  rrDetailsHeading('Journey details','rr-ui-info');$('focusRoute').hidden=false;
