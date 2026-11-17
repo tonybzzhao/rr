@@ -181,11 +181,11 @@ body,.app{background:var(--rr-canvas)}
  .app.folded .map-header{padding-left:calc(var(--rr-folded-width) - 88px + var(--rr-gutter))!important}
 }
 
-/* View route: the one action in the details header, so it gets a light blue
-   fill and blue text instead of blending into the white card. */
-#focusRoute{background:color-mix(in srgb,var(--main) 11%,var(--surface))!important;color:var(--main)!important;box-shadow:none!important;font-weight:600}
-#focusRoute:hover{background:color-mix(in srgb,var(--main) 18%,var(--surface))!important}
-#focusRoute svg,#focusRoute .rr-action-icon{color:var(--main)!important}
+/* View route: a neutral grey fill, the same as the controls inside cards
+   (station and time boxes), so it reads as a button on the white card. */
+#focusRoute{background:var(--rr-canvas)!important;color:var(--ink-strong)!important;box-shadow:none!important;font-weight:600}
+#focusRoute:hover{background:color-mix(in srgb,var(--ink-strong) 8%,var(--rr-canvas))!important}
+#focusRoute svg,#focusRoute .rr-action-icon{color:var(--ink-strong)!important}
 /* Tablet widths: the panel is too narrow for the title and the labelled
    button, so View route keeps its blue fill and icon and its label is read
    out by screen readers only. */
