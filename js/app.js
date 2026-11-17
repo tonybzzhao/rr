@@ -256,7 +256,7 @@ function drawBoard(){
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
   row.style.setProperty('--service-color',rrCssServiceAccent(t.type));
   row.style.setProperty('--rr-white-text-fill',rrCssWhiteTextFill(t.type));
-  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}</span>${rrAlertMarkup(t)}</span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
+  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrAlertFlag(t)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
   row.addEventListener('click',()=>chooseTrain(t));
   board.append(row);
  }
@@ -436,12 +436,12 @@ function rrAlertNotices(t){
  return out;
 }
 function rrAssignDailyAlerts(){
- const add=(t,kind,en,fr,short,shortFr)=>{t.dailyAlert={kind,en,short};RR_ALERT_FR.set(en,fr);RR_ALERT_FR.set(short,shortFr)};
+ const add=(t,kind,en,fr)=>{t.dailyAlert={kind,en};RR_ALERT_FR.set(en,fr)};
  for(const t of TRAINS){
   t.dailyAlert=null;const r=rrRandom(rrHash('alert|'+RR_DAY_KEY+'|'+t.id));
-  if(t.dailyProblem==='cancel'){const [en,fr]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
-  else if(t.dailyProblem==='delay'&&t.dailyDelay>=5){const [en,fr]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
-  else if(t.dailyProblem==='notice'){const list=rrAlertNotices(t);const [en,fr,sh,shFr]=list[Math.floor(r()*list.length)];add(t,'notice',en,fr,sh,shFr)}
+  if(t.dailyProblem==='cancel'){const [en,fr]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`)}
+  else if(t.dailyProblem==='delay'&&t.dailyDelay>=5){const [en,fr]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`)}
+  else if(t.dailyProblem==='notice'){const list=rrAlertNotices(t);const [en,fr]=list[Math.floor(r()*list.length)];add(t,'notice',en,fr)}
  }
 }
 // “en raison de” contracts with the article that follows.
@@ -452,9 +452,14 @@ function rrVisibleAlert(t){
  if(a.kind==='delay'&&!delayMinutes(t.status))return null;
  return a;
 }
-function rrAlertMarkup(t,cls='rr-alert-line'){
+// On boards only a warning icon flags the train; the message is in its details.
+function rrAlertFlag(t){
  const a=rrVisibleAlert(t);if(!a)return '';
- return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#rr-settings-warning"></use></svg><span class="rr-alert-text">${cls==='rr-alert-line'?a.short:a.en}</span></span>`;
+ return `<svg class="rr-alert-flag rr-alert-${a.kind}" viewBox="0 0 32 32" role="img" aria-label="Service alert" focusable="false"><use href="#rr-settings-warning"></use></svg>`;
+}
+function rrAlertMarkup(t,cls='rr-alert-banner'){
+ const a=rrVisibleAlert(t);if(!a)return '';
+ return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#rr-settings-warning"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
 }
 rrAssignDailyAlerts();
 function rrIcon(name,cls='rr-picto'){
