@@ -25,25 +25,27 @@ for(const t of TRAINS){
 }
 function rrApplyDailyOperations(){
  const day=rrRandom(rrHash('day|'+RR_DAY_KEY));
- // Some days run smoothly, some are rough: scale disruption by 0.4x to 1.8x.
- const mood=.4+day()*1.4;
- for(const t of TRAINS){
-  const r=rrRandom(rrHash(RR_DAY_KEY+'|'+t.id));
-  const x=r(),pCancel=.018*mood,pDelay=.17*mood;
-  let status='On time',delay=0;
-  if(x<pCancel)status='Cancelled';
-  else if(x<pCancel+pDelay){delay=Math.max(2,Math.round(2+Math.pow(r(),2.2)*33));}
-  t.dailyDelay=delay;t.dailyCancelled=status==='Cancelled';
-  // Platform alterations: about one train in fifteen, at one station.
+ // Only 5% to 10% of trains have a problem on any day: some days run
+ // smoothly, some are rougher. Each affected train has one problem.
+ const share=.05+day()*.05,target=Math.round(TRAINS.length*share);
+ const order=TRAINS.map(t=>{const r=rrRandom(rrHash(RR_DAY_KEY+'|'+t.id));return{t,r,k:r()}}).sort((a,b)=>a.k-b.k);
+ order.forEach(({t,r},i)=>{
+  t.dailyDelay=0;t.dailyCancelled=false;t.dailyProblem=null;
   t.platforms={...t.basePlatforms};t.plat=t.basePlat;t.platformChanged={};
+  if(i>=target)return;
+  const x=r();
   const stations=Object.keys(t.platforms).filter(s=>/^\d+$/.test(t.platforms[s])&&(RR_STATION_PLATFORMS.get(s)||0)>=3);
-  if(stations.length&&r()<.045*mood){
+  if(x<.12){t.dailyCancelled=true;t.dailyProblem='cancel'}
+  else if(x<.72||(x<.87&&!stations.length)){t.dailyDelay=Math.max(2,Math.round(2+Math.pow(r(),1.6)*38));t.dailyProblem='delay'}
+  else if(x<.87){
    const s=stations[Math.floor(r()*stations.length)],max=RR_STATION_PLATFORMS.get(s),old=+t.platforms[s];
    let np=1+Math.floor(r()*(max-1));if(np>=old)np++;
    t.platforms[s]=String(np);t.platformChanged[s]=String(old);
    if(t.route[0][0]===s&&t.plat===String(old))t.plat=String(np);
+   t.dailyProblem='platform';
   }
- }
+  else t.dailyProblem='notice';
+ });
  rrRefreshLiveStatus();
 }
 // A delay becomes visible from 90 minutes before a train leaves its origin
@@ -388,8 +390,8 @@ function rrFormationKey(t){
  return 'IC10';
 }
 /* Daily service alerts, in the style of British station screens and journey
-   planners. Every day about 5–10% of trains carry one: the reason a train is
-   cancelled or delayed, or an on-board notice. Like the delays, they come from
+   planners. The 5–10% of trains with a problem each day explain it: the reason
+   a train is cancelled or delayed, or an on-board notice. Like the delays, they come from
    the date seed, so everyone sees the same alerts today and new ones tomorrow. */
 const RR_ALERT_FR=new Map();
 const RR_ALERT_CAUSES=[
@@ -421,7 +423,7 @@ function rrAlertCause(t,r){
  const [en,fr]=pool[Math.floor(r()*pool.length)];
  const names=t.route.map(s=>s[0]),i=Math.floor(r()*(names.length-1));
  const fill=x=>x.replace('{s}',names[i]).replace('{a}',names[i]).replace('{b}',names[i+1]);
- return [fill(en),fill(fr)];
+ return [fill(en),fill(fr).replace(/\bde (?=[AEIOUYÉÈÂ])/g,'d’')];
 }
 function rrAlertNotices(t){
  const form=RR_FORMATIONS[rrFormationKey(t)],f=new Set((form?.cars||[]).flatMap(c=>c.features));const out=[];
@@ -434,19 +436,13 @@ function rrAlertNotices(t){
  return out;
 }
 function rrAssignDailyAlerts(){
- const day=rrRandom(rrHash('alerts|'+RR_DAY_KEY));
- const share=.05+day()*.05,target=Math.round(TRAINS.length*share);
- const keyed=TRAINS.map(t=>{const r=rrRandom(rrHash('alert|'+RR_DAY_KEY+'|'+t.id));return{t,r,k:r()}});
- for(const {t} of keyed)t.dailyAlert=null;
- // Cancellations always explain themselves, then the longest delays, then on-board notices.
- const cancelled=keyed.filter(x=>x.t.dailyCancelled);
- const delayed=keyed.filter(x=>!x.t.dailyCancelled&&x.t.dailyDelay>=8).sort((a,b)=>b.t.dailyDelay-a.t.dailyDelay||a.k-b.k);
- const others=keyed.filter(x=>!x.t.dailyCancelled&&!x.t.dailyDelay).sort((a,b)=>a.k-b.k);
- let n=0;
- const add=(t,kind,en,fr,short,shortFr)=>{t.dailyAlert={kind,en,short};RR_ALERT_FR.set(en,fr);RR_ALERT_FR.set(short,shortFr);n++};
- for(const {t,r} of cancelled){const [en,fr]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
- for(const {t,r} of delayed){if(n>=target*.7)break;const [en,fr]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
- for(const {t,r} of others){if(n>=target)break;const list=rrAlertNotices(t);const [en,fr,sh,shFr]=list[Math.floor(r()*list.length)];add(t,'notice',en,fr,sh,shFr)}
+ const add=(t,kind,en,fr,short,shortFr)=>{t.dailyAlert={kind,en,short};RR_ALERT_FR.set(en,fr);RR_ALERT_FR.set(short,shortFr)};
+ for(const t of TRAINS){
+  t.dailyAlert=null;const r=rrRandom(rrHash('alert|'+RR_DAY_KEY+'|'+t.id));
+  if(t.dailyProblem==='cancel'){const [en,fr]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
+  else if(t.dailyProblem==='delay'&&t.dailyDelay>=5){const [en,fr]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
+  else if(t.dailyProblem==='notice'){const list=rrAlertNotices(t);const [en,fr,sh,shFr]=list[Math.floor(r()*list.length)];add(t,'notice',en,fr,sh,shFr)}
+ }
 }
 // “en raison de” contracts with the article that follows.
 function rrFrDe(s){return s.replace(/^le /,'du ').replace(/^les /,'des ').replace(/^des (?=[aeiouéàâêîôûh])/i,'d’').replace(/^des /,'de ').replace(/^(?=[aeiouéàâêîôûh])/i,'d’').replace(/^(?!du |de |d’)/,'de ')}
@@ -458,7 +454,7 @@ function rrVisibleAlert(t){
 }
 function rrAlertMarkup(t,cls='rr-alert-line'){
  const a=rrVisibleAlert(t);if(!a)return '';
- return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.6 15 14H1z"/><path class="rr-alert-mark" d="M8 6v3.6M8 11.4v.1"/></svg><span class="rr-alert-text">${cls==='rr-alert-line'?a.short:a.en}</span></span>`;
+ return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#rr-settings-warning"></use></svg><span class="rr-alert-text">${cls==='rr-alert-line'?a.short:a.en}</span></span>`;
 }
 rrAssignDailyAlerts();
 function rrIcon(name,cls='rr-picto'){
