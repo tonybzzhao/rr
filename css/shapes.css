@@ -2,14 +2,17 @@
    content is grouped into cards and filled controls.
 
    One system for every screen:
-   - Gutter: 12px from the window edge and 12px between columns, so every
-     card edge lines up with the header controls above it.
+   - Gutter: 16px from the window edge and 16px between columns, the same
+     space the logo and header buttons keep from the window edge. The map
+     always owns the gutters on both of its sides, so its spacing holds when
+     either side panel is folded away.
+   - Bottom: every column ends 16px above the footer.
    - Gap: 10px between stacked cards and between list cards.
    - Corners: 14px for cards and the map, 10px for controls inside them,
      6px for badges and tags. Nested corners stay concentric
      (outer radius = inner radius + padding). */
 :root{
- --rr-canvas:#EEF1F5;--rr-gutter:12px;--rr-half-gutter:6px;--rr-gap:10px;
+ --rr-canvas:#EEF1F5;--rr-gutter:16px;--rr-gap:10px;
  --rr-radius-card:14px;--rr-radius-control:10px;--rr-radius-badge:6px;
  --rr-card-pad:16px;--rr-card-shadow:0 1px 2px #001F5A0F,0 2px 8px #001F5A0A
 }
@@ -23,19 +26,33 @@ body,.app{background:var(--rr-canvas)}
 .desktop-site-footer{border-top:0!important;background:var(--rr-canvas)!important}
 .map-area{background:var(--rr-canvas)!important}
 
-/* Column edges. Left column: 12px outside, 6px toward the map; the map 6px
-   on both sides; right column 6px toward the map, 12px outside. */
-.side-content{padding:var(--rr-gap) var(--rr-half-gutter) 0 var(--rr-gutter)!important}
+/* Column edges. Each panel keeps a gutter on its window side; the map keeps
+   one on both sides. Scrolling lists stop at the same line as the map. */
+.side-content{padding:var(--rr-gap) var(--rr-gutter) 0!important}
 .board-tabs,.side-controls,.boardhead,.board,.mobile-planner-slot{margin-left:0!important;margin-right:0!important}
-.board{padding:0 0 var(--rr-gutter)!important}
-.map-container{margin:var(--rr-gap) var(--rr-half-gutter) var(--rr-gutter);border-radius:var(--rr-radius-card);overflow:hidden;background:var(--map);box-shadow:var(--rr-card-shadow)}
-.map-header{padding-left:var(--rr-half-gutter)!important;padding-right:var(--rr-half-gutter)!important}
-.details-body,#detailsBody{padding:0 var(--rr-gutter) var(--rr-gutter) var(--rr-half-gutter)!important;background:var(--rr-canvas)}
+/* The list scrolls inside a window that ends one gutter above the footer;
+   4px of inner room keeps the card shadows from being cut off. */
+.board{padding:0 4px 4px!important;margin:0 -4px var(--rr-gutter)!important}
+.map-container{margin:var(--rr-gap) var(--rr-gutter) var(--rr-gutter);border-radius:var(--rr-radius-card);overflow:hidden;background:var(--map);box-shadow:var(--rr-card-shadow)}
+.map-header{padding-left:var(--rr-gutter)!important;padding-right:var(--rr-gutter)!important}
+.details-body,#detailsBody{padding:0 var(--rr-gutter) 4px!important;margin-bottom:var(--rr-gutter);background:var(--rr-canvas)}
 .rr-site-settings{padding-right:var(--rr-gutter)!important}
+.side-header{padding-left:var(--rr-gutter)!important}
+@media(min-width:751px){
+ .side-content{padding-right:0!important}
+ .details-body,#detailsBody{padding-left:0!important}
+ .details .details-head{margin-left:0!important}
+ /* Lists that scroll fade out over their last few pixels instead of being
+    cut by a hard line, so the column's bottom edge reads as the same edge as
+    the map's. */
+ .board,.details-body{-webkit-mask-image:linear-gradient(#000 calc(100% - 14px),transparent);mask-image:linear-gradient(#000 calc(100% - 14px),transparent)}
+}
 
-/* Tabs: a segmented control. Track 14px, tabs 10px, 4px apart: concentric. */
-.board-tabs{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:4px!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);display:grid!important;grid-template-columns:repeat(3,1fr);gap:4px}
-.board-tab{border:0!important;border-radius:var(--rr-radius-control)!important;min-height:36px;height:36px;padding:0 8px!important;display:flex!important;align-items:center;justify-content:center;line-height:1;width:auto!important;margin:0!important}
+/* Tabs: one card split into three equal segments. The selected segment
+   fills its third edge to edge, so its outer corners are the card's own
+   corners and its inner sides are straight: no floating blob. */
+.board-tabs{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:0!important;border-radius:var(--rr-radius-card)!important;overflow:hidden;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);display:grid!important;grid-template-columns:repeat(3,1fr);gap:0}
+.board-tab{border:0!important;border-radius:0!important;min-height:44px;height:44px;padding:0 8px!important;display:flex!important;align-items:center;justify-content:center;line-height:1;width:auto!important;margin:0!important}
 .board-tab.active{background:var(--main)!important;color:#fff!important}
 .board-tab.active::after,.board-tab.active::before,.board-tab::after{display:none!important}
 
@@ -58,6 +75,9 @@ body,.app{background:var(--rr-canvas)}
 .map-legend{border:0!important;border-radius:var(--rr-radius-control)!important;box-shadow:var(--rr-card-shadow);left:var(--rr-gutter)!important;bottom:var(--rr-gutter)!important}
 .zoom-control{border:0!important;border-radius:var(--rr-radius-control)!important;overflow:hidden;box-shadow:var(--rr-card-shadow);right:var(--rr-gutter)!important;bottom:var(--rr-gutter)!important}
 .zoom-control button{border:0!important}
+/* On a narrow map the key would sit under the zoom buttons: hide it there. */
+.map-container{container:rrmap/inline-size}
+@container rrmap (max-width:400px){.map-legend{display:none!important}}
 
 /* Controls: filled shapes, one corner size, no outlines. */
 .picker-control,.swap-stations,#trace,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#swapStations,#focusRoute,.journey-more{border-color:transparent!important;border-radius:var(--rr-radius-control)!important}
@@ -73,13 +93,13 @@ body,.app{background:var(--rr-canvas)}
 .service,.train-number{border-radius:var(--rr-radius-badge)!important}
 
 /* Details: a header card, then hero, facts, stops and formation cards. */
-.details-head{margin:var(--rr-gap) var(--rr-gutter) var(--rr-gap) var(--rr-half-gutter)!important;padding:0 8px 0 var(--rr-card-pad)!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);width:auto!important}
+.details-head{margin:var(--rr-gap) var(--rr-gutter)!important;padding:0 8px 0 var(--rr-card-pad)!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);width:auto!important}
 .train-hero,.journey-hero{border:0!important;border-radius:var(--rr-radius-card);background:var(--surface);padding:var(--rr-card-pad)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow)}
 .info-grid{border:0!important;border-radius:var(--rr-radius-card);background:var(--surface);padding:6px var(--rr-card-pad)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow)}
 .fact-row{border:0!important}
 /* “Calling at” is the title of the stops card, not a label floating above it. */
 .stops-heading{margin:0!important;padding:var(--rr-card-pad) var(--rr-card-pad) 4px!important;background:var(--surface);border-radius:var(--rr-radius-card) var(--rr-radius-card) 0 0;box-shadow:var(--rr-card-shadow);clip-path:inset(-10px -10px 0 -10px)}
-.stops-heading+.stop-list,.stops-heading~.stop-list{clip-path:inset(0 -10px -10px -10px)}
+.stops-heading+.stop-list,.stops-heading~.stop-list{clip-path:inset(0 -10px -10px -10px);margin-top:-1px!important;padding-top:9px!important}
 .stop-list{border-radius:0 0 var(--rr-radius-card) var(--rr-radius-card);background:var(--surface);padding:8px var(--rr-card-pad) var(--rr-card-pad)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow)}
 .rr-formation{border:0!important;border-radius:var(--rr-radius-card);background:var(--surface);padding:var(--rr-card-pad)!important;margin:0!important;box-shadow:var(--rr-card-shadow)}
 .rr-car-line{border:0!important}
@@ -90,5 +110,4 @@ body,.app{background:var(--rr-canvas)}
 .jt-card .rr-alert-banner,.rr-alert-leg{border-radius:var(--rr-radius-control)!important}
 
 /* Logo and footer text start on the same edge as the cards. */
-.side-header{padding-left:var(--rr-gutter)!important}
 .desktop-site-footer{padding-left:var(--rr-gutter)!important;padding-right:var(--rr-gutter)!important}
