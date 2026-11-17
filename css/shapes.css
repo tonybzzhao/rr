@@ -40,11 +40,21 @@ body,.app{background:var(--rr-canvas)}
 /* The logo gets more room than the cards: its emblem is a solid shape that
    reads as touching the window at the card gutter. */
 .app:not(.folded) .side-header{padding-left:28px!important}
-@media(max-width:750px){.app:not(.folded) .side-header,.app.folded .side-header{padding-left:20px!important}}
+@media(max-width:750px){.app:not(.folded) .side-header,.app.folded .side-header{padding-left:20px!important}
+ /* Phone header: the buttons sit 15px from the top, the tabs 15px below them. */
+ .side-content{padding-top:2px!important}}
 @media(min-width:751px){
  .side-content{padding-right:0!important}
  .details-body,#detailsBody{padding-left:0!important}
  .details .details-head{margin-left:0!important}
+ /* Header band: the buttons sit 17px below the window's top edge, and the
+    first cards start 17px below the buttons. Footer band: the columns end
+    where the footer starts, and the copyright line is centred in it. */
+ .side-content{padding-top:0!important}
+ .map-container{margin-top:0!important;margin-bottom:0!important}
+ .board{margin-bottom:0!important}
+ .details-body,#detailsBody{margin-bottom:0!important}
+ .details .details-head{margin-top:0!important}
 }
 
 /* Tabs: one card split into three equal segments. The selected segment
@@ -58,6 +68,7 @@ body,.app{background:var(--rr-canvas)}
 /* Station or journey-search block as a card. */
 .side-controls{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:var(--rr-card-pad)!important;border-radius:var(--rr-radius-card);background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
 .side-controls .picker-control,.side-controls select{background:var(--rr-canvas)!important;box-shadow:none!important}
+.side-controls .picker-toggle{background:transparent!important}
 .side-controls .station-fac-link{padding-left:0!important;padding-right:0!important}
 
 /* Column titles line up with the text inside the cards below. */
@@ -110,3 +121,27 @@ body,.app{background:var(--rr-canvas)}
 
 /* Logo and footer text start on the same edge as the cards. */
 .desktop-site-footer{padding-left:var(--rr-gutter)!important;padding-right:var(--rr-gutter)!important}
+
+/* Journey time: Depart after, the time and Now share one row. (A container
+   query can't style its own container, so the row rule sits outside it.) */
+.journey-when{flex-wrap:nowrap!important}
+@container rrwhen (min-width:220px){
+ .journey-when .rr-when-mode{flex:1 1 auto!important;min-width:0}
+ .journey-when .rr-when-time{flex:0 0 auto!important}
+ .journey-when .rr-when-time input{width:auto!important}
+ .journey-when .rr-when-mode select{padding-right:30px}
+ .journey-when .rr-when-mode .picker-toggle{width:30px}
+}
+/* Narrow panels: Now becomes a round-arrow clock icon (its text stays for
+   screen readers) and the time box drops its picker icon, so all three
+   still fit on one row in every language. */
+@container rrwhen (min-width:220px) and (max-width:299px){
+ .journey-when .rr-when-mode select,.journey-when .rr-when-time input{font-size:12.5px}
+ .journey-when .rr-when-mode select{padding-left:8px;padding-right:24px}
+ .journey-when .rr-when-mode .picker-toggle{width:24px}
+ .journey-when .rr-when-time input{padding:0 6px;width:70px!important;text-align:center}
+ .journey-when .rr-when-time input::-webkit-calendar-picker-indicator{display:none}
+ .journey-when .rr-when-now{width:36px;padding:0!important;font-size:0!important;display:flex;align-items:center;justify-content:center}
+ .journey-when .rr-when-now::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:var(--rr-now-icon) center/16px no-repeat;mask:var(--rr-now-icon) center/16px no-repeat}
+}
+:root{--rr-now-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.6 6.2A5.6 5.6 0 1 1 2.4 9.6'/%3E%3Cpath d='M2.2 2.8v3.6h3.6'/%3E%3Cpath d='M8 5v3.2l2.2 1.4'/%3E%3C/svg%3E")}
