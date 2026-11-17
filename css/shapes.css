@@ -1,0 +1,63 @@
+/* Shape-based theme: no divider lines. Panels sit on a soft canvas and
+   content is grouped into rounded cards, pills and filled controls. */
+:root{--rr-canvas:#EEF1F5;--rr-card-radius:12px;--rr-control-radius:8px;--rr-card-shadow:0 1px 2px #001F5A0F,0 2px 8px #001F5A0A}
+:root[data-theme="dark"]{--rr-canvas:#0F151D;--rr-card-shadow:0 1px 2px #00000040}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rr-canvas:#0F151D;--rr-card-shadow:0 1px 2px #00000040}}
+
+/* Canvas and panels: no hairlines anywhere. */
+body,.app{background:var(--rr-canvas)}
+.side,.details,aside#details.details{border:0!important;background:var(--rr-canvas)!important}
+.side-header,.map-header,.rr-site-settings,.details-head,.board-tabs,.side-controls,.boardhead{border:0!important;background:var(--rr-canvas)!important}
+.desktop-site-footer{border-top:0!important;background:var(--rr-canvas)!important}
+.map-area{background:var(--rr-canvas)!important}
+
+/* The map becomes one large rounded card. */
+.map-container{margin:0 10px 10px;border-radius:16px;overflow:hidden;background:var(--map);box-shadow:var(--rr-card-shadow)}
+.map-legend{border:0!important;border-radius:10px;box-shadow:var(--rr-card-shadow)}
+.zoom-control{border:0!important;border-radius:10px;overflow:hidden;box-shadow:var(--rr-card-shadow)}
+.zoom-control button{border:0!important}
+
+/* Tabs: a segmented pill instead of an underline. */
+.board-tabs{margin:2px 14px 10px;padding:4px!important;border-radius:999px!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);gap:2px}
+.board-tab{border:0!important;border-radius:999px!important;min-height:34px}
+.board-tab.active{background:var(--main)!important;color:#fff!important}
+.board-tab.active::after,.board-tab.active::before{display:none!important}
+
+/* Station block as a card. */
+.side-controls{margin:0 14px 10px;padding:14px 16px!important;border-radius:var(--rr-card-radius);background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
+.boardhead{padding-top:4px!important;padding-bottom:6px!important}
+
+/* Each train or journey is its own card. */
+.board{padding:0 14px 14px}
+.trainrow,.journey-row{border:0!important;border-radius:var(--rr-card-radius)!important;background:var(--surface)!important;margin:0 0 8px;box-shadow:var(--rr-card-shadow)}
+.trainrow.selected,.journey-row.selected{background:var(--selected)!important;box-shadow:inset 0 0 0 2px var(--main)!important}
+.trainrow::before,.journey-row::before{display:none!important}
+.rr-day-divider{border:0!important;background:transparent!important;padding:10px 6px 6px!important}
+.journey-more{border-radius:999px!important}
+
+/* Controls: filled shapes, no outlines. */
+.picker-control,.swap-stations,#trace,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#swapStations{border-color:transparent!important;border-radius:var(--rr-control-radius)!important}
+.picker-control{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
+.picker-toggle{border-left:0!important;border-radius:0 var(--rr-control-radius) var(--rr-control-radius) 0!important}
+.swap-stations,#swapStations,#clear,.rr-when-now,.appearance-toggle,.station-info-button{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
+#trace{border-radius:999px!important;padding-left:16px;padding-right:18px}
+.side-controls .picker-control,.side-controls select{background:var(--rr-canvas)!important;box-shadow:none}
+.picker-control:focus-within{box-shadow:0 0 0 2px var(--main)!important}
+
+/* Pills for statuses and badges. */
+.status-tag{border-radius:999px!important;padding-left:9px!important;padding-right:9px!important}
+.service,.train-number{border-radius:6px!important}
+
+/* Details: hero, facts, stops and formation as stacked cards. */
+.details-body,#detailsBody{padding:0 14px 14px!important;background:var(--rr-canvas)}
+.train-hero,.journey-hero{border:0!important;border-radius:var(--rr-card-radius);background:var(--surface);padding:18px!important;margin:0 0 10px;box-shadow:var(--rr-card-shadow)}
+.info-grid{border:0!important;border-radius:var(--rr-card-radius);background:var(--surface);padding:4px 18px!important;margin:0 0 10px!important;box-shadow:var(--rr-card-shadow)}
+.fact-row{border:0!important}
+.stops-heading{padding-left:4px}
+.stop-list{border-radius:var(--rr-card-radius);background:var(--surface);padding:14px 18px!important;margin-bottom:10px;box-shadow:var(--rr-card-shadow)}
+.rr-formation{border:0!important;border-radius:var(--rr-card-radius);background:var(--surface);padding:14px 18px!important;box-shadow:var(--rr-card-shadow)}
+.rr-car-line{border:0!important}
+.jt-card{border:0!important;border-radius:var(--rr-card-radius)!important;box-shadow:var(--rr-card-shadow)}
+.jt-coach{border-top:0!important}
+.rr-alert-banner{border-left:0!important;border-radius:var(--rr-card-radius)!important;margin-left:0!important;margin-right:0!important}
+.boardhead{margin:0 14px!important}
