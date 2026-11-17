@@ -2240,3 +2240,14 @@ body{font-size:14.5px}
   width:max-content;height:auto;flex:none;padding:0;margin:23.7px 0 23.7px 20px;line-height:0
  }
 }
+
+/* Service alerts: a warning icon on boards, the message in train and journey details. */
+.rowstatus:has(.rr-alert-flag){display:inline-flex;align-items:center;gap:3px;flex-wrap:nowrap}
+.rowstatus:has(.rr-alert-flag) .status-tag{white-space:nowrap}
+.rr-alert-flag{flex:0 0 20px;width:20px;height:20px;color:var(--rr-alert-color)}
+.rr-alert-icon{flex:0 0 18px;width:18px;height:18px;margin:-1px -2px 0 -3px;color:var(--rr-alert-color)}
+.rr-alert-banner .rr-alert-icon{flex-basis:20px;width:20px;height:20px;margin-top:-1px}
+.rr-alert-delay,.rr-alert-notice{--rr-alert-color:var(--status-expected);--rr-alert-bg:var(--status-expected-bg)}
+.rr-alert-cancel{--rr-alert-color:var(--status-cancelled);--rr-alert-bg:var(--status-cancelled-bg)}
+.rr-alert-banner{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px;padding:10px 12px;border-left:3px solid var(--rr-alert-color);border-radius:3px;background:var(--rr-alert-bg);color:var(--ink-strong);font-size:13px;line-height:1.4}
+.rr-alert-leg{margin:8px 0 2px;font-size:12.5px}
