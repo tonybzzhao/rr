@@ -2168,14 +2168,16 @@ body{font-size:14.5px}
   .map-header .map-tools{flex-wrap:nowrap;min-width:0;flex:1 1 auto}
   .map-header .map-tools .search-picker{flex:1 1 150px!important;width:auto!important;min-width:92px!important;max-width:165px!important}
   .map-header .map-actions{flex:none;display:flex;gap:7px}
+ }
+ @container rrhead (max-width:540px){
   .map-header #clear{padding:0 9px}
   .map-header #clear>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
  }
- @container rrhead (max-width:600px){
+ @container rrhead (max-width:500px){
   .map-header #trace{padding:0 10px}
   .map-header #trace>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
  }
- @container rrhead (max-width:510px){
+ @container rrhead (max-width:470px){
   .map-header .map-tools>label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
  }
 }
