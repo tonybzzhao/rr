@@ -3,7 +3,7 @@
 
    One system for every screen:
    - Gutter: 16px from the window edge and 16px between columns, the same
-     space the logo and header buttons keep from the window edge. The map
+     space the header buttons keep from the window edge. The map
      always owns the gutters on both of its sides, so its spacing holds when
      either side panel is folded away.
    - Bottom: every column ends 16px above the footer.
@@ -37,15 +37,14 @@ body,.app{background:var(--rr-canvas)}
 .map-header{padding-left:var(--rr-gutter)!important;padding-right:var(--rr-gutter)!important}
 .details-body,#detailsBody{padding:0 var(--rr-gutter) 4px!important;margin-bottom:var(--rr-gutter);background:var(--rr-canvas)}
 .rr-site-settings{padding-right:var(--rr-gutter)!important}
-.side-header{padding-left:var(--rr-gutter)!important}
+/* The logo gets more room than the cards: its emblem is a solid shape that
+   reads as touching the window at the card gutter. */
+.app:not(.folded) .side-header{padding-left:28px!important}
+@media(max-width:750px){.app:not(.folded) .side-header,.app.folded .side-header{padding-left:20px!important}}
 @media(min-width:751px){
  .side-content{padding-right:0!important}
  .details-body,#detailsBody{padding-left:0!important}
  .details .details-head{margin-left:0!important}
- /* Lists that scroll fade out over their last few pixels instead of being
-    cut by a hard line, so the column's bottom edge reads as the same edge as
-    the map's. */
- .board,.details-body{-webkit-mask-image:linear-gradient(#000 calc(100% - 14px),transparent);mask-image:linear-gradient(#000 calc(100% - 14px),transparent)}
 }
 
 /* Tabs: one card split into three equal segments. The selected segment
