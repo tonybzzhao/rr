@@ -254,7 +254,7 @@ function drawBoard(){
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
   row.style.setProperty('--service-color',rrCssServiceAccent(t.type));
   row.style.setProperty('--rr-white-text-fill',rrCssWhiteTextFill(t.type));
-  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
+  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}</span>${rrAlertMarkup(t)}</span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
   row.addEventListener('click',()=>chooseTrain(t));
   board.append(row);
  }
@@ -387,6 +387,80 @@ function rrFormationKey(t){
  if(t.type==='Nightline')return serial%3===0?'NL9P':'NL11';
  return 'IC10';
 }
+/* Daily service alerts, in the style of British station screens and journey
+   planners. Every day about 5–10% of trains carry one: the reason a train is
+   cancelled or delayed, or an on-board notice. Like the delays, they come from
+   the date seed, so everyone sees the same alerts today and new ones tomorrow. */
+const RR_ALERT_FR=new Map();
+const RR_ALERT_CAUSES=[
+ ['a fault with the signalling system at {s}','un dérangement de la signalisation à {s}'],
+ ['a points failure at {s}','une défaillance d’aiguillage à {s}'],
+ ['a broken-down train at {s}','un train en panne à {s}'],
+ ['a fault on this train','une panne sur ce train'],
+ ['a shortage of train crew','un manque de personnel de bord'],
+ ['a problem with the overhead electric wires between {a} and {b}','un incident sur la caténaire entre {a} et {b}'],
+ ['trespassers on the railway near {s}','la présence de personnes sur les voies près de {s}'],
+ ['an obstruction on the line near {s}','un obstacle sur la voie près de {s}'],
+ ['a passenger being taken ill at {s}','un voyageur malade à {s}'],
+ ['emergency engineering work near {s}','des travaux d’urgence près de {s}'],
+ ['a speed restriction over a defective rail near {s}','une limitation de vitesse due à un rail défectueux près de {s}'],
+ ['congestion caused by an earlier incident','une congestion due à un incident antérieur'],
+ ['a late-running freight train','un train de fret en retard'],
+ ['a fire alarm at {s} station','une alarme incendie en gare de {s}'],
+ ['an animal on the line near {s}','un animal sur la voie près de {s}']
+];
+const RR_ALERT_SEASONAL={
+ autumn:[['poor rail conditions caused by leaves on the line','une mauvaise adhérence due aux feuilles mortes sur les voies']],
+ winter:[['frozen points at {s}','un aiguillage gelé à {s}'],['severe weather','des intempéries']],
+ summer:[['a speed restriction because of high rail temperatures','une limitation de vitesse due à la chaleur']],
+ spring:[]
+};
+function rrSeason(){const m=new Date().getMonth();return m>=8&&m<=10?'autumn':m===11||m<=1?'winter':m>=5&&m<=7?'summer':'spring'}
+function rrAlertCause(t,r){
+ const pool=[...RR_ALERT_CAUSES,...RR_ALERT_SEASONAL[rrSeason()],...RR_ALERT_SEASONAL[rrSeason()]];
+ const [en,fr]=pool[Math.floor(r()*pool.length)];
+ const names=t.route.map(s=>s[0]),i=Math.floor(r()*(names.length-1));
+ const fill=x=>x.replace('{s}',names[i]).replace('{a}',names[i]).replace('{b}',names[i+1]);
+ return [fill(en),fill(fr)];
+}
+function rrAlertNotices(t){
+ const form=RR_FORMATIONS[rrFormationKey(t)],f=new Set((form?.cars||[]).flatMap(c=>c.features));const out=[];
+ if(f.has('cafe'))out.push(['The café bar on this train is closed today.','La voiture-bar de ce train est fermée aujourd’hui.','Café bar closed','Voiture-bar fermée']);
+ if(f.has('restaurant'))out.push(['The restaurant on this train is closed today.','Le restaurant de ce train est fermé aujourd’hui.','Restaurant closed','Restaurant fermé']);
+ if((t.fac||[]).some(x=>/^Wi.Fi$/.test(x)))out.push(['Wi‑Fi is not available on this train today.','Le Wi‑Fi n’est pas disponible à bord de ce train aujourd’hui.','Wi‑Fi unavailable','Wi‑Fi indisponible']);
+ if(f.has('accessible-toilet'))out.push(['The accessible toilet on this train is out of use.','Les toilettes accessibles de ce train sont hors service.','Accessible toilet out of use','Toilettes accessibles hors service']);
+ out.push(['Seat reservations will not be shown on this train today.','Les réservations ne seront pas affichées dans ce train aujourd’hui.','Seat reservations not shown','Réservations non affichées']);
+ out.push(['This train is expected to be very busy. Please allow extra time to board.','Ce train devrait être très fréquenté. Prévoyez plus de temps pour monter à bord.','Expected to be very busy','Forte affluence prévue']);
+ return out;
+}
+function rrAssignDailyAlerts(){
+ const day=rrRandom(rrHash('alerts|'+RR_DAY_KEY));
+ const share=.05+day()*.05,target=Math.round(TRAINS.length*share);
+ const keyed=TRAINS.map(t=>{const r=rrRandom(rrHash('alert|'+RR_DAY_KEY+'|'+t.id));return{t,r,k:r()}});
+ for(const {t} of keyed)t.dailyAlert=null;
+ // Cancellations always explain themselves, then the longest delays, then on-board notices.
+ const cancelled=keyed.filter(x=>x.t.dailyCancelled);
+ const delayed=keyed.filter(x=>!x.t.dailyCancelled&&x.t.dailyDelay>=8).sort((a,b)=>b.t.dailyDelay-a.t.dailyDelay||a.k-b.k);
+ const others=keyed.filter(x=>!x.t.dailyCancelled&&!x.t.dailyDelay).sort((a,b)=>a.k-b.k);
+ let n=0;
+ const add=(t,kind,en,fr,short,shortFr)=>{t.dailyAlert={kind,en,short};RR_ALERT_FR.set(en,fr);RR_ALERT_FR.set(short,shortFr);n++};
+ for(const {t,r} of cancelled){const [en,fr]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
+ for(const {t,r} of delayed){if(n>=target*.7)break;const [en,fr]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`,`Due to ${en}`,`En raison ${rrFrDe(fr)}`)}
+ for(const {t,r} of others){if(n>=target)break;const list=rrAlertNotices(t);const [en,fr,sh,shFr]=list[Math.floor(r()*list.length)];add(t,'notice',en,fr,sh,shFr)}
+}
+// “en raison de” contracts with the article that follows.
+function rrFrDe(s){return s.replace(/^le /,'du ').replace(/^les /,'des ').replace(/^des (?=[aeiouéàâêîôûh])/i,'d’').replace(/^des /,'de ').replace(/^(?=[aeiouéàâêîôûh])/i,'d’').replace(/^(?!du |de |d’)/,'de ')}
+// The alert to show now: delays only while the delay is on the screens.
+function rrVisibleAlert(t){
+ const a=t.dailyAlert;if(!a||t.tomorrow)return null;
+ if(a.kind==='delay'&&!delayMinutes(t.status))return null;
+ return a;
+}
+function rrAlertMarkup(t,cls='rr-alert-line'){
+ const a=rrVisibleAlert(t);if(!a)return '';
+ return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.6 15 14H1z"/><path class="rr-alert-mark" d="M8 6v3.6M8 11.4v.1"/></svg><span class="rr-alert-text">${cls==='rr-alert-line'?a.short:a.en}</span></span>`;
+}
+rrAssignDailyAlerts();
 function rrIcon(name,cls='rr-picto'){
  return `<svg class="${cls}" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><use href="#rr-picto-${name}"></use></svg>`;
 }
@@ -593,7 +667,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div><dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrCssTravelAccent(t.type)}">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${t.type==='InterCity'?' rr-ic-outline':''}">${t.id}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrCssTravelAccent(t.type)}">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -1376,7 +1450,7 @@ function fillJourneyDetails(j){
   rows+=`<li class="jt-leg" style="${accent}"><ol class="jt-leg-list">`;
   rows+=rrJourneyNode(t,leg.fromIdx,leg.from,'board',index?'dot':'none','solid',index);
   rows+=`<li class="jt-row jt-ride"><div class="jt-time"></div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"></div><div class="jt-card">
-   <h3 class="jt-card-head"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${t.id}</span><span class="jt-service">${rrServiceLabel(t.type)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>
+   <h3 class="jt-card-head"><span class="service${t.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${t.id}</span><span class="jt-service">${rrServiceLabel(t.type)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
    <div class="jt-towards"><span class="jt-towards-label">towards</span> <span>${t.dest}</span></div>
    <div class="jt-meta"><span>${fmtDuration(leg.arr-leg.dep)}</span><span class="jt-sep" aria-hidden="true">·</span>${calls.length?`<button type="button" class="jt-calls-toggle" aria-expanded="false" aria-controls="${callsId}"><span>${stopsLabel}</span><span class="jt-chevron" aria-hidden="true"></span></button>`:`<span>${stopsLabel}</span>`}</div>
    ${rrJourneyCoachSummary(t,leg.from,leg.to)}
@@ -1440,7 +1514,7 @@ function rrRefreshOpenDetails(){
 setInterval(()=>{
  const before=TRAINS.map(t=>t.status).join('|');
  const key=rrDateKey(new Date());RR_NOW=rrNowMinutes();
- if(key!==RR_DAY_KEY){RR_DAY_KEY=key;rrApplyDailyOperations()}else rrRefreshLiveStatus();
+ if(key!==RR_DAY_KEY){RR_DAY_KEY=key;rrApplyDailyOperations();rrAssignDailyAlerts()}else rrRefreshLiveStatus();
  if(viewMode!=='journeys'){const top=board.scrollTop;drawBoard();board.scrollTop=top}
  if(TRAINS.map(t=>t.status).join('|')!==before)rrRefreshOpenDetails();
 },60000);
@@ -1652,6 +1726,7 @@ function rrFrenchText(source){
  const leading=source.match(/^\s*/)[0], trailing=source.match(/\s*$/)[0];
  let s=source.slice(leading.length,source.length-trailing.length);
  if(Object.prototype.hasOwnProperty.call(rrFrenchExact,s))return leading+rrFrenchExact[s]+trailing;
+ if(RR_ALERT_FR.has(s))return leading+RR_ALERT_FR.get(s)+trailing;
  s=s
   .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard +'+n+' min')
   .replace(/\b(\d+) journeys\b/g,(_,n)=>n+' trajets')
