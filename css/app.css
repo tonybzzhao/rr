@@ -2218,3 +2218,12 @@ body{font-size:14.5px}
  .app{--rr-tablet-side-width:clamp(280px,31vw,340px)!important;--rr-tablet-detail-width:clamp(280px,31vw,340px)!important}
 }
 @media(min-width:1261px){.app.detail-open>.rr-site-settings{width:var(--rr-panel-width)}}
+
+/* Journey time row: when the panel is too narrow for one row, the
+   Depart after / Arrive by box takes its own line instead of truncating. */
+.journey-when{container:rrwhen / inline-size;flex-wrap:wrap}
+@container rrwhen (max-width:329px){
+ .journey-when .rr-when-mode{flex:1 1 100%}
+ .journey-when .rr-when-time{flex:1 1 auto}
+ .journey-when .rr-when-time input{width:100%}
+}
