@@ -2206,3 +2206,14 @@ body{font-size:14.5px}
 /* Visible keyboard focus on map stations. */
 #map .mapnode:focus{outline:none}
 #map .mapnode:focus-visible{fill:var(--focus-ring);stroke:var(--main);stroke-width:2.5}
+
+/* Left and right panels share one width at every screen size. */
+@media(min-width:1261px){
+ .app{--rr-panel-width:376px}
+ .app:not(.folded):not(.detail-open){grid-template-columns:var(--rr-panel-width) minmax(0,1fr)!important}
+ .app:not(.folded).detail-open{grid-template-columns:var(--rr-panel-width) minmax(300px,1fr) var(--rr-panel-width)!important}
+ .app.folded.detail-open{grid-template-columns:88px minmax(300px,1fr) var(--rr-panel-width)!important}
+}
+@media(min-width:751px) and (max-width:1260px){
+ .app{--rr-tablet-side-width:clamp(280px,31vw,340px)!important;--rr-tablet-detail-width:clamp(280px,31vw,340px)!important}
+}
