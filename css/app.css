@@ -2217,3 +2217,4 @@ body{font-size:14.5px}
 @media(min-width:751px) and (max-width:1260px){
  .app{--rr-tablet-side-width:clamp(280px,31vw,340px)!important;--rr-tablet-detail-width:clamp(280px,31vw,340px)!important}
 }
+@media(min-width:1261px){.app.detail-open>.rr-site-settings{width:var(--rr-panel-width)}}
