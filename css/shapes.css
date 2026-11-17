@@ -180,3 +180,16 @@ body,.app{background:var(--rr-canvas)}
  .app.folded .map-container{margin-left:calc(var(--rr-folded-width) - 88px + var(--rr-gutter))}
  .app.folded .map-header{padding-left:calc(var(--rr-folded-width) - 88px + var(--rr-gutter))!important}
 }
+
+/* View route: the one action in the details header, so it gets a light blue
+   fill and blue text instead of blending into the white card. */
+#focusRoute{background:color-mix(in srgb,var(--main) 11%,var(--surface))!important;color:var(--main)!important;box-shadow:none!important;font-weight:600}
+#focusRoute:hover{background:color-mix(in srgb,var(--main) 18%,var(--surface))!important}
+#focusRoute svg,#focusRoute .rr-action-icon{color:var(--main)!important}
+/* Tablet widths: the panel is too narrow for the title and the labelled
+   button, so View route keeps its blue fill and icon and its label is read
+   out by screen readers only. */
+@media(min-width:751px) and (max-width:990px){
+ #focusRoute{width:36px;height:36px;padding:0!important;gap:0!important}
+ #focusRoute span{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+}
