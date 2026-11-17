@@ -1,63 +1,94 @@
 /* Shape-based theme: no divider lines. Panels sit on a soft canvas and
-   content is grouped into rounded cards, pills and filled controls. */
-:root{--rr-canvas:#EEF1F5;--rr-card-radius:12px;--rr-control-radius:8px;--rr-card-shadow:0 1px 2px #001F5A0F,0 2px 8px #001F5A0A}
+   content is grouped into cards and filled controls.
+
+   One system for every screen:
+   - Gutter: 12px from the window edge and 12px between columns, so every
+     card edge lines up with the header controls above it.
+   - Gap: 10px between stacked cards and between list cards.
+   - Corners: 14px for cards and the map, 10px for controls inside them,
+     6px for badges and tags. Nested corners stay concentric
+     (outer radius = inner radius + padding). */
+:root{
+ --rr-canvas:#EEF1F5;--rr-gutter:12px;--rr-half-gutter:6px;--rr-gap:10px;
+ --rr-radius-card:14px;--rr-radius-control:10px;--rr-radius-badge:6px;
+ --rr-card-pad:16px;--rr-card-shadow:0 1px 2px #001F5A0F,0 2px 8px #001F5A0A
+}
 :root[data-theme="dark"]{--rr-canvas:#0F151D;--rr-card-shadow:0 1px 2px #00000040}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rr-canvas:#0F151D;--rr-card-shadow:0 1px 2px #00000040}}
 
 /* Canvas and panels: no hairlines anywhere. */
 body,.app{background:var(--rr-canvas)}
 .side,.details,aside#details.details{border:0!important;background:var(--rr-canvas)!important}
-.side-header,.map-header,.rr-site-settings,.details-head,.board-tabs,.side-controls,.boardhead{border:0!important;background:var(--rr-canvas)!important}
+.side-header,.map-header,.rr-site-settings,.details-head,.board-tabs,.side-controls,.boardhead,.side-content{border:0!important;background:var(--rr-canvas)!important}
 .desktop-site-footer{border-top:0!important;background:var(--rr-canvas)!important}
 .map-area{background:var(--rr-canvas)!important}
 
-/* The map becomes one large rounded card. */
-.map-container{margin:0 10px 10px;border-radius:16px;overflow:hidden;background:var(--map);box-shadow:var(--rr-card-shadow)}
-.map-legend{border:0!important;border-radius:10px;box-shadow:var(--rr-card-shadow)}
-.zoom-control{border:0!important;border-radius:10px;overflow:hidden;box-shadow:var(--rr-card-shadow)}
-.zoom-control button{border:0!important}
+/* Column edges. Left column: 12px outside, 6px toward the map; the map 6px
+   on both sides; right column 6px toward the map, 12px outside. */
+.side-content{padding:var(--rr-gap) var(--rr-half-gutter) 0 var(--rr-gutter)!important}
+.board-tabs,.side-controls,.boardhead,.board,.mobile-planner-slot{margin-left:0!important;margin-right:0!important}
+.board{padding:0 0 var(--rr-gutter)!important}
+.map-container{margin:var(--rr-gap) var(--rr-half-gutter) var(--rr-gutter);border-radius:var(--rr-radius-card);overflow:hidden;background:var(--map);box-shadow:var(--rr-card-shadow)}
+.map-header{padding-left:var(--rr-half-gutter)!important;padding-right:var(--rr-half-gutter)!important}
+.details-body,#detailsBody{padding:0 var(--rr-gutter) var(--rr-gutter) var(--rr-half-gutter)!important;background:var(--rr-canvas)}
+.rr-site-settings{padding-right:var(--rr-gutter)!important}
 
-/* Tabs: a segmented pill instead of an underline. */
-.board-tabs{margin:2px 14px 10px;padding:4px!important;border-radius:999px!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);gap:2px}
-.board-tab{border:0!important;border-radius:999px!important;min-height:34px}
+/* Tabs: a segmented control. Track 14px, tabs 10px, 4px apart: concentric. */
+.board-tabs{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:4px!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);display:grid!important;grid-template-columns:repeat(3,1fr);gap:4px}
+.board-tab{border:0!important;border-radius:var(--rr-radius-control)!important;min-height:36px;height:36px;padding:0 8px!important;display:flex!important;align-items:center;justify-content:center;line-height:1;width:auto!important;margin:0!important}
 .board-tab.active{background:var(--main)!important;color:#fff!important}
-.board-tab.active::after,.board-tab.active::before{display:none!important}
+.board-tab.active::after,.board-tab.active::before,.board-tab::after{display:none!important}
 
-/* Station block as a card. */
-.side-controls{margin:0 14px 10px;padding:14px 16px!important;border-radius:var(--rr-card-radius);background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
-.boardhead{padding-top:4px!important;padding-bottom:6px!important}
+/* Station or journey-search block as a card. */
+.side-controls{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:var(--rr-card-pad)!important;border-radius:var(--rr-radius-card);background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
+.side-controls .picker-control,.side-controls select{background:var(--rr-canvas)!important;box-shadow:none!important}
+.side-controls .station-fac-link{padding-left:0!important;padding-right:0!important}
+
+/* Column titles line up with the text inside the cards below. */
+.boardhead{padding:2px var(--rr-card-pad) 6px!important}
 
 /* Each train or journey is its own card. */
-.board{padding:0 14px 14px}
-.trainrow,.journey-row{border:0!important;border-radius:var(--rr-card-radius)!important;background:var(--surface)!important;margin:0 0 8px;box-shadow:var(--rr-card-shadow)}
+.trainrow,.journey-row{border:0!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow);padding-left:var(--rr-card-pad)!important;padding-right:var(--rr-card-pad)!important}
 .trainrow.selected,.journey-row.selected{background:var(--selected)!important;box-shadow:inset 0 0 0 2px var(--main)!important}
 .trainrow::before,.journey-row::before{display:none!important}
-.rr-day-divider{border:0!important;background:transparent!important;padding:10px 6px 6px!important}
-.journey-more{border-radius:999px!important}
+.rr-day-divider{border:0!important;background:transparent!important;padding:6px var(--rr-card-pad) 8px!important}
+.journey-more,.journey-earlier{border-radius:var(--rr-radius-control)!important}
 
-/* Controls: filled shapes, no outlines. */
-.picker-control,.swap-stations,#trace,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#swapStations{border-color:transparent!important;border-radius:var(--rr-control-radius)!important}
+/* Map overlays sit 12px in from the map's corners. */
+.map-legend{border:0!important;border-radius:var(--rr-radius-control)!important;box-shadow:var(--rr-card-shadow);left:var(--rr-gutter)!important;bottom:var(--rr-gutter)!important}
+.zoom-control{border:0!important;border-radius:var(--rr-radius-control)!important;overflow:hidden;box-shadow:var(--rr-card-shadow);right:var(--rr-gutter)!important;bottom:var(--rr-gutter)!important}
+.zoom-control button{border:0!important}
+
+/* Controls: filled shapes, one corner size, no outlines. */
+.picker-control,.swap-stations,#trace,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#swapStations,#focusRoute,.journey-more{border-color:transparent!important;border-radius:var(--rr-radius-control)!important}
 .picker-control{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
-.picker-toggle{border-left:0!important;border-radius:0 var(--rr-control-radius) var(--rr-control-radius) 0!important}
-.swap-stations,#swapStations,#clear,.rr-when-now,.appearance-toggle,.station-info-button{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
-#trace{border-radius:999px!important;padding-left:16px;padding-right:18px}
-.side-controls .picker-control,.side-controls select{background:var(--rr-canvas)!important;box-shadow:none}
+.picker-toggle{border-left:0!important;border-radius:0 var(--rr-radius-control) var(--rr-radius-control) 0!important}
+.rr-when-mode select{border-radius:var(--rr-radius-control)}
+.swap-stations,#swapStations,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#focusRoute{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
+.side-controls .rr-when-now{background:var(--rr-canvas)!important;box-shadow:none!important}
 .picker-control:focus-within{box-shadow:0 0 0 2px var(--main)!important}
 
-/* Pills for statuses and badges. */
-.status-tag{border-radius:999px!important;padding-left:9px!important;padding-right:9px!important}
-.service,.train-number{border-radius:6px!important}
+/* Badges and tags share one small corner. */
+.status-tag{border-radius:var(--rr-radius-badge)!important}
+.service,.train-number{border-radius:var(--rr-radius-badge)!important}
 
-/* Details: hero, facts, stops and formation as stacked cards. */
-.details-body,#detailsBody{padding:0 14px 14px!important;background:var(--rr-canvas)}
-.train-hero,.journey-hero{border:0!important;border-radius:var(--rr-card-radius);background:var(--surface);padding:18px!important;margin:0 0 10px;box-shadow:var(--rr-card-shadow)}
-.info-grid{border:0!important;border-radius:var(--rr-card-radius);background:var(--surface);padding:4px 18px!important;margin:0 0 10px!important;box-shadow:var(--rr-card-shadow)}
+/* Details: a header card, then hero, facts, stops and formation cards. */
+.details-head{margin:var(--rr-gap) var(--rr-gutter) var(--rr-gap) var(--rr-half-gutter)!important;padding:0 8px 0 var(--rr-card-pad)!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);width:auto!important}
+.train-hero,.journey-hero{border:0!important;border-radius:var(--rr-radius-card);background:var(--surface);padding:var(--rr-card-pad)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow)}
+.info-grid{border:0!important;border-radius:var(--rr-radius-card);background:var(--surface);padding:6px var(--rr-card-pad)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow)}
 .fact-row{border:0!important}
-.stops-heading{padding-left:4px}
-.stop-list{border-radius:var(--rr-card-radius);background:var(--surface);padding:14px 18px!important;margin-bottom:10px;box-shadow:var(--rr-card-shadow)}
-.rr-formation{border:0!important;border-radius:var(--rr-card-radius);background:var(--surface);padding:14px 18px!important;box-shadow:var(--rr-card-shadow)}
+/* “Calling at” is the title of the stops card, not a label floating above it. */
+.stops-heading{margin:0!important;padding:var(--rr-card-pad) var(--rr-card-pad) 4px!important;background:var(--surface);border-radius:var(--rr-radius-card) var(--rr-radius-card) 0 0;box-shadow:var(--rr-card-shadow);clip-path:inset(-10px -10px 0 -10px)}
+.stops-heading+.stop-list,.stops-heading~.stop-list{clip-path:inset(0 -10px -10px -10px)}
+.stop-list{border-radius:0 0 var(--rr-radius-card) var(--rr-radius-card);background:var(--surface);padding:8px var(--rr-card-pad) var(--rr-card-pad)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow)}
+.rr-formation{border:0!important;border-radius:var(--rr-radius-card);background:var(--surface);padding:var(--rr-card-pad)!important;margin:0!important;box-shadow:var(--rr-card-shadow)}
 .rr-car-line{border:0!important}
-.jt-card{border:0!important;border-radius:var(--rr-card-radius)!important;box-shadow:var(--rr-card-shadow)}
+.jt-timeline{background:var(--surface);border-radius:var(--rr-radius-card);padding:var(--rr-card-pad)!important;margin:0!important;box-shadow:var(--rr-card-shadow)}
+.jt-card{border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--rr-canvas)!important;box-shadow:none!important}
 .jt-coach{border-top:0!important}
-.rr-alert-banner{border-left:0!important;border-radius:var(--rr-card-radius)!important;margin-left:0!important;margin-right:0!important}
-.boardhead{margin:0 14px!important}
+.rr-alert-banner{border-left:0!important;border-radius:var(--rr-radius-card)!important;margin-left:0!important;margin-right:0!important;padding:12px var(--rr-card-pad)!important}
+.jt-card .rr-alert-banner,.rr-alert-leg{border-radius:var(--rr-radius-control)!important}
+
+/* Logo and footer text start on the same edge as the cards. */
+.side-header{padding-left:var(--rr-gutter)!important}
+.desktop-site-footer{padding-left:var(--rr-gutter)!important;padding-right:var(--rr-gutter)!important}
