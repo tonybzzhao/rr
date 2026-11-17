@@ -57,12 +57,13 @@ body,.app{background:var(--rr-canvas)}
  .details .details-head{margin-top:0!important}
 }
 
-/* Tabs: one card split into three equal segments. The selected segment
-   fills its third edge to edge, so its outer corners are the card's own
-   corners and its inner sides are straight: no floating blob. */
-.board-tabs{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:0!important;border-radius:var(--rr-radius-card)!important;overflow:hidden;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);display:grid!important;grid-template-columns:repeat(3,1fr);gap:0}
-.board-tab{border:0!important;border-radius:0!important;min-height:44px;height:44px;padding:0 8px!important;display:flex!important;align-items:center;justify-content:center;line-height:1;width:auto!important;margin:0!important}
-.board-tab.active{background:var(--main)!important;color:#fff!important}
+/* Tabs: a card with the selected tab as a blue highlight inside it. The
+   highlight is inset 3px on every side and its corners follow the card's
+   (14px card = 11px highlight + 3px inset), so the two shapes stay parallel. */
+.board-tabs{margin-top:0!important;margin-bottom:var(--rr-gap)!important;padding:3px!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);display:grid!important;grid-template-columns:repeat(3,1fr);gap:3px}
+.board-tab{border:0!important;border-radius:11px!important;min-height:38px;height:38px;padding:0 8px!important;display:flex!important;align-items:center;justify-content:center;line-height:1;width:auto!important;margin:0!important;font-weight:500}
+.board-tab:not(.active):hover{background:var(--rr-canvas)!important}
+.board-tab.active{background:var(--main)!important;color:#fff!important;font-weight:700;box-shadow:0 1px 2px #001F5A26}
 .board-tab.active::after,.board-tab.active::before,.board-tab::after{display:none!important}
 
 /* Station or journey-search block as a card. */
