@@ -994,7 +994,7 @@ function rrSetPhoneView(showMap,scroll=true){
  app.classList.toggle('phone-map',showMap);
  const btn=$('rrPhoneToggle');btn.setAttribute('aria-pressed',String(showMap));
  btn.querySelector('use').setAttribute('href',showMap?'#rr-ui-train-information':'#rr-ui-route');
- btn.querySelector('.rr-phone-toggle-text').textContent=showMap?'List':'Map';
+ btn.querySelector('.rr-phone-toggle-text').textContent=showMap?'Timetable':'Map';
  if(scroll)window.scrollTo(0,0);
  if(showMap)requestAnimationFrame(()=>{resize();drawMap()});
 }
@@ -1626,7 +1626,7 @@ const rrFrenchExact=Object.freeze({
  'No journeys found between these stations in the current timetable.':'Aucun trajet trouvé entre ces gares dans les horaires disponibles.',
  'Back to journey':'Retour au trajet',
  'Tomorrow':'Demain','Depart after':'Départ après','Arrive by':'Arrivée avant','Now':'Maintenant','Search by':'Rechercher par',
- 'Map':'Carte','List':'Liste',
+ 'Map':'Carte','Timetable':'Horaires',
  'Show earlier journeys':'Afficher les trajets précédents','Arriving':'À l’approche',
  'Sleeper cabins':'Cabines-lits','Night catering':'Restauration de nuit',
  'Standard accommodation':'Places en classe Standard',
