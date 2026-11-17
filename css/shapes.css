@@ -97,6 +97,10 @@ body,.app{background:var(--rr-canvas)}
 .picker-control{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
 .picker-toggle{border-left:0!important;border-radius:0 var(--rr-radius-control) var(--rr-radius-control) 0!important}
 .rr-when-mode select{border-radius:var(--rr-radius-control)}
+/* Depart after / Arrive by is styled like the station dropdowns: the same
+   32px arrow segment behind a thin divider. */
+.rr-when-mode .picker-toggle{width:32px!important;border-left:1px solid var(--stroke-soft)!important}
+.rr-when-mode select{padding-right:40px}
 .swap-stations,#swapStations,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#focusRoute{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
 .side-controls .rr-when-now{background:var(--rr-canvas)!important;box-shadow:none!important}
 .picker-control:focus-within{box-shadow:0 0 0 2px var(--main)!important}
@@ -132,16 +136,13 @@ body,.app{background:var(--rr-canvas)}
  .journey-when .rr-when-mode{flex:1 1 auto!important;min-width:0}
  .journey-when .rr-when-time{flex:0 0 auto!important}
  .journey-when .rr-when-time input{width:auto!important}
- .journey-when .rr-when-mode select{padding-right:30px}
- .journey-when .rr-when-mode .picker-toggle{width:30px}
 }
 /* Narrow panels: Now becomes the “now” clock icon (its text stays for
    screen readers) and the time box drops its picker icon, so all three
    still fit on one row in every language. */
 @container rrwhen (min-width:220px) and (max-width:299px){
- .journey-when .rr-when-mode select,.journey-when .rr-when-time input{font-size:12.5px}
- .journey-when .rr-when-mode select{padding-left:8px;padding-right:24px}
- .journey-when .rr-when-mode .picker-toggle{width:24px}
+ .journey-when .rr-when-mode select,.journey-when .rr-when-time input{font-size:12px}
+ .journey-when .rr-when-mode select{padding-left:8px;padding-right:34px}
  .journey-when .rr-when-time input{padding:0 6px;width:70px!important;text-align:center}
  .journey-when .rr-when-time input::-webkit-calendar-picker-indicator{display:none}
  .journey-when .rr-when-now{width:36px;padding:0!important;font-size:0!important;display:flex;align-items:center;justify-content:center}
