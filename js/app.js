@@ -348,7 +348,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
- const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${returnTrain.train.id}"><span aria-hidden="true">←</span> Back to ${returnTrain.train.id}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney">← Back to journey</button>`:'';
+ const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${returnTrain.train.id}"><span aria-hidden="true">←</span> Back to ${returnTrain.train.id}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true">←</span> Back to journey</button>`:'';
  detail.innerHTML=`<div class="station-name-band">${name}</div>
  ${backButton}<div class="facilities-heading">Standard facilities</div><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
  ${additional.length?`<div class="facilities-heading">Additional station facilities</div><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}

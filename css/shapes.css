@@ -200,3 +200,10 @@ body,.app{background:var(--rr-canvas)}
 .details-body .station-name-band{display:block!important;width:auto!important;max-width:none!important;margin:0 0 var(--rr-gap)!important;padding:var(--rr-card-pad)!important;background:var(--surface)!important;color:var(--ink)!important;border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow)}
 .details-body .facilities-heading:has(+ .station-picto-grid){margin:0!important;padding:var(--rr-card-pad) var(--rr-card-pad) 4px!important;background:var(--surface);border-radius:var(--rr-radius-card) var(--rr-radius-card) 0 0;box-shadow:var(--rr-card-shadow);clip-path:inset(-10px -10px 0 -10px)}
 .details-body .facilities-heading+.station-picto-grid{margin:-1px 0 var(--rr-gap)!important;padding:13px var(--rr-card-pad) var(--rr-card-pad)!important;background:var(--surface);border-radius:0 0 var(--rr-radius-card) var(--rr-radius-card);box-shadow:var(--rr-card-shadow);clip-path:inset(0 -10px -10px -10px);gap:16px 4px!important}
+
+/* Back to train / Back to journey: a 36px control like the other buttons
+   (white fill on the canvas, 10px corners, soft shadow, neutral text),
+   spaced from the cards above and below by the standard 10px gap. */
+.details-body .back-to-train{display:inline-flex!important;align-items:center;gap:8px!important;height:36px;box-sizing:border-box;margin:0 0 var(--rr-gap)!important;padding:0 14px 0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important;font-size:13px!important;font-weight:600!important;line-height:1!important}
+.details-body .back-to-train:hover{background:var(--hover-blue)!important;color:var(--main)!important}
+.details-body .back-to-train span{font-size:16px!important;line-height:1}
