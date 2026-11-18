@@ -5,7 +5,7 @@
 :root{
  /* Operators, travelled paths, railway lines and first class. */
  /* Immutable source colours are used only to identify service types in data. */
- --rr-base-main:#0057B8;--rr-base-via:#D162C0;--rr-base-night:#394779;
+ --rr-base-main:#0057B8;--rr-base-regio:#146E78;--rr-base-via:#D162C0;--rr-base-night:#394779;
  --rr-base-travel-main:#4D8EE9;--rr-base-travel-via:#F08ADF;--rr-base-travel-night:#7080B1;
  /* Exactly one visible colour per service in each appearance.
     Light VIA and travelled shades are AA-adjusted for text on light surfaces. */
@@ -88,7 +88,7 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--main);outline-
 #map{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-user-drag:none}#map text,#map tspan,#map .station-label,#map .mapnode{user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
 #map.drag{cursor:grabbing}
 .rail{fill:none;stroke:var(--rail);stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-.rail.hsl{stroke-width:5.8}.rail.ml{stroke-width:2.8}
+.rail.hsl{stroke-width:5.8}.rail.ml{stroke-width:2.8}.rail.regio{stroke:var(--rr-base-regio);stroke-width:2;opacity:.75}
 .rail-under{fill:none;stroke:var(--surface);stroke-width:10;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
 .route-line{fill:none;vector-effect:non-scaling-stroke;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
 .mapnode{cursor:pointer}
@@ -2251,3 +2251,5 @@ body{font-size:14.5px}
 .rr-alert-cancel{--rr-alert-color:var(--status-cancelled);--rr-alert-bg:var(--status-cancelled-bg)}
 .rr-alert-banner{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px;padding:10px 12px;border-left:3px solid var(--rr-alert-color);border-radius:3px;background:var(--rr-alert-bg);color:var(--ink-strong);font-size:13px;line-height:1.4}
 .rr-alert-leg{margin:8px 0 2px;font-size:12.5px}
+
+.keymark.regio{border-top-color:var(--rr-base-regio);border-top-width:2px}
