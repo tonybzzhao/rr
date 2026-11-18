@@ -193,3 +193,10 @@ body,.app{background:var(--rr-canvas)}
  #focusRoute{width:36px;height:36px;padding:0!important;gap:0!important}
  #focusRoute span{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
+
+/* Station information: the same cards as train details. The station name is
+   the header card; each group of facilities is one card with its title
+   inside, like “Calling at”. */
+.details-body .station-name-band{display:block!important;width:auto!important;max-width:none!important;margin:0 0 var(--rr-gap)!important;padding:var(--rr-card-pad)!important;background:var(--surface)!important;color:var(--ink)!important;border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow)}
+.details-body .facilities-heading:has(+ .station-picto-grid){margin:0!important;padding:var(--rr-card-pad) var(--rr-card-pad) 4px!important;background:var(--surface);border-radius:var(--rr-radius-card) var(--rr-radius-card) 0 0;box-shadow:var(--rr-card-shadow);clip-path:inset(-10px -10px 0 -10px)}
+.details-body .facilities-heading+.station-picto-grid{margin:-1px 0 var(--rr-gap)!important;padding:13px var(--rr-card-pad) var(--rr-card-pad)!important;background:var(--surface);border-radius:0 0 var(--rr-radius-card) var(--rr-radius-card);box-shadow:var(--rr-card-shadow);clip-path:inset(0 -10px -10px -10px);gap:16px 4px!important}
