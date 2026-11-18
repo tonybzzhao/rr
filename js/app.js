@@ -348,7 +348,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
- const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${returnTrain.train.id}"><span aria-hidden="true">←</span> Back to ${returnTrain.train.id}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true">←</span> Back to journey</button>`:'';
+ const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${returnTrain.train.id}"><span aria-hidden="true">←</span><span>Back to</span><span class="service${returnTrain.train.type==='InterCity'?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(returnTrain.train.type)};--rr-white-text-fill:${rrCssWhiteTextFill(returnTrain.train.type)}">${returnTrain.train.id}</span></button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true">←</span> Back to journey</button>`:'';
  detail.innerHTML=`<div class="station-name-band">${name}</div>
  ${backButton}<div class="facilities-heading">Standard facilities</div><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
  ${additional.length?`<div class="facilities-heading">Additional station facilities</div><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}
@@ -1699,7 +1699,7 @@ const rrFrenchExact=Object.freeze({
  'High-speed available':'Grande vitesse disponible','Mainline only':'Magistrale uniquement',
  'RR Mainline':'RR Magistrale','RR InterCity':'RR Intercités','RR Nightline':'RR Nocturne',
  'No journeys found between these stations in the current timetable.':'Aucun trajet trouvé entre ces gares dans les horaires disponibles.',
- 'Back to journey':'Retour au trajet',
+ 'Back to journey':'Retour au trajet','Back to':'Retour au train',
  'Tomorrow':'Demain','Depart after':'Départ après','Arrive by':'Arrivée avant','Now':'Maintenant','Search by':'Rechercher par',
  'Map':'Carte','Timetable':'Horaires',
  'Show earlier journeys':'Afficher les trajets précédents','Arriving':'À l’approche',
