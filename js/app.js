@@ -404,8 +404,8 @@ const RR_ALERT_CAUSES=[
  ['trespassers on the railway near {s}','la présence de personnes sur les voies près de {s}'],
  ['an obstruction on the line near {s}','un obstacle sur la voie près de {s}'],
  ['a passenger being taken ill at {s}','un voyageur malade à {s}'],
- ['emergency engineering work near {s}','des travaux d’urgence près de {s}'],
- ['a speed restriction over a defective rail near {s}','une limitation de vitesse due à un rail défectueux près de {s}'],
+ ['emergency engineering work near {s}','des travaux d’urgence près de {s}',true],
+ ['a speed restriction over a defective rail near {s}','une limitation de vitesse due à un rail défectueux près de {s}',true],
  ['congestion caused by an earlier incident','une congestion due à un incident antérieur'],
  ['a late-running freight train','un train de fret en retard'],
  ['a fire alarm at {s} station','une alarme incendie en gare de {s}'],
@@ -420,10 +420,10 @@ const RR_ALERT_SEASONAL={
 function rrSeason(){const m=new Date().getMonth();return m>=8&&m<=10?'autumn':m===11||m<=1?'winter':m>=5&&m<=7?'summer':'spring'}
 function rrAlertCause(t,r){
  const pool=[...RR_ALERT_CAUSES,...RR_ALERT_SEASONAL[rrSeason()],...RR_ALERT_SEASONAL[rrSeason()]];
- const [en,fr]=pool[Math.floor(r()*pool.length)];
+ const [en,fr,works=false]=pool[Math.floor(r()*pool.length)];
  const names=t.route.map(s=>s[0]),i=Math.floor(r()*(names.length-1));
  const fill=x=>x.replace('{s}',names[i]).replace('{a}',names[i]).replace('{b}',names[i+1]);
- return [fill(en),fill(fr).replace(/\bde (?=[AEIOUYÉÈÂ])/g,'d’')];
+ return [fill(en),fill(fr).replace(/\bde (?=[AEIOUYÉÈÂ])/g,'d’'),works];
 }
 function rrAlertNotices(t){
  const form=RR_FORMATIONS[rrFormationKey(t)],f=new Set((form?.cars||[]).flatMap(c=>c.features));const out=[];
@@ -436,11 +436,11 @@ function rrAlertNotices(t){
  return out;
 }
 function rrAssignDailyAlerts(){
- const add=(t,kind,en,fr)=>{t.dailyAlert={kind,en};RR_ALERT_FR.set(en,fr)};
+ const add=(t,kind,en,fr,works=false)=>{t.dailyAlert={kind,en,works};RR_ALERT_FR.set(en,fr)};
  for(const t of TRAINS){
   t.dailyAlert=null;const r=rrRandom(rrHash('alert|'+RR_DAY_KEY+'|'+t.id));
-  if(t.dailyProblem==='cancel'){const [en,fr]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`)}
-  else if(t.dailyProblem==='delay'&&t.dailyDelay>=5){const [en,fr]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`)}
+  if(t.dailyProblem==='cancel'){const [en,fr,works]=rrAlertCause(t,r);add(t,'cancel',`This train has been cancelled because of ${en}.`,`Ce train est supprimé en raison ${rrFrDe(fr)}.`,works)}
+  else if(t.dailyProblem==='delay'&&t.dailyDelay>=5){const [en,fr,works]=rrAlertCause(t,r);add(t,'delay',`This train has been delayed by ${en}.`,`Ce train est retardé en raison ${rrFrDe(fr)}.`,works)}
   else if(t.dailyProblem==='notice'){const list=rrAlertNotices(t);const [en,fr]=list[Math.floor(r()*list.length)];add(t,'notice',en,fr)}
  }
 }
@@ -452,14 +452,18 @@ function rrVisibleAlert(t){
  if(a.kind==='delay'&&!delayMinutes(t.status))return null;
  return a;
 }
+// Engineering work and track maintenance alerts show the construction icon;
+// every other alert shows the warning icon.
+const RR_WORKS_ICON='rr-picto-construction';
+function rrAlertIconId(a){return a.works&&document.getElementById(RR_WORKS_ICON)?RR_WORKS_ICON:'rr-settings-warning'}
 // On boards only a warning icon flags the train; the message is in its details.
 function rrAlertFlag(t){
  const a=rrVisibleAlert(t);if(!a)return '';
- return `<svg class="rr-alert-flag rr-alert-${a.kind}" viewBox="0 0 32 32" role="img" aria-label="Service alert" focusable="false"><use href="#rr-settings-warning"></use></svg>`;
+ return `<svg class="rr-alert-flag rr-alert-${a.kind}" viewBox="0 0 32 32" role="img" aria-label="${a.works?'Engineering works':'Service alert'}" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg>`;
 }
 function rrAlertMarkup(t,cls='rr-alert-banner'){
  const a=rrVisibleAlert(t);if(!a)return '';
- return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#rr-settings-warning"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
+ return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
 }
 rrAssignDailyAlerts();
 function rrIcon(name,cls='rr-picto'){
@@ -1699,7 +1703,7 @@ const rrFrenchExact=Object.freeze({
  'High-speed available':'Grande vitesse disponible','Mainline only':'Magistrale uniquement',
  'RR Mainline':'RR Magistrale','RR InterCity':'RR Intercités','RR Nightline':'RR Nocturne',
  'No journeys found between these stations in the current timetable.':'Aucun trajet trouvé entre ces gares dans les horaires disponibles.',
- 'Back to journey':'Retour au trajet','Back to':'Retour au train',
+ 'Back to journey':'Retour au trajet','Back to':'Retour au train','Engineering works':'Travaux',
  'Tomorrow':'Demain','Depart after':'Départ après','Arrive by':'Arrivée avant','Now':'Maintenant','Search by':'Rechercher par',
  'Map':'Carte','Timetable':'Horaires',
  'Show earlier journeys':'Afficher les trajets précédents','Arriving':'À l’approche',
