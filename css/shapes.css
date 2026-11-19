@@ -327,3 +327,8 @@ body,.app{background:var(--rr-canvas)}
 .journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:0!important;border-radius:10px!important;font-weight:600!important;font-size:13.5px!important;gap:8px!important}
 .journey-actions-slot #trace:hover{background:var(--ui-hover)!important}
 .journey-actions-slot #trace .rr-action-icon{color:var(--ui-on)!important;fill:currentColor}
+
+/* Selected train / journey: the trip stands out, the network steps back. */
+.app.trip-focus .rail{opacity:.32}
+.label-time{font-weight:500;fill:var(--muted-slate);font-size:.82em}
+.label[data-trip="hub"]{fill:var(--muted-slate)!important;opacity:.7}

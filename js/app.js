@@ -243,7 +243,8 @@ function rrBoardStatus(t,isArrival){
 function upcoming(station){return TRAINS.map(t=>{const index=t.route.findIndex(s=>s[0]===station);if(index<0||index===t.route.length-1)return null;return{...t,hereTime:t.route[index][1],hereIndex:index}}).filter(Boolean).map(rrWithBoardTime).sort((a,b)=>a.boardRel-b.boardRel||a.id.localeCompare(b.id))}
 function arriving(station){return TRAINS.map(t=>{const index=t.route.findIndex(s=>s[0]===station);if(index<=0)return null;return{...t,hereTime:t.route[index][1],hereIndex:index}}).filter(Boolean).map(rrWithBoardTime).sort((a,b)=>a.boardRel-b.boardRel||a.id.localeCompare(b.id))}
 let departures=[];
-let serviceFilter='all',rrStationNetwork=null;
+let serviceFilter='all',rrStationNetwork=null,rrBoardShown=15,rrBoardKey='';
+const RR_BOARD_PAGE=15;
 function rrNetworkAt(station){const c=new Map();for(const t of TRAINS)if(t.type==='Regio'&&t.network&&t.route.some(r=>r[0]===station))c.set(t.network,(c.get(t.network)||0)+1);let best=null,n=0;for(const [k,v] of c)if(v>n){best=k;n=v}return best}
 new MutationObserver(()=>{if(typeof drawMap==='function'){drawMap();if(typeof drawRoute==='function'&&(selectedTrain||selectedJourney||selectedPath.length))drawRoute()}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 const RR_MAINLINE_TYPES=new Set(['Max','VIA','InterCity','Nightline']);
@@ -268,8 +269,13 @@ function drawBoard(){
  $('stationBoardTitle').textContent=isArrival?'Arrivals':'Departures';
  $('boardRouteHeader').textContent=isArrival?'Origin':'Destination';
  if(!departures.length){board.innerHTML=serviceFilter==='local'?'<div class="empty">No Local services yet.</div>':`<div class="empty">No ${isArrival?'arrivals':'departures'}.</div>`;return}
+ // Like journeys: a page of trains, then "Show more trains" (no endless scroll).
+ const boardKey=currentStation+'|'+viewMode+'|'+serviceFilter;
+ if(boardKey!==rrBoardKey){rrBoardKey=boardKey;rrBoardShown=RR_BOARD_PAGE}
+ const selIndex=selectedTrain?departures.findIndex(t=>t.id===selectedTrain.id):-1;
+ if(selIndex>=rrBoardShown)rrBoardShown=Math.ceil((selIndex+1)/RR_BOARD_PAGE)*RR_BOARD_PAGE;   // keep the chosen train visible
  let dividerShown=false;
- for(const t of departures){
+ for(const t of departures.slice(0,rrBoardShown)){
   if(t.tomorrow&&!dividerShown){dividerShown=true;const d=document.createElement('div');d.className='rr-day-divider';d.textContent='Tomorrow';board.append(d)}
   const row=document.createElement('button');
   row.type='button';
@@ -279,6 +285,11 @@ function drawBoard(){
   row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</span><span><span class="dest">${isArrival?t.origin:t.dest}</span><span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrAlertFlag(t)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
   row.addEventListener('click',()=>chooseTrain(t));
   board.append(row);
+ }
+ if(rrBoardShown<departures.length){
+  const more=document.createElement('button');more.type='button';more.className='journey-more';more.textContent='Show more trains';
+  more.addEventListener('click',()=>{const y=board.scrollTop;rrBoardShown+=RR_BOARD_PAGE;drawBoard();board.scrollTop=y});
+  board.append(more);
  }
 }
 function setCurrentStation(name){
@@ -931,12 +942,31 @@ function rrLabelAcross(s){
  const clear=a=>Math.min(...ang.map(b=>{const d=Math.abs(((a*Math.PI/180-b)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);return d}));
  return Object.keys(DIR).sort((x,y)=>clear(DIR[y])-clear(DIR[x])||(x.length-y.length));
 }
+function rrTripFocus(){
+ if(!(selectedTrain||selectedJourney))return null;
+ const calls=new Set(selectedNames),key=new Map(),changes=new Set();
+ const tm=(t,i)=>String(t.route[i][1]).split(' ')[0];
+ if(selectedJourney){
+  const L=selectedJourney.legs;
+  key.set(L[0].from,tm(L[0].train,L[0].fromIdx));
+  key.set(L[L.length-1].to,tm(L[L.length-1].train,L[L.length-1].toIdx));
+  for(let i=0;i<L.length-1;i++){changes.add(L[i].to);key.set(L[i].to,tm(L[i].train,L[i].toIdx)+' – '+tm(L[i+1].train,L[i+1].fromIdx))}
+ }else{
+  const t=selectedTrain,r=t.route;
+  key.set(r[0][0],tm(t,0));key.set(r[r.length-1][0],tm(t,r.length-1));
+  const h=r.findIndex(x=>x[0]===currentStation);if(h>=0)key.set(currentStation,tm(t,h));
+ }
+ const onPath=new Set(selectedPath);
+ const through=new Set(STATIONS.filter(s=>onPath.has(s.point)&&!calls.has(s.name)).map(s=>s.name));
+ return {calls,key,changes,through};
+}
 function drawMap(){
  if(!W||!H)return;
  const focusedStation=document.activeElement?.classList?.contains('mapnode')?document.activeElement.getAttribute('aria-label'):rrPendingMapFocus;
  rrPendingMapFocus=null;
  layer.replaceChildren();labels.replaceChildren();tooltip.style.display='none';
  const sc=fit*zoom,visible=[];
+ const rrTrip=rrTripFocus();app.classList.toggle('trip-focus',!!rrTrip);
  const selectedSet=new Set(selectedNames);
  const progressIndex=selectedTrain?rrTrainProgressIndex(selectedTrain):0;
  const passedStationNames=new Set(progressIndex>0?selectedTrain.route.slice(0,progressIndex).map(([name])=>name):[]);
@@ -950,6 +980,8 @@ function drawMap(){
  const rrDotTake=(x,y)=>{const k=Math.floor(x/RR_DOT_GAP)+','+Math.floor(y/RR_DOT_GAP);if(!rrDotGrid.has(k))rrDotGrid.set(k,[]);rrDotGrid.get(k).push([x,y])};
  for(const s of RR_DOT_ORDER){
   if(s.regio&&zoom<2.2&&!selectedSet.has(s.name)&&s.name!==currentStation)continue; // Regio halts appear when zoomed in
+  const tripRole=rrTrip?(rrTrip.calls.has(s.name)||s.name===currentStation?'call':rrTrip.through.has(s.name)?'through':LABELS.includes(s.name)?'hub':null):null;
+  if(rrTrip&&!tripRole)continue;                       // a selected trip hides stations it has nothing to do with
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
   const focus=viewMode==='journeys'?'all':serviceFilter,pinned=selectedSet.has(s.name)||s.name===currentStation;
@@ -996,6 +1028,8 @@ function drawMap(){
   hit.addEventListener('mouseleave',()=>tooltip.style.display='none');
   hit.addEventListener('focus',()=>{tooltip.textContent=s.name;tooltip.style.display='block';tooltip.style.left=x+'px';tooltip.style.top=(y-13)+'px'});
   hit.addEventListener('blur',()=>tooltip.style.display='none');
+  if(tripRole==='hub')g.setAttribute('opacity','.35');
+  if(tripRole==='through'){g.replaceChildren();g.append(se('circle',{cx:x,cy:y,r:2.6,fill:RR_UI_CSS_COLOR('--surface'),stroke:RR_UI_CSS_COLOR('--muted-slate'),'stroke-width':1.2,'pointer-events':'none'}))}
   g.append(hit);layer.append(g);
   // Keep keyboard focus on the same station when the map redraws.
   if(focusedStation===s.name){rrPendingMapFocus=s.name;requestAnimationFrame(()=>{if(hit.isConnected){hit.focus({preventScroll:true});if(document.activeElement===hit)rrPendingMapFocus=null}})}
@@ -1004,14 +1038,22 @@ function drawMap(){
  const priorities=[currentStation];
  for(const n of selectedNames)if(!priorities.includes(n))priorities.push(n);
  for(const n of LABELS)if(!priorities.includes(n))priorities.push(n);
- if(zoom>=1.30)for(const s of visible)if(!priorities.includes(s.name))priorities.push(s.name);
+ if(rrTrip){
+  priorities.length=0;
+  const add=n=>{if(n&&!priorities.includes(n))priorities.push(n)};
+  rrTrip.key.forEach((_,n)=>add(n));rrTrip.changes.forEach(add);rrTrip.calls.forEach(add);
+  for(const n of LABELS)add(n);
+  for(let i=priorities.length-1;i>=0;i--)if(rrTrip.through.has(priorities[i]))priorities.splice(i,1);
+ }else if(zoom>=1.30)for(const s of visible)if(!priorities.includes(s.name))priorities.push(s.name);
  // Avoid putting enlarged labels beneath the map legend or zoom controls.
  const mapBounds=container.getBoundingClientRect();
  const overlayRects=[...container.querySelectorAll('.map-legend,.zoom-control')]
   .map(el=>{const b=el.getBoundingClientRect();return {x:b.left-mapBounds.left,y:b.top-mapBounds.top,w:b.width,h:b.height}})
   .filter(r=>r.w>0&&r.h>0);
  const placed=[],segments=[];
- for(const [a,b] of E){
+ // During a trip only the trip's own line blocks names; the faded network behind it does not.
+ const segEdges=rrTrip?selectedPath.slice(1).map((b,i)=>[selectedPath[i],b]):E;
+ for(const [a,b] of segEdges){
   const pa=P[a],pb=P[b];
   const x1=pa[0]*sc+offX,y1=pa[1]*sc+offY,x2=pb[0]*sc+offX,y2=pb[1]*sc+offY;
   if(Math.max(x1,x2)<-20||Math.min(x1,x2)>W+20||Math.max(y1,y2)<-20||Math.min(y1,y2)>H+20)continue;
@@ -1019,12 +1061,13 @@ function drawMap(){
  }
  for(const name of priorities){
   const s=byVisible.get(name);if(!s)continue;
-  const important=LABELS.includes(name);
+  const tripKey=!!rrTrip&&(rrTrip.key.has(name)||rrTrip.changes.has(name)),tripHub=!!rrTrip&&!rrTrip.calls.has(name)&&name!==currentStation;
+  const important=rrTrip?tripKey:LABELS.includes(name);
   const mixedServiceInterchange=!!(selectedJourney&&selectedPath.length&&selectedSet.has(name)&&interchangeMarkers.get(name)?.colors.length>1);
-  const minor=!!byVisible.get(name)?.regio&&!important;
+  const minor=(!!byVisible.get(name)?.regio&&!important)||tripHub;
   const fontSize=minor?12.5:15.625,weight=important||mixedServiceInterchange?700:500,lh=minor?14.5:18.125;
   ctx.font=`${weight} ${fontSize}px Frutiger,Arial`;
-  const splits=splitName(name);
+  const splits=tripKey?splitName(name).map(l=>[...l,rrTrip.key.get(name)]):splitName(name);
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
   // Prefer a side label. Left-side labels are right-aligned; right-side labels are left-aligned.
   const preferredSide=s.sx>W*.68?'W':s.sx<W*.32?'E':hint[2]==='end'?'W':hint[2]==='start'?'E':s.sx<W/2?'E':'W';
@@ -1075,7 +1118,8 @@ function drawMap(){
    }
    text.setAttribute('data-route-label',selectedTrain&&passedStationNames.has(name)?'passed':'forthcoming');
   }
-  chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});span.textContent=line;text.append(span)});
+  if(tripHub)text.setAttribute('data-trip','hub');
+  chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});if(tripKey&&i===chosen.lines.length-1)span.setAttribute('class','label-time');span.textContent=line;text.append(span)});
   group.append(text);
   group.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(name)});
   group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(name)}});
@@ -1502,7 +1546,7 @@ function fillJourneyDetails(j){
   rows+=`<li class="jt-leg" style="${accent}"><ol class="jt-leg-list">`;
   rows+=rrJourneyNode(t,leg.fromIdx,leg.from,'board',index?'dot':'none','solid',index);
   rows+=`<li class="jt-row jt-ride"><div class="jt-time"></div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"></div><div class="jt-card">
-   <h3 class="jt-card-head"><span class="service${rrOutline(t)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${rrTrainLabel(t)}</span><span class="jt-service">${rrServiceLabel(t.type)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
+   <h3 class="jt-card-head"><span class="service${rrOutline(t)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${rrTrainLabel(t)}</span><span class="jt-service">${rrServiceLabel(t.type,t.network)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
    <div class="jt-towards"><span class="jt-towards-label">towards</span> <span>${t.dest}</span></div>
    <div class="jt-meta"><span>${fmtDuration(leg.arr-leg.dep)}</span><span class="jt-sep" aria-hidden="true">·</span>${calls.length?`<button type="button" class="jt-calls-toggle" aria-expanded="false" aria-controls="${callsId}"><span>${stopsLabel}</span><span class="jt-chevron" aria-hidden="true"></span></button>`:`<span>${stopsLabel}</span>`}</div>
    ${rrJourneyCoachSummary(t,leg.from,leg.to)}
@@ -1699,6 +1743,7 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
+ 'Show more trains':'Afficher plus de trains',
  'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
  'South Radeland':'Radeland-Sud',
