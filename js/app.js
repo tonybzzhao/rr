@@ -975,8 +975,8 @@ function drawMap(){
   }else if(activeColors.length){
    appendStationDisc(g,x,y,radius,[activeColors[0]]);
   }else{
-   const sysColor=s.sys==='M'?RR_UI_CSS_COLOR('--main'):s.sys==='R'?RR_UI_CSS_COLOR('--regio'):RR_UI_CSS_COLOR('--muted');
-   g.append(se('circle',{cx:x,cy:y,r:radius,fill:important?RR_UI_CSS_COLOR('--surface'):sysColor,stroke:important?(s.sys==='MR'?RR_UI_CSS_COLOR('--muted-slate'):sysColor):'none','stroke-width':important?1.8:1.4,'pointer-events':'none'}));
+   const sysColor=s.sys==='M'?RR_UI_CSS_COLOR('--rail'):s.sys==='R'?RR_UI_CSS_COLOR('--rail-regio'):RR_UI_CSS_COLOR('--muted');
+   g.append(se('circle',{cx:x,cy:y,r:radius,fill:important?RR_UI_CSS_COLOR('--surface'):sysColor,stroke:important?RR_UI_CSS_COLOR('--muted-slate'):RR_UI_CSS_COLOR('--surface'),'stroke-width':important?1.8:1.1,'pointer-events':'none'}));
   }
   const hit=se('circle',{cx:x,cy:y,r:12,fill:'transparent',class:'mapnode',role:'button','aria-label':s.name,tabindex:0});
   hit.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(s.name)});
@@ -1054,7 +1054,7 @@ function drawMap(){
   placed.push(chosen);
   const group=se('g',{class:'station-label',role:'button',tabindex:0,'aria-label':`Show departures at ${name}`});
   const textX=chosen.anchor==='end'?chosen.x+chosen.w:chosen.anchor==='middle'?chosen.x+chosen.w/2:chosen.x;
-  const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,class:'label'+(important?' important':''),'pointer-events':'all'});
+  const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,style:`font-size:${fontSize}px`,class:'label'+(important?' important':''),'pointer-events':'all'});
   const routeNameColor=selectedLabelColors.get(name);
   if(routeNameColor){
    text.style.fill=routeNameColor;
