@@ -7,12 +7,24 @@ const GRAPH={"pts":[[1440,3570],[1440.0,3555.0],[1440.0,3540.0],[1440.0,3585.0],
    same disruption on the same day and a new pattern tomorrow. Delays only show
    for trains that are running or due to leave soon, as they would on a real
    information screen. */
+/* Radeland time, one zone nationwide: Radelish Standard Time (RST, UTC−1); Radelish Daylight Time (RDT, UTC±0) from the
+   last Sunday of March to the last Sunday of October, changing at 01:00 UTC.
+   Timetables and opening hours are written in Radeland local time, and "now" is Radeland's clock. Every time shown
+   is converted to the visitor's own time zone (RR_SHOW_SHIFT minutes). */
+function rrLastSunday(y,m){const d=new Date(Date.UTC(y,m+1,0,1));d.setUTCDate(d.getUTCDate()-d.getUTCDay());return d.getTime()}
+function rrRadelandOffset(ms=Date.now()){const y=new Date(ms).getUTCFullYear();return ms>=rrLastSunday(y,2)&&ms<rrLastSunday(y,9)?0:-60}
+function rrNow(){const ms=Date.now(),d=new Date(ms);return new Date(ms+(rrRadelandOffset(ms)+d.getTimezoneOffset())*60000)}   // local getters read Radeland wall-clock time
+const RR_SHOW_SHIFT=-new Date().getTimezoneOffset()-rrRadelandOffset();
+function rrShowMinutes(m){return m+RR_SHOW_SHIFT}
+// How many of the visitor's calendar days ahead something is that happens rel minutes from now.
+function rrLocalDayOff(rel){return Math.round((rrDay(0,new Date(Date.now()+rel*60000))-rrDay(0))/864e5)}
+function rrToRadeland(m){return m-RR_SHOW_SHIFT}
 function rrDateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-let RR_DAY_KEY=rrDateKey(new Date());
-function rrNowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes()}
+let RR_DAY_KEY=rrDateKey(rrNow());
+function rrNowMinutes(){const d=rrNow();return d.getHours()*60+d.getMinutes()}
 // Dates: long form "Wednesday, 18/11/2026", short form "Wed, 18/11" (French: "mercredi 18/11/2026", "mer. 18/11").
 const RR_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-function rrDay(offset=0,base=new Date()){const d=new Date(base);d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return d}
+function rrDay(offset=0,base=new Date()){/* dates shown follow the visitor's calendar */const d=new Date(base);d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return d}
 function rrIsoDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function rrFmtDate(d,long=true){const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),wd=RR_DAYS[d.getDay()];
  return long?`${wd}, ${dd}/${mm}/${d.getFullYear()}`:`${wd.slice(0,3)}, ${dd}/${mm}`}
@@ -312,7 +324,7 @@ function drawBoard(){
  if(selIndex>=rrBoardShown)rrBoardShown=Math.ceil((selIndex+1)/RR_BOARD_PAGE)*RR_BOARD_PAGE;   // keep the chosen train visible
  let dividerShown=false;
  for(const t of departures.slice(0,rrBoardShown)){
-  if(t.tomorrow&&!dividerShown){dividerShown=true;const d=document.createElement('div');d.className='rr-day-divider';d.textContent=rrDayLabel(1);board.append(d)}
+  if(rrLocalDayOff(t.boardRel)>0&&!dividerShown){dividerShown=true;const d=document.createElement('div');d.className='rr-day-divider';d.textContent=rrDayLabel(1);board.append(d)}
   const row=document.createElement('button');
   row.type='button';
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
@@ -401,9 +413,9 @@ const RR_FAC_NOTE={'RR Services':'Tickets, travel advice and help with your jour
  'First Class lounge':'For First Class ticket holders','Lost property':'Items found on trains and at the station','Café':'Food and drinks','Luggage':'Left luggage'};
 function rrStationTier(name){return NATIONAL_HUBS.has(name)?'national':MAJOR_STATIONS.has(name)?'major':(REGIONAL_INTERCHANGES.has(name)||AIRPORT_STATIONS.has(name))?'regional':'local'}
 function rrHoursOn(h,day){return day===0?h.sun:day===6?h.sat:h.wk}
-function rrClock(m){return m>=1440?'24:00':rrMinutesToInput(m)}
+function rrClock(m){return m>=1440&&!RR_SHOW_SHIFT?'24:00':rrMinutesToInput(rrShowMinutes(m))}
 function rrOpenStatus(h){
- const d=new Date(),day=d.getDay(),now=d.getHours()*60+d.getMinutes(),t=rrHoursOn(h,day);
+ const d=rrNow(),day=d.getDay(),now=d.getHours()*60+d.getMinutes(),t=rrHoursOn(h,day);
  if(t&&t[0]===0&&t[1]>=1440)return{open:true,text:'Open 24 hours'};
  if(t&&now>=t[0]&&now<t[1])return{open:true,text:'Open now · closes '+rrClock(t[1])};
  for(let k=0;k<8;k++){const dd=(day+k)%7,tt=rrHoursOn(h,dd);if(!tt||(k===0&&now>=tt[0]))continue;
@@ -554,7 +566,7 @@ const RR_ALERT_SEASONAL={
  summer:[['a speed restriction because of high rail temperatures','une limitation de vitesse due à la chaleur']],
  spring:[]
 };
-function rrSeason(){const m=new Date().getMonth();return m>=8&&m<=10?'autumn':m===11||m<=1?'winter':m>=5&&m<=7?'summer':'spring'}
+function rrSeason(){const m=rrNow().getMonth();return m>=8&&m<=10?'autumn':m===11||m<=1?'winter':m>=5&&m<=7?'summer':'spring'}
 function rrAlertCause(t,r){
  const pool=[...RR_ALERT_CAUSES,...RR_ALERT_SEASONAL[rrSeason()],...RR_ALERT_SEASONAL[rrSeason()]];
  const [en,fr,works=false]=pool[Math.floor(r()*pool.length)];
@@ -795,7 +807,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${t.tomorrow?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(t.tomorrow?1:0),false)}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrServiceLabel(t.type,t.network)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrServiceLabel(t.type,t.network)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -1341,9 +1353,10 @@ let viewMode='departures',journeyResults=[],selectedJourney=null,journeyShown=12
 const JOURNEY_MAX_RESULTS=260;
 function fmtDuration(n){const h=Math.floor(n/60),m=n%60;return h?(m?`${h}h ${String(m).padStart(2,'0')}m`:`${h}h`):`${m} min`}
 function timeMarkup(s){
- const m=String(s).match(/^(\d{1,2}:\d{2})(?:\s*\+(\d+))?$/);
+ if(!/^\d{1,2}:\d{2}(\s*\+\d+)?$/.test(String(s)))return String(s);
+ const total=rrShowMinutes(timeOrdinal(s)),day=Math.floor(total/1440),hm=rrMinutesToInput(total);   // shown in the visitor's time zone
  // Keep time and the day-offset together as one non-wrapping unit.
- return m?`<span class="time-value"><span class="time-primary">${m[1]}</span>${m[2]?` <span class="day-offset" title="Day ${Number(m[2])+1}">+${m[2]}</span>`:''}</span>`:String(s);
+ return `<span class="time-value"><span class="time-primary">${hm}</span>${day?` <span class="day-offset">${day>0?'+':'−'}${Math.abs(day)}</span>`:''}</span>`;
 }
 function delayMinutes(status){const m=String(status||'').match(/Expected\s*\+(\d+)\s*min/i);return m?+m[1]:0}
 // Existing calls keep their original delay; newly introduced major calls
@@ -1509,14 +1522,14 @@ function setViewMode(mode){
  $('focusRoute').hidden=true;app.classList.remove('detail-open');
  requestAnimationFrame(resize);
 }
-function rrTimeInputMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):RR_NOW}
+function rrTimeInputMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):rrShowMinutes(RR_NOW)}
 function rrMinutesToInput(n){n=((n%1440)+1440)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function rrJourneyDate(){const v=$('journeyWhenDate').value,m=v.match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(+m[1],+m[2]-1,+m[3],12):rrDay(0)}
 function rrJourneyDayOffset(){return Math.max(0,Math.round((rrJourneyDate()-rrDay(0))/864e5))}
 function rrJourneyDayLabel(extra){const off=rrJourneyDayOffset()+extra;return rrDayLabel(off)}
 function rrSyncWhenTabs(){const v=$('journeyWhenMode').value;document.querySelectorAll('.rr-when-tab').forEach(b=>{const on=b.dataset.when===v;b.classList.toggle('active',on);b.setAttribute('aria-selected',on)})}
 function rrSyncWhenDate(){rrSyncWhenTabs();$('journeyWhenDateLabel').textContent=rrJourneyDayOffset()===0?'Today':rrFmtDate(rrJourneyDate(),false)}
-function rrJourneyWhen(){return{mode:$('journeyWhenMode').value,time:rrTimeInputMinutes($('journeyWhenTime').value)}}
+function rrJourneyWhen(){return{mode:$('journeyWhenMode').value,time:(rrToRadeland(rrTimeInputMinutes($('journeyWhenTime').value))%1440+1440)%1440}}   // the field is in the visitor's time
 // Order journeys around the chosen time. Depart after: from that time on,
 // wrapping into tomorrow. Arrive by: the latest arrivals before that time first.
 function rrJourneyWindow(list){
@@ -1529,7 +1542,7 @@ function rrJourneyWindow(list){
  }
  return list.map(j=>({j,rel:rrRelative(j.dep,time,0)}))
   .sort((a,b)=>a.rel-b.rel||a.j.change-b.j.change||a.j.arr-b.j.arr)
-  .map(x=>Object.assign(x.j,{whenTomorrow:time+x.rel>=1440}))
+  .map(x=>Object.assign(x.j,{whenTomorrow:((rrShowMinutes(time)%1440+1440)%1440)+x.rel>=1440}))   // the visitor's midnight
   .map(rrJourneyPlanned);
 }
 // Live running is only known for today: journeys on another day show the plan.
@@ -1550,7 +1563,7 @@ function renderJourneyResults(){
  if(!from||!to){$('journeyCount').textContent='';board.innerHTML='<div class="empty">Choose a From and a To station.</div>';return}
  const onlyDirect=query.directOnly;
  const list=rrJourneyWindow(journeyResults.filter(j=>(!onlyDirect||j.change===0)&&(!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train)))));
- {const w=rrJourneyWhen(),off=rrJourneyDayOffset();$('journeyCount').innerHTML=`<span>${list.length} ${list.length===1?'journey':'journeys'}</span><span class="jr-sep">·</span><span>${w.mode==='arrive'?'Arrive by':'Depart after'}</span> <span class="jr-time">${rrMinutesToInput(w.time)}</span><span class="jr-sep">·</span><span>${off===0?'Today':off===1?'Tomorrow':rrFmtDate(rrJourneyDate(),false)}</span>`}
+ {const w=rrJourneyWhen(),off=rrJourneyDayOffset();$('journeyCount').innerHTML=`<span>${list.length} ${list.length===1?'journey':'journeys'}</span><span class="jr-sep">·</span><span>${w.mode==='arrive'?'Arrive by':'Depart after'}</span> <span class="jr-time">${rrMinutesToInput(rrShowMinutes(w.time))}</span><span class="jr-sep">·</span><span>${off===0?'Today':off===1?'Tomorrow':rrFmtDate(rrJourneyDate(),false)}</span>`}
  if(from===to){board.innerHTML='<div class="empty">Choose two different stations.</div>';return}
  if(!list.length){board.innerHTML=`<div class="empty">No ${query.highSpeedOnly?'high-speed ':''}${onlyDirect?'direct ':''}journeys found between these stations in the current timetable.</div>`;return}
  const arriveBy=rrJourneyWhen().mode==='arrive';
@@ -1687,7 +1700,7 @@ $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
 // Filter existing results immediately; new stations still require Find trains.
 $('directOnly').addEventListener('change',refreshJourneyFilters);
 $('highSpeedOnly').addEventListener('change',refreshJourneyFilters);
-$('journeyWhenTime').value=rrMinutesToInput(RR_NOW);
+$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(RR_NOW));
 $('journeyWhenDate').value=$('journeyWhenDate').min=rrIsoDate(rrDay(0));rrSyncWhenDate();
 $('journeyWhenDate').addEventListener('change',()=>{if(!$('journeyWhenDate').value||$('journeyWhenDate').value<$('journeyWhenDate').min)$('journeyWhenDate').value=$('journeyWhenDate').min;rrSyncWhenDate();rrJourneyWhenChanged()});
 $('journeyWhenDate').addEventListener('click',e=>{try{e.target.showPicker()}catch(_){}});
@@ -1695,7 +1708,7 @@ function rrJourneyWhenChanged(){if(!appliedJourneyQuery)return;journeyShown=12;r
 $('journeyWhenMode').addEventListener('change',()=>{rrSyncWhenTabs();rrJourneyWhenChanged()});
 document.querySelectorAll('.rr-when-tab').forEach(b=>b.addEventListener('click',()=>{if($('journeyWhenMode').value===b.dataset.when)return;$('journeyWhenMode').value=b.dataset.when;$('journeyWhenMode').dispatchEvent(new Event('change'))}));
 $('journeyWhenTime').addEventListener('change',()=>rrJourneyWhenChanged());
-$('journeyWhenNow').addEventListener('click',()=>{$('journeyWhenMode').value='depart';$('journeyWhenDate').value=rrIsoDate(rrDay(0));rrSyncWhenDate();$('journeyWhenTime').value=rrMinutesToInput(rrNowMinutes());rrJourneyWhenChanged()});
+$('journeyWhenNow').addEventListener('click',()=>{$('journeyWhenMode').value='depart';$('journeyWhenDate').value=rrIsoDate(rrDay(0));rrSyncWhenDate();$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(rrNowMinutes()));rrJourneyWhenChanged()});
 // Keep the clock moving: refresh live status every minute, and start a new
 // day's running pattern after midnight.
 // Re-render an open train or journey panel when its live status changes,
@@ -1716,7 +1729,7 @@ function rrRefreshOpenDetails(){
 }
 setInterval(()=>{
  const before=TRAINS.map(t=>t.status).join('|');
- const key=rrDateKey(new Date());RR_NOW=rrNowMinutes();
+ const key=rrDateKey(rrNow());RR_NOW=rrNowMinutes();
  if(key!==RR_DAY_KEY){RR_DAY_KEY=key;rrApplyDailyOperations();rrAssignDailyAlerts()}else rrRefreshLiveStatus();
  if(viewMode!=='journeys'){const top=board.scrollTop;drawBoard();board.scrollTop=top}
  if(TRAINS.map(t=>t.status).join('|')!==before)rrRefreshOpenDetails();
@@ -1771,6 +1784,8 @@ function rrPlacePlanner(){
 rrPlacePlanner();
 rrPlannerMobileQuery.addEventListener('change',()=>{rrPlacePlanner();requestAnimationFrame(resize)});
 
+// Footer: say which time zone times are shown in when it differs from Radeland's.
+if(RR_SHOW_SHIFT)document.querySelectorAll('.rr-tz-note').forEach(n=>{n.hidden=false;n.textContent='Times shown in your time zone · Radeland: '+(rrRadelandOffset()?'RST (UTC−1)':'RDT (UTC±0)')});
 pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
 // Recompute map-label collision positions once the hosted fonts are available.
 if (document.fonts && document.fonts.load) {
@@ -1968,6 +1983,7 @@ function rrFrenchText(source){
   .replace(/^(\d+) departures a day$/,'$1 départs par jour').replace(/^1 departure a day$/,'1 départ par jour').replace(/^(\d+) platforms$/,'$1 voies')
   .replace(/^Open now · closes (\S+)$/,'Ouvert · ferme à $1').replace(/^Closed · opens tomorrow (\S+)$/,'Fermé · ouvre demain à $1').replace(/^Closed · opens (\d\d:\d\d)$/,'Fermé · ouvre à $1')
   .replace(/^Closed · opens (Sun|Mon|Tue|Wed|Thu|Fri|Sat) (\S+)$/,(_,d,t)=>'Fermé · ouvre '+RR_DAYS_FR[RR_DAYS.findIndex(x=>x.startsWith(d))]+' à '+t)
+  .replace(/^Times shown in your time zone · Radeland: (.+)$/,'Horaires affichés dans votre fuseau horaire · Radeland : $1')
   .replace(/^Coach (\d+)$/,'Voiture $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Pl\. (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard
@@ -2176,7 +2192,7 @@ function rrApplyHash(){
   else if(kind==='journey'&&S.has(a)&&S.has(b)&&a!==b){
    $('from').value=a;$('to').value=b;pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();
    const m=String(c||'').match(/^(dep|arr)-(\d{2})(\d{2})$/);
-   if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';rrSyncWhenTabs();$('journeyWhenTime').value=m[2]+':'+m[3]}
+   if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';rrSyncWhenTabs();$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(+m[2]*60+(+m[3])))}
    searchJourneys();
    if(d){const j=journeyResults.find(x=>x.key===d);if(j)chooseJourney(j)}
   }

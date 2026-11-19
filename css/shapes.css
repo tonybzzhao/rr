@@ -408,17 +408,18 @@ body,.app{background:var(--rr-canvas)}
 .station-hero .station-name-band{background:transparent!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
 .rr-card .station-picto-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))!important;gap:14px 8px!important}
 
-/* Right panel: ONE white sheet. Its header row (icon, title, actions, close) and every section below share
-   the card padding as their left/right edge; sections are divided by hairlines instead of nested cards. */
-.details,aside#details.details{background:var(--surface)!important;border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow);margin-right:var(--rr-gutter);overflow:hidden}
-.details .details-head{margin:0!important;min-height:56px;padding:0 10px 0 var(--rr-card-pad)!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;border-bottom:1px solid var(--stroke-soft)!important}
-.details .details-body{padding:0!important}
-.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stops-heading,.details-body .stop-list,.details-body .rr-formation,.details-body .jt-timeline,.details-body .rr-card{background:transparent!important;box-shadow:none!important;border-radius:0!important;clip-path:none!important;margin:0!important;padding-left:var(--rr-card-pad)!important;padding-right:var(--rr-card-pad)!important}
-.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stop-list,.details-body .jt-timeline,.details-body .rr-card{border-bottom:1px solid var(--stroke-soft)!important}
-.details-body>:last-child,.details-body .rr-formation{border-bottom:0!important}
-.details-body .back-to-train{margin:var(--rr-card-pad) var(--rr-card-pad) 0!important}
-.details-body .rr-alert-banner{margin:var(--rr-card-pad) var(--rr-card-pad) 0!important}
-.details-body .empty{padding:var(--rr-card-pad)!important}
+/* Right panel: a tinted tray that holds white cards. The tray's own top row (icon, title, actions, close) belongs to the
+   tray, so closing it clearly closes every card. One left edge for everything: tray padding + card padding. */
+.details,aside#details.details{--tray-pad:10px;background:var(--rr-tray)!important;border-radius:var(--rr-radius-card);box-shadow:none;margin-right:var(--rr-gutter);overflow:hidden}
+.details .details-head{margin:0!important;min-height:52px;padding:0 calc(var(--tray-pad) + 4px) 0 calc(var(--tray-pad) + var(--rr-card-pad))!important;background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+.details .details-body{padding:0 var(--tray-pad) var(--tray-pad)!important}
+.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stop-list,.details-body .rr-formation,.details-body .jt-timeline,.details-body .rr-card{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)!important;border:0!important;border-radius:var(--rr-radius-card)!important;margin:0 0 var(--rr-gap)!important;padding-left:var(--rr-card-pad)!important;padding-right:var(--rr-card-pad)!important}
+.details-body .stops-heading{background:var(--surface)!important;margin:0!important;padding:var(--rr-card-pad) var(--rr-card-pad) 4px!important;border-radius:var(--rr-radius-card) var(--rr-radius-card) 0 0!important;box-shadow:var(--rr-card-shadow)!important;clip-path:inset(-10px -10px 0 -10px)!important}
+.details-body .stops-heading+.stop-list{border-radius:0 0 var(--rr-radius-card) var(--rr-radius-card)!important;clip-path:inset(0 -10px -10px -10px)!important;margin-top:-1px!important}
+.details-body>:last-child{margin-bottom:0!important}
+.details-body .back-to-train{margin:0 0 var(--rr-gap)!important}
+.details-body .rr-alert-banner{margin:0 0 var(--rr-gap)!important}
+.details-body .empty{background:var(--surface);border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow);padding:var(--rr-card-pad)!important}
 /* Station services: each service is a disclosure row (like Train formation); open it to see its trains */
 .station-svc{border-top:1px solid var(--stroke-soft)}
 .station-svc:first-child{border-top:0}
@@ -471,3 +472,5 @@ body,.app{background:var(--rr-canvas)}
 .fac-hours dt{color:var(--muted-slate)}
 .fac-hours dd{margin:0;font-weight:500;color:var(--ink-strong);font-variant-numeric:tabular-nums}
 .facility .fac-rr{color:var(--rr)}
+
+.rr-tz-note::before{content:"·";margin:0 6px;color:var(--text-faint)}
