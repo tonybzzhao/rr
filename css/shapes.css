@@ -266,3 +266,37 @@ body,.app{background:var(--rr-canvas)}
 .service-chip[data-filter="local"]{--chip-fill:#D62828;--chip-on:#fff}
 .service-chip:not(.active):hover{background:var(--rr-canvas)!important;color:var(--ink-strong)!important}
 .service-chip.active{background:var(--chip-fill)!important;border-color:var(--chip-fill)!important;color:var(--chip-on)!important;font-weight:700!important}
+
+/* Board tabs follow the filter's standard: same container padding, gap and corner radius, slightly larger. */
+.board-tabs{padding:5px!important;gap:6px!important;height:auto!important;min-height:0!important}
+.board-tab{height:40px!important;min-height:40px!important;border:2px solid transparent!important;border-radius:8px!important;font-size:13.5px!important}
+.board-tab:not(.active){color:var(--muted-slate)!important}
+@media(max-width:750px){.longmark img{height:24px!important}}
+/* Journey planner inside the Journeys tab */
+.journey-planner-slot{margin:0 0 12px}
+.journey-planner-slot{display:block!important}
+.journey-planner-slot .map-tools{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-areas:none!important;align-items:center;gap:8px!important;width:100%!important;position:static!important}
+.journey-planner-slot .map-tools>label{grid-column:1}
+.journey-planner-slot .map-tools .search-picker,.journey-planner-slot .map-tools select{grid-column:2;width:100%!important;max-width:none!important;min-width:0!important}
+.journey-planner-slot .map-tools #swapStations{grid-column:3;grid-row:1 / span 2;align-self:center}
+.journey-planner-slot .map-tools .map-actions,.journey-planner-slot .map-tools #trace,.journey-planner-slot .map-tools #clear{grid-column:1 / -1}
+.journey-planner-slot .map-tools #trace,.journey-planner-slot .map-tools #clear{position:static!important;justify-self:stretch!important;width:100%!important}
+.app.journey-mode .service-filter{display:none!important}
+.journey-results-head{margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)}
+/* Planner in the Journeys tab: plain document flow on every screen size. */
+.mobile-planner-slot:empty{display:none!important}
+.journey-planner-slot .map-tools *{position:static!important;inset:auto!important;transform:none!important}
+.journey-planner-slot .map-tools #swapStations{position:static!important}
+.journey-planner-slot .map-tools .map-actions{display:grid!important;grid-template-columns:1fr auto!important;gap:8px!important;width:100%!important;margin:4px 0 0!important;grid-column:1 / -1!important}
+.journey-planner-slot .map-tools .map-actions>button{display:inline-flex!important;width:100%!important;height:40px!important}
+.journey-planner-slot .map-tools #clear{width:auto!important;padding:0 14px!important}
+/* Explicit layout for the planner in the Journeys tab (overrides the header/phone grid areas). */
+.journey-planner-slot .map-tools{grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-rows:auto auto auto!important;grid-template-areas:"flabel from swap" "tlabel to swap" "actions actions actions"!important}
+.journey-planner-slot .map-tools>:nth-child(1){grid-area:flabel!important}
+.journey-planner-slot .map-tools>:nth-child(2){grid-area:from!important}
+.journey-planner-slot .map-tools>:nth-child(4){grid-area:swap!important;align-self:center!important}
+.journey-planner-slot .map-tools>:nth-child(5){grid-area:tlabel!important}
+.journey-planner-slot .map-tools>:nth-child(6){grid-area:to!important}
+.journey-planner-slot .map-tools>:nth-child(8){grid-area:actions!important}
+.journey-planner-slot .map-tools>select{display:none!important}
+.journey-planner-slot .map-tools>label{display:block!important;font-size:12px;color:var(--muted-slate);min-width:36px}

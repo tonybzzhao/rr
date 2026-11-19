@@ -1391,7 +1391,7 @@ body{font-size:14.5px}
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
  --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
  --shadow:#00000066;--focus-ring:#8ABDF74A;
- --rail:#56728D;--rail-regio:#3E8E86;--rail-regio-strong:#7FCFC2;--station-blue:#244E86;
+ --rail:#56728D;--rail-regio:#4B7F7A;--rail-regio-strong:#7FB5AE;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
  --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
 }
@@ -2186,7 +2186,7 @@ body{font-size:14.5px}
 .rr-phone-toggle{display:none}
 @media(max-width:750px){
  .rr-phone-toggle{display:inline-flex;align-items:center;gap:8px;position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:55;height:44px;padding:0 20px;border:0;border-radius:22px;background:var(--ui);color:var(--on-accent);font:inherit;font-size:14px;font-weight:700;box-shadow:0 4px 16px var(--shadow);cursor:pointer}
- .rr-phone-toggle .rr-action-icon{width:20px;height:20px;color:var(--on-accent);fill:currentColor}
+ .rr-phone-toggle .rr-action-icon{width:20px;height:20px;color:var(--ui-on);fill:currentColor}
  .rr-phone-toggle:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}
  .app.detail-open .rr-phone-toggle{display:none}
  .app:not(.phone-map) .map-area{display:none!important}
@@ -2263,3 +2263,4 @@ body{font-size:14.5px}
 .stop-list .stop-marker{min-height:34px}
 .stop-list .stop-time,.stop-list .stop-name,.stop-list .stop-name.stop-station,
 .stop-list.has-disruptions .stop-time,.stop-list.has-disruptions .stop-name{padding-top:6px;padding-bottom:6px}
+.rr-phone-toggle{color:var(--ui-on)!important}
