@@ -234,9 +234,7 @@ body,.app{background:var(--rr-canvas)}
 
 /* The service filter also focuses the map on that system (not on the Journeys tab). */
 .app:not(.journey-mode)[data-sys-focus="mainline"] .rail.regio{opacity:.12}
-.app:not(.journey-mode)[data-sys-focus="mainline"] .rail.regio-shared{opacity:0}
 .app:not(.journey-mode)[data-sys-focus="regio"] .rail.hsl,.app:not(.journey-mode)[data-sys-focus="regio"] .rail.ml{opacity:.28}
-.app:not(.journey-mode)[data-sys-focus="regio"] .rail.regio-shared{stroke:var(--rail-regio);stroke-width:2.8;opacity:1}
 .app:not(.journey-mode)[data-sys-focus="local"] .rail{opacity:.18}
 .rail{transition:opacity .2s ease}
 
@@ -343,7 +341,7 @@ body,.app{background:var(--rr-canvas)}
 /* Running train: passed stops grey out; the next stop is called out. Journey rows: name and platform never touch. */
 .label[data-trip="passed"]{fill:var(--muted-slate)!important;opacity:.6}
 /* Journey stops: name and platform on one line; "Pl. 1" when the panel is narrow. */
-.jt-node{column-gap:8px!important}
+.jt-row{column-gap:8px!important}
 .jt-node .jt-station{min-width:0;overflow-wrap:normal;word-break:normal}
 .jt-plat{white-space:nowrap;justify-self:end;text-align:right}
 .pl-short{display:none}
@@ -366,10 +364,10 @@ body,.app{background:var(--rr-canvas)}
 .journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:16px}
 .journey-results-head .journey-pair .rr-arrow{display:none}
 .journey-results-head .journey-pair strong{grid-column:2;font-weight:700;color:var(--ink-strong);line-height:1.25}
-.journey-results-head .journey-pair::before,.journey-results-head .journey-pair::after{content:"";grid-column:1;width:8px;height:8px;border-radius:50%;justify-self:center;box-sizing:border-box}
-.journey-results-head .journey-pair::before{grid-row:1;border:2px solid var(--ui);background:var(--surface);position:relative;z-index:1}
-.journey-results-head .journey-pair::after{grid-row:2;background:var(--ui)}
-.journey-results-head .journey-pair{background:linear-gradient(var(--stroke),var(--stroke)) 6px 50%/2px calc(100% - 20px) no-repeat}
+.journey-results-head .journey-pair::before,.journey-results-head .journey-pair::after{content:"";grid-column:1;width:12px;height:12px;border-radius:50%;justify-self:center;box-sizing:border-box}
+.journey-results-head .journey-pair::before{grid-row:1;border:3px solid var(--ui);background:var(--surface);position:relative;z-index:1}
+.journey-results-head .journey-pair::after{grid-row:2;border:3px solid var(--ui);background:var(--surface)}
+.journey-results-head .journey-pair{background:linear-gradient(var(--ui),var(--ui)) 5.5px 50%/3px calc(100% - 20px) no-repeat}
 .journey-results-head .journey-count{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
 .journey-results-head .jr-time{font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
 .journey-results-head .jr-sep{color:var(--text-faint)}
@@ -380,3 +378,10 @@ body,.app{background:var(--rr-canvas)}
 .journey-when .rr-when-time input{width:62px!important;padding:0 4px!important;text-align:center}
 .journey-when .rr-when-time input::-webkit-calendar-picker-indicator{display:none}
 .filter-hint{font-size:12px!important}
+
+/* Calling at: line and ring share one 3px weight; 12px markers */
+.stop-icon{width:12px!important;height:12px!important;border-width:3px!important}
+/* When row: the mode select gets its own line when space is short (no truncated "De…") */
+.journey-when{flex-wrap:wrap!important;row-gap:6px}
+.journey-when .rr-when-mode{flex:1 1 100%!important}
+.journey-when .rr-when-date{flex:1 1 auto!important;justify-content:center}

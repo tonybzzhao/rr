@@ -154,7 +154,25 @@ const adj=Array.from({length:P.length},()=>[]);
 for(const [a,b,t] of E){const w=Math.hypot(P[a][0]-P[b][0],P[a][1]-P[b][1]);adj[a].push([b,w,t]);adj[b].push([a,w,t])}
 function nearestPoint(x,y){let best=0,dmin=Infinity;for(let i=0;i<P.length;i++){const d=(P[i][0]-x)**2+(P[i][1]-y)**2;if(d<dmin){dmin=d;best=i}}return best}
 STATIONS.forEach(s=>{s.point=nearestPoint(s.attach[0],s.attach[1])});
-function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',(GRAPH.land||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));const g=[],sh=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;(t===2?g:t?h:m).push(d);if(shared)sh.push(d)}$('regioShared').setAttribute('d',sh.join(' '));$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '))}
+// Shared Mainline/Regio track is drawn as two parallel lines. Chains of shared edges get per-vertex normals once;
+// the offset is re-applied in screen pixels at every zoom so the pair stays the same width on screen.
+let RR_SHARED_CHAINS=null;
+function rrSharedChains(){
+ if(RR_SHARED_CHAINS)return RR_SHARED_CHAINS;
+ const adj=new Map(),add=(a,b)=>{if(!adj.has(a))adj.set(a,[]);adj.get(a).push(b)};
+ for(const [a,b,,sh] of E)if(sh){add(a,b);add(b,a)}
+ const seen=new Set(),key=(a,b)=>a<b?a+'_'+b:b+'_'+a,chains=[];
+ const walk=(s,n)=>{const c=[s,n];seen.add(key(s,n));let prev=s,cur=n;while(adj.get(cur).length===2){const nx=adj.get(cur).find(x=>x!==prev);if(nx===undefined||seen.has(key(cur,nx)))break;seen.add(key(cur,nx));c.push(nx);prev=cur;cur=nx}return c};
+ for(const pass of [0,1])for(const [v,ns] of adj)if(pass||ns.length!==2)for(const n of ns)if(!seen.has(key(v,n)))chains.push(walk(v,n));
+ return RR_SHARED_CHAINS=chains.map(c=>{
+  const a=P[c[0]],b=P[c.at(-1)];if(b[0]-a[0]<0||(b[0]===a[0]&&b[1]<a[1]))c.reverse();   // Regio keeps to one side of each chain
+  const pts=c.map(i=>P[i]);
+  return {pts,ns:pts.map((p,i)=>{const q=pts[Math.max(0,i-1)],r=pts[Math.min(pts.length-1,i+1)],dx=r[0]-q[0],dy=r[1]-q[1],l=Math.hypot(dx,dy)||1;return[-dy/l,dx/l]})};
+ });
+}
+function rrSharedPath(o){return rrSharedChains().map(({pts,ns})=>'M'+pts.map((p,i)=>(p[0]+ns[i][0]*o).toFixed(2)+' '+(p[1]+ns[i][1]*o).toFixed(2)).join('L')).join('')}
+function rrDrawShared(sc){if(sc===rrDrawShared.sc)return;rrDrawShared.sc=sc;const o=1.6/sc;$('mlShared').setAttribute('d',rrSharedPath(-o));$('regioShared').setAttribute('d',rrSharedPath(o))}
+function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',(GRAPH.land||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));const g=[],sh=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;if(shared)continue;(t===2?g:t?h:m).push(d)}$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '))}
 
 // Binary heap Dijkstra. Schematic distance is for routing only, not timetable estimation.
 function shortest(a,b,regio=true){if(a===b)return[a];const d=new Float64Array(P.length);d.fill(Infinity);d[a]=0;const prev=new Int32Array(P.length);prev.fill(-1);const heap=[[0,a]];
@@ -815,7 +833,7 @@ function clampPan(){
  panY=Math.min(maxY,Math.max(-maxY,panY));
  if(zoom<=1.000001){panX=0;panY=0;}
 }
-function updateWorld(){clampPan();const sc=fit*zoom;offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap();$('zoomOut').disabled=zoom<=1.000001;}
+function updateWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap();$('zoomOut').disabled=zoom<=1.000001;}
 // Point and segment collision checks in screen pixels.
 const ctx=document.createElement('canvas').getContext('2d');
 function rectOverlap(a,b,g=5){return a.x-g<b.x+b.w && a.x+a.w+g>b.x && a.y-g<b.y+b.h && a.y+a.h+g>b.y}
