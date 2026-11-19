@@ -245,16 +245,17 @@ body,.app{background:var(--rr-canvas)}
 @media(min-width:751px){
  .app .fold-button{position:static!important;order:-1;flex:none;width:36px!important;height:36px!important;margin:0 12px 0 0!important}
  .app .side-header{gap:0!important}
+ .app:not(.folded) .side-header{padding-left:16px!important}   /* button's left edge = the panel cards' left edge */
  .app .side-header .longmark.rr-home-link{margin-right:auto}
  .app .fold-button .rr-menu-icon{display:block!important;width:20px!important;height:20px!important;transform:none!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round}
  .app .fold-button::before,.app .fold-button::after{display:none!important;content:none!important}
  .app.folded .side{width:0!important;overflow:visible!important;z-index:30!important}
- .app.folded .side-header{position:absolute!important;top:0;left:0;width:317px;height:70px!important;padding:0 0 0 28px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;background:var(--rr-canvas)!important}
+ .app.folded .side-header{position:absolute!important;top:0;left:0;width:317px;height:70px!important;padding:0 0 0 16px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;background:var(--rr-canvas)!important}
  .app.folded .longmark{display:block!important}
  .app.folded .longmark img{clip-path:none!important}
  .app.folded .shortmark{display:none!important}
  .app.folded .map-header{padding-left:calc(317px - 88px + var(--rr-gutter))!important}
- .app.folded .map-container{margin-left:calc(28px - 88px)!important}
+ .app.folded .map-container{margin-left:calc(16px - 88px)!important}
 }
 /* Service filter: each option outlined in its system colour; the selected one fills solid. */
 .service-filter{gap:6px!important;height:auto!important;padding:5px!important}
