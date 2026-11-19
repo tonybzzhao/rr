@@ -225,14 +225,17 @@ function getTrainPath(t){
 }
 function makePath(ids){if(!ids.length)return'';return ids.map((i,j)=>(j?'L':'M')+P[i][0]+' '+P[i][1]).join('')}
 
-function stationList(){const names=[...S.keys()].sort((a,b)=>a.localeCompare(b));for(const id of ['stationSelect','from','to']){const el=$(id);el.replaceChildren(...names.map(name=>{const n=document.createElement('option');n.value=name;n.textContent=name;return n}))}stationSelect.value=currentStation;for(const id of ['from','to']){const blank=document.createElement('option');blank.value='';blank.textContent='Choose station';$(id).prepend(blank);$(id).value=''}}   // journeys start empty
+// Station names live in one array; the hidden selects only ever hold the chosen station (6,757 options x 3 made phones crawl).
+let RR_STATION_NAMES=[];
+function rrSelectValue(el,name){if(name&&![...el.options].some(o=>o.value===name))el.append(new Option(name,name));el.value=name||''}
+function stationList(){RR_STATION_NAMES=[...S.keys()].sort((a,b)=>a.localeCompare(b));for(const id of ['stationSelect','from','to'])$(id).replaceChildren(new Option(id==='stationSelect'?'Choose station':'Choose station',''));rrSelectValue(stationSelect,currentStation);for(const id of ['from','to'])$(id).value=''}   // journeys start empty
 function statusTone(s){const v=String(s).toLowerCase();return v.startsWith('cancel')?'cancelled':v.startsWith('expected')||v.includes('delay')?'expected':v.startsWith('on time')?'on-time':'neutral'}
 function statusTag(s){return `<span class="status-tag status-${statusTone(s)}">${s}</span>`}
 
 // Three searchable selectors with listbox navigation; original selects remain the source of truth.
 const pickerViews=new Map();
 function setupSearchPicker(id){
- const select=$(id),nodes=[...select.options];
+ const select=$(id);
  const shell=document.createElement('div');shell.className='search-picker'+(id==='stationSelect'?' search-picker-main':'');
  const trigger=document.createElement('div');trigger.className='picker-control';
  const input=document.createElement('input');input.type='text';input.className='picker-input';
@@ -246,12 +249,12 @@ function setupSearchPicker(id){
  toggle.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>';
  const list=document.createElement('div');list.className='picker-list';list.id=id+'List';list.setAttribute('role','listbox');
  trigger.append(input,toggle);shell.append(trigger,list);select.parentElement.insertBefore(shell,select);select.classList.add('native-select');
- const names=nodes.map(o=>o.value),normalize=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
+ const names=RR_STATION_NAMES,normalize=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
  let open=false,items=[],active=0;
  function sync(){input.value=select.value;input.title=select.value;}
  function shut(){open=false;list.classList.remove('open');shell.classList.remove('open');input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');sync();}
  function closeOthers(){for(const [key,v] of pickerViews)if(key!==id)v.shut();}
- function choose(name){select.value=name;shut();select.dispatchEvent(new Event('change',{bubbles:true}));input.focus({preventScroll:true});}
+ function choose(name){rrSelectValue(select,name);shut();select.dispatchEvent(new Event('change',{bubbles:true}));input.focus({preventScroll:true});}
  function mark(){const opts=[...list.querySelectorAll('.picker-option')];opts.forEach((opt,i)=>{opt.classList.toggle('active',i===active);opt.setAttribute('aria-selected',String(items[i]===select.value))});if(opts[active]){input.setAttribute('aria-activedescendant',opts[active].id);opts[active].scrollIntoView({block:'nearest'});}}
  function render(q=''){
   const term=normalize(q);items=names.filter(n=>normalize(n).includes(term));
@@ -356,7 +359,7 @@ function setCurrentStation(name){
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
  updateBoardTabs();
  selectedJourney=null;selectedLegPaths=[];currentStation=name;
- stationSelect.value=name||'';pickerViews.get('stationSelect')?.sync();
+ rrSelectValue(stationSelect,name);pickerViews.get('stationSelect')?.sync();
  selectedTrain=null;selectedPath=[];selectedNames=name?[name]:[];manualTrace=false;
  routeWorld.replaceChildren();drawBoard();app.classList.remove('detail-open');
  requestAnimationFrame(resize);
@@ -549,7 +552,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  detail.querySelectorAll('.station-action').forEach(b=>b.addEventListener('click',()=>{
   const k=b.dataset.action;
   if(k==='departures'||k==='arrivals'){viewMode=k;setCurrentStation(name);return}
-  $(k).value=name;pickerViews.get(k)?.sync();setViewMode('journeys');
+  rrSelectValue($(k),name);pickerViews.get(k)?.sync();setViewMode('journeys');
  }));
  if(returnTrain){
   $('backToTrain').addEventListener('click',()=>{
@@ -2276,7 +2279,7 @@ function rrApplyHash(){
    }
   }
   else if(kind==='journey'&&S.has(a)&&S.has(b)&&a!==b){
-   $('from').value=a;$('to').value=b;pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();
+   rrSelectValue($('from'),a);rrSelectValue($('to'),b);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();
    const m=String(c||'').match(/^(dep|arr)-(\d{2})(\d{2})$/);
    if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';rrSyncWhenTabs();$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(+m[2]*60+(+m[3])))}
    searchJourneys();
