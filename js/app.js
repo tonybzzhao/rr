@@ -253,9 +253,9 @@ function rrMatchesFilter(t){
  return t.type==='Local';
 }
 document.querySelectorAll('.service-chip').forEach(b=>b.addEventListener('click',()=>{
- serviceFilter=b.dataset.filter;
+ serviceFilter=b.dataset.filter;app.dataset.sysFocus=serviceFilter;
  document.querySelectorAll('.service-chip').forEach(x=>{const on=x===b;x.classList.toggle('active',on);x.setAttribute('aria-checked',String(on))});
- drawBoard();
+ drawBoard();drawMap();
 }));
 function drawBoard(){
  if(viewMode==='journeys'){renderJourneyResults();return}
@@ -950,7 +950,9 @@ function drawMap(){
   if(s.regio&&zoom<2.2&&!selectedSet.has(s.name)&&s.name!==currentStation)continue; // Regio halts appear when zoomed in
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
-  const keep=selectedSet.has(s.name)||s.name===currentStation||LABELS.includes(s.name)||s.sys==='MR';
+  const focus=viewMode==='journeys'?'all':serviceFilter,pinned=selectedSet.has(s.name)||s.name===currentStation;
+  if(!pinned&&((focus==='mainline'&&s.sys==='R')||(focus==='regio'&&s.sys==='M'&&!LABELS.includes(s.name))||(focus==='local'&&!LABELS.includes(s.name))))continue;
+  const keep=pinned||LABELS.includes(s.name)||s.sys==='MR';
   if(!keep&&!rrDotFree(x,y))continue;                // too close to a dot already drawn at this zoom
   rrDotTake(x,y);
   visible.push({...s,sx:x,sy:y});
