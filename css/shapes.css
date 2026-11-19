@@ -327,9 +327,11 @@ body,.app{background:var(--rr-canvas)}
 .journey-actions-slot #trace .rr-action-icon{color:var(--ui-on)!important;fill:currentColor}
 
 /* Selected train / journey: the trip stands out, the network steps back. */
-.app.trip-focus .rail{opacity:.32}
+/* Trip focus: the rest of the network steps back in solid, faded colours (no transparency, so nothing shows through) */
+.app.trip-focus .rail{opacity:1!important;stroke:var(--rail-faded)!important}
+.app.trip-focus .rail.regio{stroke:var(--rail-regio-faded)!important}
 .label-time{font-weight:500;fill:var(--muted-slate);font-size:.82em}
-.label[data-trip="hub"]{fill:var(--text-faint)!important;opacity:.5}
+.label[data-trip="hub"]{fill:var(--hub-faded)!important;opacity:1}
 
 /* "Show more trains / journeys": a full-width card like the train rows, with a down chevron. */
 .board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;cursor:pointer;box-shadow:none!important}

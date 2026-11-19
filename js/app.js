@@ -1132,7 +1132,7 @@ function drawMap(){
   hit.addEventListener('mouseleave',()=>tooltip.style.display='none');
   hit.addEventListener('focus',()=>{tooltip.textContent=s.name;tooltip.style.display='block';tooltip.style.left=x+'px';tooltip.style.top=(y-13)+'px'});
   hit.addEventListener('blur',()=>tooltip.style.display='none');
-  if(tripRole==='hub')g.setAttribute('opacity','.35');
+  if(tripRole==='hub')g.querySelectorAll('circle:not(.mapnode)').forEach(c=>{c.setAttribute('stroke',RR_UI_CSS_COLOR('--hub-faded'));c.setAttribute('fill',RR_UI_CSS_COLOR('--surface'))});   // solid faded ring, not transparency
   g.append(hit);layer.append(g);
   // Keep keyboard focus on the same station when the map redraws.
   if(focusedStation===s.name){rrPendingMapFocus=s.name;requestAnimationFrame(()=>{if(hit.isConnected){hit.focus({preventScroll:true});if(document.activeElement===hit)rrPendingMapFocus=null}})}
