@@ -244,6 +244,7 @@ function upcoming(station){return TRAINS.map(t=>{const index=t.route.findIndex(s
 function arriving(station){return TRAINS.map(t=>{const index=t.route.findIndex(s=>s[0]===station);if(index<=0)return null;return{...t,hereTime:t.route[index][1],hereIndex:index}}).filter(Boolean).map(rrWithBoardTime).sort((a,b)=>a.boardRel-b.boardRel||a.id.localeCompare(b.id))}
 let departures=[];
 let serviceFilter='all';
+new MutationObserver(()=>{if(typeof drawMap==='function'){drawMap();if(typeof drawRoute==='function'&&(selectedTrain||selectedJourney||selectedPath.length))drawRoute()}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 const RR_MAINLINE_TYPES=new Set(['Max','VIA','InterCity','Nightline']);
 function rrMatchesFilter(t){
  if(serviceFilter==='all')return true;
