@@ -533,3 +533,19 @@ body,.app{background:var(--rr-canvas)}
 /* Airport glyph after airport station names */
 .rr-airport-glyph{display:inline-block;width:.95em;height:.95em;margin-left:.3em;vertical-align:-.12em;fill:currentColor;color:inherit;flex:none}
 .rr-airport-glyph-map{fill:currentColor;color:var(--ink)}
+
+/* Route details: ends joined by the site arrow; departures with status and platform; a station where every pattern stops
+   gets one capsule spanning the lanes (like an interchange marker), so RS-only halts stand out as single rings. */
+.route-ends{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.route-ends .route-arrow{width:20px;height:20px;flex:none;fill:currentColor;color:var(--muted-slate)}
+.route-dep{grid-template-columns:52px auto minmax(0,1fr) auto!important;padding:6px 0!important}
+.route-dep-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.route-dep-dest{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.route-dep-status .status-tag{font-size:11px;padding:1px 5px}
+.route-dep-plat{font-size:13px;font-weight:700;color:var(--ink-strong);min-width:20px;text-align:right}
+.route-row.all-stop .route-lane.stops::after{display:none}
+.route-row.all-stop .route-lane.lane-RS::before{z-index:0}
+.route-row.all-stop .route-lane.lane-RS{z-index:1}
+.route-row.all-stop .route-lane.lane-RS > i{display:none}
+.route-row.all-stop .route-lane.lane-RS::after{display:block!important;content:"";position:absolute;left:5px;top:50%;width:34px;height:12px;margin:-6px 0 0 0;border-radius:6px;box-sizing:border-box;border:3px solid var(--route);background:var(--rr-canvas)}
+.route-row.all-stop .route-lane.lane-RX{z-index:0}
