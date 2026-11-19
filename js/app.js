@@ -357,7 +357,7 @@ const ICONS={
  'Couchette':'couchette','Sleeper':'sleeper',
  'Deluxe Sleeper':'deluxe-sleeper','Parent-and-child compartment':'toddler',
  'Toddler Compartment':'toddler','Power Car':'power-car',
- 'Duplex':'duplex'
+ 'Duplex':'duplex','Police':'police','First Class lounge':'lounge','Lost property':'lost-property','Mobility assistance':'mobility'
 };
 const mapFacilityName={'Wi‑Fi':'Wi-Fi','Quiet':'Quiet Zone','Seat':'Reserved Seats','Baby changing':'Baby Changing'};
 function facilityLabel(name){return mapFacilityName[name]||name;}
@@ -385,6 +385,58 @@ const AIRPORT_STATIONS=new Set([
  'Aéroport Parnay','Cartier','Cosgrove','Medway Airport','Atlantic Airport',
  'Findel','Chiangkou'
 ]);
+// Staffed services and facilities with opening hours, by station tier (minutes past midnight; null = closed that day).
+const RR_H=(a,b)=>[a*60,b*60];
+const RR_DAILY=(a,b)=>({wk:RR_H(a,b),sat:RR_H(a,b),sun:RR_H(a,b)});
+const STATION_HOURS={
+ national:{'RR Services':RR_DAILY(5.5,23.5),'Police':RR_DAILY(0,24),'Mobility assistance':RR_DAILY(5,24),'First Class lounge':{wk:RR_H(5.5,22),sat:RR_H(6,22),sun:RR_H(6,22)},
+  'Lost property':{wk:RR_H(8,19),sat:RR_H(9,17),sun:null},'Café':{wk:RR_H(5.5,22),sat:RR_H(6,22),sun:RR_H(7,21)},'Luggage':{wk:RR_H(6,23),sat:RR_H(6,23),sun:RR_H(7,22)}},
+ major:{'RR Services':{wk:RR_H(6,22),sat:RR_H(7,21),sun:RR_H(7,21)},'Police':{wk:RR_H(7,23),sat:RR_H(7,23),sun:RR_H(8,22)},'Mobility assistance':{wk:RR_H(6,22),sat:RR_H(7,21),sun:RR_H(7,21)},
+  'Lost property':{wk:RR_H(9,17),sat:null,sun:null},'Café':{wk:RR_H(6,21),sat:RR_H(7,20),sun:RR_H(8,20)},'Luggage':{wk:RR_H(7,21),sat:RR_H(8,20),sun:RR_H(8,20)}},
+ regional:{'RR Services':{wk:RR_H(6.5,19.5),sat:RR_H(8,16),sun:null},'Café':{wk:RR_H(6.5,19),sat:RR_H(8,17),sun:null}},
+ local:{'Café':{wk:RR_H(7,14),sat:null,sun:null}}
+};
+const STATION_HELP=['RR Services','Police','Mobility assistance','First Class lounge','Lost property'];
+const RR_FAC_NOTE={'RR Services':'Tickets, travel advice and help with your journey','Police':'Station police post','Mobility assistance':'Help getting on and off trains',
+ 'First Class lounge':'For First Class ticket holders','Lost property':'Items found on trains and at the station','Café':'Food and drinks','Luggage':'Left luggage'};
+function rrStationTier(name){return NATIONAL_HUBS.has(name)?'national':MAJOR_STATIONS.has(name)?'major':(REGIONAL_INTERCHANGES.has(name)||AIRPORT_STATIONS.has(name))?'regional':'local'}
+function rrHoursOn(h,day){return day===0?h.sun:day===6?h.sat:h.wk}
+function rrClock(m){return m>=1440?'24:00':rrMinutesToInput(m)}
+function rrOpenStatus(h){
+ const d=new Date(),day=d.getDay(),now=d.getHours()*60+d.getMinutes(),t=rrHoursOn(h,day);
+ if(t&&t[0]===0&&t[1]>=1440)return{open:true,text:'Open 24 hours'};
+ if(t&&now>=t[0]&&now<t[1])return{open:true,text:'Open now · closes '+rrClock(t[1])};
+ for(let k=0;k<8;k++){const dd=(day+k)%7,tt=rrHoursOn(h,dd);if(!tt||(k===0&&now>=tt[0]))continue;
+  return{open:false,text:'Closed · opens '+(k===0?'':k===1?'tomorrow ':RR_DAYS[dd].slice(0,3)+' ')+rrClock(tt[0])}}
+ return{open:false,text:'Closed'};
+}
+function rrHoursRows(h){
+ const f=t=>!t?'Closed':t[0]===0&&t[1]>=1440?'24 hours':rrClock(t[0])+'–'+rrClock(t[1]),wk=f(h.wk),sat=f(h.sat),sun=f(h.sun);
+ return wk===sat&&sat===sun?[['Daily',wk]]:[['Mon–Fri',wk],['Saturday',sat],['Sunday',sun]];
+}
+function rrFacilityIcon(name){
+ if(name==='RR Services')return `<svg class="fac-rr" viewBox="0 0 108 50" aria-hidden="true"><use href="#rr-service-mark"></use></svg>`;
+ const kind=ICONS[name]||ICONS[facilityLabel(name)];return kind?`<svg viewBox="0 0 32 32" aria-hidden="true"><use href="#rr-picto-${kind}"></use></svg>`:'';
+}
+// A facility with opening hours is a button: its dot shows open/closed now, and a tap opens the hours under its row.
+function rrFacilityTile(name,hours){
+ if(!hours)return pictoItem(name);
+ const st=rrOpenStatus(hours);
+ return `<button type="button" class="facility has-hours" data-fac="${name}" aria-expanded="false"><span class="fac-icon">${rrFacilityIcon(name)}<i class="fac-dot${st.open?' open':''}" aria-hidden="true"></i></span><span>${name}</span></button>`;
+}
+function rrFacilityDetail(name,hours){
+ const st=rrOpenStatus(hours);
+ return `<div class="fac-detail"><div class="fac-detail-head"><span class="fac-detail-icon">${rrFacilityIcon(name)}</span><div><strong>${name}</strong><span class="fac-status${st.open?' open':''}">${st.text}</span></div></div>${RR_FAC_NOTE[name]?`<p class="fac-note">${RR_FAC_NOTE[name]}</p>`:''}<dl class="fac-hours">${rrHoursRows(hours).map(([d,t])=>`<div><dt>${d}</dt><dd>${t}</dd></div>`).join('')}</dl></div>`;
+}
+function rrWireFacilityHours(root,hoursOf){
+ root.querySelectorAll('.facility.has-hours').forEach(btn=>btn.addEventListener('click',()=>{
+  const grid=btn.parentElement,open=btn.getAttribute('aria-expanded')==='true';
+  grid.querySelectorAll('.fac-detail').forEach(x=>x.remove());grid.querySelectorAll('.has-hours').forEach(b=>b.setAttribute('aria-expanded','false'));
+  if(open)return;
+  const tiles=[...grid.children],row=tiles.filter(t=>t.offsetTop===btn.offsetTop),last=row[row.length-1];
+  last.insertAdjacentHTML('afterend',rrFacilityDetail(btn.dataset.fac,hoursOf(btn.dataset.fac)));btn.setAttribute('aria-expanded','true');
+ }));
+}
 function pictoItem(name){
  const kind=ICONS[name]||ICONS[facilityLabel(name)];if(!kind)return '';
  const label=({'Accessible Toilet':'Accessible toilet','Baby Changing':'Baby changing','Reserved Seats':'Reserved seats','Quiet Zone':'Quiet zone','First Class':'First class','Premium Class':'Premium class'})[name]||name;
@@ -401,7 +453,7 @@ function stationFacilities(name){
  const airport=AIRPORT_STATIONS.has(name);
  // The PDF defines major stations; a generic "Central" suffix is not proof
  // of major status (e.g. Medway Central is a smaller station on this map).
- const tier=NATIONAL_HUBS.has(name)?'national':MAJOR_STATIONS.has(name)?'major':(REGIONAL_INTERCHANGES.has(name)||airport)?'regional':'local';
+ const tier=rrStationTier(name);
  const items=[...STATION_CORE,...STATION_AMENITIES[tier]];
  if(airport)for(const item of ['Airport','Interchange','Luggage','Baby Changing'])items.push(item);
  return [...new Set(items)];
@@ -423,12 +475,14 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
+ const hours=STATION_HOURS[rrStationTier(name)],help=STATION_HELP.filter(f=>hours[f]);
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
  detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
  <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>s.type!=='Regio'?`<div class="station-svc"><div class="station-svc-row"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span></div></div>`:`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>rrBadge(t)).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
- <section class="rr-card"><h3 class="rr-card-title">Facilities</h3><h4 class="rr-card-sub" data-rr-fr="Standard">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
- ${additional.length?`<h4 class="rr-card-sub" data-rr-fr="Supplémentaires">Additional</h4><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}</section>`;
+ <section class="rr-card"><h3 class="rr-card-title">Facilities</h3>${help.length?`<h4 class="rr-card-sub">Help and services</h4><div class="station-picto-grid">${help.map(f=>rrFacilityTile(f,hours[f])).join('')}</div>`:''}<h4 class="rr-card-sub" data-rr-fr="Standard">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
+ ${additional.length?`<h4 class="rr-card-sub" data-rr-fr="Supplémentaires">Additional</h4><div class="station-picto-grid">${additional.map(f=>rrFacilityTile(f,hours[f])).join('')}</div>`:''}</section>`;
+ rrWireFacilityHours(detail,f=>hours[f]);
  detail.querySelectorAll('.station-action').forEach(b=>b.addEventListener('click',()=>{
   const k=b.dataset.action;
   if(k==='departures'||k==='arrivals'){viewMode=k;setCurrentStation(name);return}
@@ -1817,7 +1871,7 @@ const rrFrenchExact=Object.freeze({
  'Find trains':'Rechercher','Reset':'Effacer','From':'Départ','To':'Arrivée',
  'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',
  'Time':'Heure','Train':'Train','Destination':'Destination',
- 'Origin':'Provenance','Platform':'Voie','Status':'État','Service':'Type de train','Journey from here':'Trajet depuis cette gare','Journey to here':'Trajet vers cette gare','Choose a station':'Choisissez une gare','Major stations':'Grandes gares','Operator':'Transporteur','Services':'Services','Facilities':'Équipements','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
+ 'Origin':'Provenance','Platform':'Voie','Status':'État','Service':'Type de train','Help and services':'Aide et services','RR Services':'Services RR','Police':'Police','Mobility assistance':'Assistance PMR','First Class lounge':'Salon Première classe','Lost property':'Objets trouvés','Open 24 hours':'Ouvert 24 h/24','Closed':'Fermé','Daily':'Tous les jours','24 hours':'24 h/24','Mon–Fri':'Lun–ven','Saturday':'Samedi','Sunday':'Dimanche','Tickets, travel advice and help with your journey':'Billets, conseils et aide pour votre voyage','Station police post':'Poste de police de la gare','Help getting on and off trains':'Aide à la montée et à la descente des trains','For First Class ticket holders':'Réservé aux titulaires d’un billet de Première classe','Items found on trains and at the station':'Objets trouvés dans les trains et en gare','Food and drinks':'Restauration','Left luggage':'Consigne à bagages','Journey from here':'Trajet depuis cette gare','Journey to here':'Trajet vers cette gare','Choose a station':'Choisissez une gare','Major stations':'Grandes gares','Operator':'Transporteur','Services':'Services','Facilities':'Équipements','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
  'Departure':'Départ','Arrival':'Arrivée','Calling at':'Gares desservies',
  'On time':'À l’heure','Boarding':'À quai','Cancelled':'Supprimé',
  'Direct':'Direct','Departs':'Départ','Arrives':'Arrivée',
@@ -1911,6 +1965,8 @@ function rrFrenchText(source){
   .replace(/\b(Sun|Mon|Tue|Wed|Thu|Fri|Sat), (\d\d\/\d\d)\b/g,(_,d,n)=>RR_DAYS_FR[RR_DAYS.findIndex(x=>x.startsWith(d))].slice(0,3)+'. '+n)
   .replace(/^Tomorrow · /,'Demain · ').replace(/^Today · /,'Aujourd’hui · ')
   .replace(/^(\d+) departures a day$/,'$1 départs par jour').replace(/^1 departure a day$/,'1 départ par jour').replace(/^(\d+) platforms$/,'$1 voies')
+  .replace(/^Open now · closes (\S+)$/,'Ouvert · ferme à $1').replace(/^Closed · opens tomorrow (\S+)$/,'Fermé · ouvre demain à $1').replace(/^Closed · opens (\d\d:\d\d)$/,'Fermé · ouvre à $1')
+  .replace(/^Closed · opens (Sun|Mon|Tue|Wed|Thu|Fri|Sat) (\S+)$/,(_,d,t)=>'Fermé · ouvre '+RR_DAYS_FR[RR_DAYS.findIndex(x=>x.startsWith(d))]+' à '+t)
   .replace(/^Coach (\d+)$/,'Voiture $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Pl\. (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard
