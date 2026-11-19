@@ -2016,7 +2016,7 @@ const rrFrenchExact=Object.freeze({
  'Show more trains':'Afficher plus de trains',
  'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
- 'South Radeland':'Radeland-Sud','Southern':'Sud','Cathia':'Cathagne','Cathian':'cathien','Marenian':'marénien','Frisian':'frison','Sylvan':'sylvain','Novanglian':'novanglien',
+ 'South Radeland':'Radeland-Sud','Southern':'Sud','Cathia':'Cathagne','New Frisia':'Nouvelle-Frise','Marenia':'Marénie','Sylvania':'Sylvanie','Central':'Centre','Cathian':'cathien','Marenian':'marénien','Frisian':'frison','Sylvan':'sylvain','Novanglian':'novanglien',
  'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voie de magistrale',
  'All':'Tous','Mainline':'Magistrale','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
  'No Local services yet.':'Aucun service de banlieue pour le moment.',
