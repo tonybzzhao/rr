@@ -970,6 +970,7 @@ function drawMap(){
  const selectedSet=new Set(selectedNames);
  const progressIndex=selectedTrain?rrTrainProgressIndex(selectedTrain):0;
  const passedStationNames=new Set(progressIndex>0?selectedTrain.route.slice(0,progressIndex).map(([name])=>name):[]);
+ const rrNextStop=selectedTrain&&progressIndex+1<selectedTrain.route.length?selectedTrain.route[progressIndex+1][0]:null;   // the stop after the one you board at
  const passedTrainColor=progressIndex>0?rrTraveledColor(routeColor):null;
  const legStationColors=journeyStationColors(selectedJourney);
  const selectedLabelColors=new Map();
@@ -993,7 +994,7 @@ function drawMap(){
   const selected=selectedSet.has(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
   const radius=selected?5.8:(important?4.7:(s.regio?2.2:3.2)),g=se('g',{'data-station':s.name});
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
-  const activeColors=selected&&selectedPath.length?(colors.length?colors:[passedTrainColor&&!current&&passedStationNames.has(s.name)?passedTrainColor:routeColor]):[];
+  const activeColors=selected&&selectedPath.length?(colors.length?colors:[passedTrainColor&&!current&&passedStationNames.has(s.name)?RR_UI_CSS_COLOR('--muted-slate'):routeColor]):[];
   const transferMarker=selected&&selectedPath.length?interchangeMarkers.get(s.name):null;
   if(selected&&(selectedTrain||selectedJourney)&&activeColors.length){
    // A mixed-colour interchange has a neutral name; the split station ring
@@ -1018,8 +1019,9 @@ function drawMap(){
   }else if(activeColors.length){
    appendStationDisc(g,x,y,radius,[activeColors[0]]);
   }else{
-   const sysColor=s.sys==='M'?RR_UI_CSS_COLOR('--rail'):s.sys==='R'?RR_UI_CSS_COLOR('--rail-regio'):RR_UI_CSS_COLOR('--muted');
-   g.append(se('circle',{cx:x,cy:y,r:radius,fill:important?RR_UI_CSS_COLOR('--surface'):sysColor,stroke:important?RR_UI_CSS_COLOR('--muted-slate'):RR_UI_CSS_COLOR('--surface'),'stroke-width':important?1.8:1.1,'pointer-events':'none'}));
+   const ring=important||s.sys==='MR'?RR_UI_CSS_COLOR('--ink-strong'):s.sys==='R'?RR_UI_CSS_COLOR('--rail-regio-strong'):RR_UI_CSS_COLOR('--rail-strong');
+   const r=important?5:s.sys==='MR'?3.9:s.regio?2.7:3.4;
+   g.append(se('circle',{cx:x,cy:y,r,fill:RR_UI_CSS_COLOR('--surface'),stroke:ring,'stroke-width':important?2.2:s.regio?1.4:1.7,'pointer-events':'none'}));
   }
   const hit=se('circle',{cx:x,cy:y,r:12,fill:'transparent',class:'mapnode',role:'button','aria-label':s.name,tabindex:0});
   hit.addEventListener('click',e=>{e.stopPropagation();if(app.classList.contains('folded'))rrSetFolded(false);setCurrentStation(s.name)});
@@ -1067,7 +1069,7 @@ function drawMap(){
   const minor=(!!byVisible.get(name)?.regio&&!important)||tripHub;
   const fontSize=minor?12.5:15.625,weight=important||mixedServiceInterchange?700:500,lh=minor?14.5:18.125;
   ctx.font=`${weight} ${fontSize}px Frutiger,Arial`;
-  const splits=tripKey?splitName(name).map(l=>[...l,rrTrip.key.get(name)]):splitName(name);
+  const splits=name===rrNextStop?splitName(name).map(l=>[...l,'Next stop']):splitName(name);
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
   // Prefer a side label. Left-side labels are right-aligned; right-side labels are left-aligned.
   const preferredSide=s.sx>W*.68?'W':s.sx<W*.32?'E':hint[2]==='end'?'W':hint[2]==='start'?'E':s.sx<W/2?'E':'W';
@@ -1119,7 +1121,8 @@ function drawMap(){
    text.setAttribute('data-route-label',selectedTrain&&passedStationNames.has(name)?'passed':'forthcoming');
   }
   if(tripHub)text.setAttribute('data-trip','hub');
-  chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});if(tripKey&&i===chosen.lines.length-1)span.setAttribute('class','label-time');span.textContent=line;text.append(span)});
+  if(selectedTrain&&passedStationNames.has(name)&&name!==currentStation)text.setAttribute('data-trip','passed');
+  chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});if(name===rrNextStop&&i===chosen.lines.length-1)span.setAttribute('class','label-next');span.textContent=line;text.append(span)});
   group.append(text);
   group.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(name)});
   group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(name)}});
@@ -1523,7 +1526,7 @@ function chooseJourney(j){
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
 function rrPlatformAt(t,station){return t.platforms?.[station]||t.plat||''}
-function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}>Platform ${p}</span>`:'<span class="jt-plat"></span>'}
+function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}><span class="pl-long">Platform ${p}</span><span class="pl-short" aria-hidden="true">Pl. ${p}</span></span>`:'<span class="jt-plat"></span>'}
 function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
  return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
@@ -1743,6 +1746,7 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
+ 'Next stop':'Prochain arrêt',
  'Show more trains':'Afficher plus de trains',
  'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
@@ -1857,6 +1861,7 @@ function rrFrenchText(source){
   .replace(/^(\d+) stops$/,'$1 arrêts').replace(/^1 stop$/,'1 arrêt').replace(/^Non-stop$/,'Sans arrêt')
   .replace(/^Coach (\d+)$/,'Voiture $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
+  .replace(/^Pl\. (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard
   .replace(/^Journey route$/,'Itinéraire du trajet')
   .replace(/^(\d+) coaches$/,'$1 voitures')
   .replace(/^Platform changed from (\S+)$/,'Voie modifiée (initialement $1)')
