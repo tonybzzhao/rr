@@ -588,3 +588,13 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .map-key-rx{width:11px;height:11px;border:2.4px solid var(--route);background:var(--rr-canvas,var(--surface))}
 .map-key-rs{width:12px;height:6px;border-radius:0;background:linear-gradient(var(--route),var(--route)) center/100% 3px no-repeat;position:relative;margin-left:6px}
 .map-key-rs::after{content:"";position:absolute;left:3px;top:0;width:6px;height:6px;border-radius:50%;box-sizing:border-box;border:1.2px solid var(--route);background:var(--rr-canvas,var(--surface))}
+
+/* Branched Local line: one row per branch, tag then its two ends. */
+.route-branches{display:grid;gap:8px;margin-top:8px}
+.route-branch{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px}
+.route-branch .route-branch-tag{font-size:12px;min-width:28px;text-align:center}
+.route-branch-ends{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:16px;font-weight:700;line-height:1.25;color:var(--ink-strong)}
+.route-branch-ends .route-arrow{width:16px;height:16px;flex:none}
+/* lane labels above the diagram, one per lane column */
+.route-lane-tags{display:grid;grid-template-columns:repeat(var(--lanes),15px);gap:0;margin:0 0 6px}
+.route-lane-tags .route-branch-tag{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;padding:3px 0;width:13px;justify-self:center;text-align:center;border-width:1.5px}

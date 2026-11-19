@@ -561,8 +561,10 @@ function fillRouteInfo(type,net,line,from=currentStation){
  const dir1=k=>trains.filter(t=>keyOf(t)===k&&t.dir===1).sort((a,b)=>b.route.length-a.route.length)[0];
  lanes=lanes.filter(k=>dir1(k));
  const runs=Object.fromEntries(lanes.map(k=>[k,dir1(k).route.map(r=>r[0])])),stopsOf=Object.fromEntries(lanes.map(k=>[k,new Set(runs[k])]));
- // one station list for all lanes: the longest lane, then each other lane's own stations where they belong
+ // one station list for all lanes: the longest lane, then each other lane's own stations where they belong;
+ // a branch stored the other way round is turned to face the same way first
  const all=[...runs[[...lanes].sort((a,b)=>runs[b].length-runs[a].length)[0]]];
+ for(const k of lanes){const ix=runs[k].map(n=>all.indexOf(n)).filter(i=>i>=0);if(ix.length>1&&ix[0]>ix[ix.length-1])runs[k]=[...runs[k]].reverse()}
  for(const k of lanes){let cur=-1,pending=[];
   for(const n of runs[k]){const at=all.indexOf(n);
    if(at<0){pending.push(n);continue}
@@ -581,11 +583,11 @@ function fillRouteInfo(type,net,line,from=currentStation){
  const many=lanes.length>1;
  const rows=all.map((n,i)=>`<div class="route-row${n===from?' is-here':''}${many&&lanes.every(k=>stopsOf[k].has(n))?' all-stop':''}">${lanes.map(k=>{const [a,b]=span[k];return `<span class="route-lane lane-${k}${stopsOf[k].has(n)?' stops':''}${i<a||i>b?' off':''}${i===a?' first':''}${i===b?' last':''}"></span>`}).join('')}<button type="button" class="route-stn" data-station="${n}">${n}</button></div>`).join('');
  // termini: the two ends of the line, each listing its terminus (one per branch when the line branches there)
- const endList=side=>{const m=new Map();for(const k of lanes){const r=runs[k],n=side?r[r.length-1]:r[0];if(!m.has(n))m.set(n,[]);m.get(n).push(k)}return m};
- const endRow=m=>`<div class="route-end"><span class="route-end-dot" aria-hidden="true"></span><span class="route-end-names">${[...m].map(([n,ks])=>`<span class="route-end-name">${n}${branched&&lanes.length>1?`<span class="route-end-tag">${ks.join(' · ')}</span>`:''}</span>`).join('')}</span></div>`;
+ const inner=new Set(lanes.flatMap(k=>runs[k].slice(1,-1)));
+ const ends=[0,1].map(side=>{const e=[...new Set(lanes.map(k=>side?runs[k][runs[k].length-1]:runs[k][0]))],outer=e.filter(n=>!inner.has(n));return outer.length?outer:e});
  const legend=type==='Regio'&&many?`<div class="route-legend">${lanes.map(k=>`<span>${rrBadge(sample[k])} ${k==='RS'?'all stations':'main stations only'}</span>`).join('')}<span class="route-legend-map"><span class="map-key-rx" aria-hidden="true"></span>RX stop<span class="map-key-rs" aria-hidden="true"></span>RS only</span></div>`
-  :branched&&many?`<div class="route-legend">${lanes.map(k=>`<span><span class="route-branch-tag">${k}</span>${runs[k][0]} – ${runs[k][runs[k].length-1]}</span>`).join('')}</div>`:'';
- detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${(type==='Regio'?lanes:[lanes[0]]).map(k=>rrBadge(sample[k])).join('')}</div><div class="route-op">${rrServiceLabel(type,net)}</div><div class="route-termini" style="--route:${rrTrainCss(sample[lanes[0]])}" aria-label="Runs between ${[...endList(0).keys()].join(' or ')} and ${[...endList(1).keys()].join(' or ')}">${endRow(endList(0))}${endRow(endList(1))}</div></div>${deps}<section class="rr-card" style="--route:${rrTrainCss(sample[lanes[0]])}"><h3 class="rr-card-title">Route</h3>${legend}<div class="route-diagram" style="--route:${rrTrainCss(sample[lanes[0]])};--lanes:${lanes.length}">${rows}</div></section>`;
+  :'';
+ detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${(type==='Regio'?lanes:[lanes[0]]).map(k=>rrBadge(sample[k])).join('')}</div><div class="route-op">${rrServiceLabel(type,net)}</div>${`<div class="route-termini" style="--route:${rrTrainCss(sample[lanes[0]])}" aria-label="Runs between ${ends[0].join(' or ')} and ${ends[1].join(' or ')}">${ends.map(e=>`<div class="route-end"><span class="route-end-dot" aria-hidden="true"></span><span class="route-end-name">${e.join(' · ')}</span></div>`).join('')}</div>`}</div>${deps}<section class="rr-card" style="--route:${rrTrainCss(sample[lanes[0]])}"><h3 class="rr-card-title">Route</h3>${legend}<div class="route-diagram" style="--route:${rrTrainCss(sample[lanes[0]])};--lanes:${lanes.length}">${rows}</div></section>`;
  detail.querySelectorAll('.route-dep').forEach(b=>b.addEventListener('click',()=>{const row=upcoming(from).find(t=>t.id===b.dataset.train);if(row){setCurrentStation(from);chooseTrain(row)}}));
  detail.querySelectorAll('.route-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
  // the map shows the whole line: every branch, in the line colour; RS-only stops get a small dot, RX stops a ring
