@@ -223,11 +223,13 @@ body,.app{background:var(--rr-canvas)}
 /* Service filter: same shape as the board tabs; the active chip takes its system's colour. */
 .service-filter{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:0!important;margin:0 0 var(--rr-gap)!important;box-sizing:border-box!important;height:40px!important;padding:3px!important;border:0!important;border-radius:11px!important;background:var(--surface)!important}
 .service-chip{box-sizing:border-box!important;height:34px!important;min-width:0!important;border:0!important;border-radius:8px!important;padding:0 4px!important;background:transparent!important;color:var(--muted-slate)!important;font-size:12px!important;font-weight:600!important;display:flex!important;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.service-chip::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--chip-color)}
 .service-chip[data-filter="all"]{--chip-color:var(--ui)}.service-chip[data-filter="mainline"]{--chip-color:var(--main)}
 .service-chip[data-filter="regio"]{--chip-color:var(--regio)}.service-chip[data-filter="local"]{--chip-color:var(--local)}
-.service-chip[data-filter="all"]::before{display:none}
+/* each system is marked by a short bar in its line colour, like a piece of its route on the map */
+.service-chip{position:relative}
+.service-chip::after{content:"";position:absolute;left:50%;bottom:4px;width:18px;height:3px;border-radius:2px;transform:translateX(-50%);background:var(--chip-color)}
+.service-chip[data-filter="all"]::after{background:linear-gradient(90deg,var(--main) 0 33%,var(--regio) 33% 66%,var(--local) 66% 100%)}
 .service-chip:not(.active):hover{background:var(--rr-canvas)!important;color:var(--ink-strong)!important}
 .service-chip.active{background:var(--chip-color)!important;color:#fff!important;font-weight:700!important}
 .service-chip[data-filter="all"].active{color:var(--ui-on)!important}
-.service-chip.active::before{background:currentColor}
+.service-chip.active::after{display:none}
