@@ -233,3 +233,13 @@ body,.app{background:var(--rr-canvas)}
 .service-chip{position:relative}
 .service-chip::after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:2px;border-radius:1px;background:var(--chip-color)}
 .service-chip.active::after{display:none}
+
+/* Folded sidebar: the expand button moves up into the header row, right after the RR mark and before
+   From/To, instead of floating below the mark. The header controls make room for it. */
+@media(min-width:751px){
+ .app{transition:grid-template-columns .22s ease}
+ .app.folded .fold-button{top:17px!important;left:calc(var(--rr-folded-width) + 6px)!important;width:36px!important;height:36px!important;z-index:5}
+ .app.folded .side{overflow:visible!important;z-index:30!important}
+ .app.folded .map-header{padding-left:calc(var(--rr-folded-width) - 88px + var(--rr-gutter) + 48px)!important}
+}
+.service-region{color:var(--muted-slate);font-weight:500}.service-sep{margin:0 5px}
