@@ -22,7 +22,7 @@
  --rail:#9DC8EE;--rail-strong:#4F8FD0;--rail-regio:#74C2B5;--rail-regio-strong:#2E8F86;--first-class:#FAC800;--first-class-ink:#24282C;--passed:#B3BCC6;--passed-ink:#8590A0;--rail-faded:#D9E3EC;--rail-regio-faded:#D3E7E3;--hub-faded:#B9C1CA;--rr-tray:#E3E8EE;--on-accent:#FFFFFF;
  /* Text: primary neutral, strong navy, softer navy, grey and two subdued levels. */
  --ink:#2C3035;--ink-strong:#24282C;--ink-soft:#3E4852;
- --muted:#676D74;--muted-slate:#68727D;--text-faint:#8D959E;
+ --muted:#676D74;--muted-slate:#5A6470;--text-faint:#636C76;--label-faded:#6A737D;
  /* Surfaces and strokes. */
  --surface:#FFFFFF;--map:#E3EDF5;--map-land:#FBFBFA;--hair:#DDDDDA;
  --stroke:#C4CCD5;--stroke-strong:#AEBCCD;--stroke-soft:#E4E9EE;
@@ -1388,7 +1388,7 @@ body{font-size:14px}
  --ui:#ECEEF1;--ui-deep:#F7F8F9;--ui-hover:#D3D7DC;--ui-on:#1C2127;--local:#FF6B6B;--main:#1584FF;--via:#D162C0;--night:#7384BD;--rr:#009A4D;--regio:#3DB0BC;--travel-regio:#8CD3DA;--rr-fill-regio:#178089;
  --travel-main:#77A9ED;--travel-via:#F2A6E6;--travel-night:#929EC3;
  --ink:#EDF1F6;--ink-strong:#F6F8FA;--ink-soft:#D7E1EC;
- --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#95A7BA;
+ --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#A3B3C4;--label-faded:#8494A6;
  --surface:#1C232C;--map:#111820;--map-land:#1A232D;--hair:#354353;
  --stroke:#4E6175;--stroke-strong:#697D93;--stroke-soft:#324050;
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
@@ -2267,3 +2267,6 @@ body{font-size:14px}
 .stop-list .stop-time,.stop-list .stop-name,.stop-list .stop-name.stop-station,
 .stop-list.has-disruptions .stop-time,.stop-list.has-disruptions .stop-name{padding-top:6px;padding-bottom:6px}
 .rr-phone-toggle{color:var(--ui-on)!important}
+
+/* AA contrast: outline badges (InterCity, Regio RS) lift their text a little on the dark surface. */
+:root[data-theme="dark"] .service.rr-ic-outline,:root[data-theme="dark"] .train-number.rr-ic-outline{color:color-mix(in srgb,var(--service-color,var(--main)) 85%,#fff)!important}

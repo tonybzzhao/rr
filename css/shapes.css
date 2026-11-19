@@ -331,7 +331,7 @@ body,.app{background:var(--rr-canvas)}
 .app.trip-focus .rail{opacity:1!important;stroke:var(--rail-faded)!important}
 .app.trip-focus .rail.regio{stroke:var(--rail-regio-faded)!important}
 .label-time{font-weight:500;fill:var(--muted-slate);font-size:.82em}
-.label[data-trip="hub"]{fill:var(--hub-faded)!important;opacity:1}
+.label[data-trip="hub"]{fill:var(--label-faded)!important;opacity:1}
 
 /* "Show more trains / journeys": a full-width card like the train rows, with a down chevron. */
 .board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;cursor:pointer;box-shadow:none!important}
@@ -341,7 +341,7 @@ body,.app{background:var(--rr-canvas)}
 .board .journey-more:focus-visible{outline:2px solid var(--ui)!important;outline-offset:2px}
 
 /* Running train: passed stops grey out; the next stop is called out. Journey rows: name and platform never touch. */
-.label[data-trip="passed"]{fill:var(--passed-ink)!important;opacity:1}
+.label[data-trip="passed"]{fill:var(--label-faded)!important;opacity:1}
 /* Journey stops: name and platform on one line; "Pl. 1" when the panel is narrow. */
 .jt-row{column-gap:8px!important}
 .jt-node .jt-station{min-width:0;overflow-wrap:normal;word-break:normal}
