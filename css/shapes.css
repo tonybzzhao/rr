@@ -486,7 +486,7 @@ body,.app{background:var(--rr-canvas)}
 .stop-list .stop-folded{display:none}
 .stop-list.show-passed .stop-folded{display:grid}
 /* The fold row's line is dotted, like a walk or wait in a journey: stops are hidden here */
-.stop-fold .stop-marker::before{background:radial-gradient(circle,var(--route-travelled) 1.6px,transparent 2px) center top/4px 8px repeat-y!important}
+.stop-fold .stop-marker::before{background:radial-gradient(circle,var(--route-travelled) 1.5px,transparent 1.6px) center top/3px 6px repeat-y!important}
 .stop-fold .stop-fold-btn{align-self:center;justify-self:start;font-size:13px;color:var(--passed-ink)}
 /* Ring markers are hollow: their centre is the colour of the card they sit on */
 .details-body .stop-icon,.details-body .jt-dot{background:var(--rr-canvas)!important}
@@ -494,3 +494,6 @@ body,.app{background:var(--rr-canvas)}
 .fac-dot.fault{background:var(--status-expected)}
 .fac-status.fault{color:var(--status-expected)}
 .rr-plat-delayed{justify-content:flex-end}
+
+/* Dotted lines (walks, waits, folded stops) use dots exactly as wide as the solid 3px line */
+.jt-in-dot::before,.jt-out-dot::after{background:radial-gradient(circle,var(--jt-dot-color) 1.5px,transparent 1.6px) center top/3px 6px repeat-y!important}
