@@ -229,19 +229,7 @@ body,.app{background:var(--rr-canvas)}
 .service-chip.active{background:var(--chip-color)!important;color:#fff!important;font-weight:700!important}
 .service-chip[data-filter="all"].active{color:var(--ui-on)!important}
 
-/* each system: a thin full-width line in its colour along the bottom, like a tab underline; the selected one fills */
-.service-chip{position:relative}
-.service-chip::after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:2px;border-radius:1px;background:var(--chip-color)}
-.service-chip.active::after{display:none}
 
-/* Folded sidebar: the expand button moves up into the header row, right after the RR mark and before
-   From/To, instead of floating below the mark. The header controls make room for it. */
-@media(min-width:751px){
- .app{transition:grid-template-columns .22s ease}
- .app.folded .fold-button{top:17px!important;left:calc(var(--rr-folded-width) + 6px)!important;width:36px!important;height:36px!important;z-index:5}
- .app.folded .side{overflow:visible!important;z-index:30!important}
- .app.folded .map-header{padding-left:calc(var(--rr-folded-width) - 88px + var(--rr-gutter) + 48px)!important}
-}
 .service-region{color:var(--muted-slate);font-weight:500}.service-sep{margin:0 5px}
 
 /* The service filter also focuses the map on that system (not on the Journeys tab). */
@@ -251,3 +239,29 @@ body,.app{background:var(--rr-canvas)}
 .app:not(.journey-mode)[data-sys-focus="regio"] .rail.regio-shared{stroke:var(--rail-regio);stroke-width:2.8;opacity:1}
 .app:not(.journey-mode)[data-sys-focus="local"] .rail{opacity:.18}
 .rail{transition:opacity .2s ease}
+
+/* Sidebar: a menu (three-line) button left of the logo. Collapsing keeps the header row exactly where it is
+   and lets the map run left until its edge lines up with the button's left edge. */
+@media(min-width:751px){
+ .app .fold-button{position:static!important;order:-1;flex:none;width:36px!important;height:36px!important;margin:0 12px 0 0!important}
+ .app .side-header{gap:0!important}
+ .app .side-header .longmark.rr-home-link{margin-right:auto}
+ .app .fold-button .rr-menu-icon{display:block!important;width:20px!important;height:20px!important;transform:none!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round}
+ .app .fold-button::before,.app .fold-button::after{display:none!important;content:none!important}
+ .app.folded .side{width:0!important;overflow:visible!important;z-index:30!important}
+ .app.folded .side-header{position:absolute!important;top:0;left:0;width:317px;height:70px!important;padding:0 0 0 28px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;background:var(--rr-canvas)!important}
+ .app.folded .longmark{display:block!important}
+ .app.folded .longmark img{clip-path:none!important}
+ .app.folded .shortmark{display:none!important}
+ .app.folded .map-header{padding-left:calc(317px - 88px + var(--rr-gutter))!important}
+ .app.folded .map-container{margin-left:calc(28px - 88px)!important}
+}
+/* Service filter: each option outlined in its system colour; the selected one fills solid. */
+.service-filter{gap:6px!important;height:auto!important;padding:5px!important}
+.service-chip{height:34px!important;border:2px solid var(--chip-color)!important;background:var(--surface)!important;color:var(--muted-slate)!important;font-weight:500!important;font-size:12.5px!important}
+.service-chip[data-filter="all"]{--chip-fill:var(--ui);--chip-on:var(--ui-on)}
+.service-chip[data-filter="mainline"]{--chip-fill:var(--rr-fill-main);--chip-on:#fff}
+.service-chip[data-filter="regio"]{--chip-fill:var(--rr-fill-regio);--chip-on:#fff}
+.service-chip[data-filter="local"]{--chip-fill:#D62828;--chip-on:#fff}
+.service-chip:not(.active):hover{background:var(--rr-canvas)!important;color:var(--ink-strong)!important}
+.service-chip.active{background:var(--chip-fill)!important;border-color:var(--chip-fill)!important;color:var(--chip-on)!important;font-weight:700!important}
