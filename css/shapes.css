@@ -547,7 +547,7 @@ body,.app{background:var(--rr-canvas)}
 /* Single-character line badges (RR Local letters) are squares */
 .service.service-square{display:inline-flex;justify-content:center;align-items:center;min-width:0;width:auto;height:auto;aspect-ratio:1/1;align-self:start;justify-self:start;padding:0!important;box-sizing:border-box}
 .service.service-square{min-height:0!important;height:1.85em!important;width:1.85em!important}
-.train-number.service-square{display:inline-flex;justify-content:center;width:1.7em;padding-left:0!important;padding-right:0!important}
+.train-number.service-square{display:inline-flex!important;align-items:center;justify-content:center;width:34px;height:34px;aspect-ratio:1/1;padding:0!important;line-height:1;box-sizing:border-box}   /* same height as the other details badges */
 
 /* Current station: a translucent halo in the line colour (Calling at, route details), like the map's current-station halo */
 .details-body .stop.current .stop-icon,.stop.current .stop-icon{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)!important}
@@ -556,3 +556,15 @@ body,.app{background:var(--rr-canvas)}
 button.train-number.train-route-link{border:0;font:inherit;font-weight:700;cursor:pointer}
 button.train-number.train-route-link:hover{text-decoration:underline}
 .picker-option.picker-city{font-weight:700}
+/* Route details mini timetable: the live value on top in the status colour, the timetabled one small and struck below.
+   No box: one quiet row per train, every row the same height. */
+.route-dep{min-height:48px}
+.route-dep-time,.route-dep-plat{display:flex;flex-direction:column;justify-content:center;line-height:1.15}
+.route-dep-time{font-size:14px}
+.route-dep-plat{align-items:flex-end;font-size:14px;min-width:24px}
+.route-dep .time-delayed{display:inline-flex!important;flex-direction:column-reverse;align-items:inherit;gap:1px;line-height:1.15}
+.route-dep-plat .time-delayed{align-items:flex-end}
+.route-dep .time-delayed .retime-box{display:inline!important;background:none!important;border:0!important;padding:0!important;border-radius:0!important;
+ font-size:14px!important;font-weight:700;color:var(--status-expected)!important;line-height:1.15!important}
+.route-dep .time-delayed .scheduled-time{font-size:11px!important;font-weight:500;color:var(--text-faint)!important;text-decoration:line-through;line-height:1.2}
+.route-dep .time-delayed .scheduled-time .day-offset,.route-dep .time-delayed .retime-box .day-offset{font-size:9px}
