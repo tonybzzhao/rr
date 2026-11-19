@@ -22,7 +22,7 @@
  --ink:#1D1D1D;--ink-strong:#23364E;--ink-soft:#34495E;
  --muted:#666666;--muted-slate:#667588;--text-faint:#8795A5;
  /* Surfaces and strokes. */
- --surface:#FFFFFF;--map:#FBFBFA;--hair:#DDDDDA;
+ --surface:#FFFFFF;--map:#E3EDF5;--map-land:#FBFBFA;--hair:#DDDDDA;
  --stroke:#C4CCD5;--stroke-strong:#AEBCCD;--stroke-soft:#E4E9EE;
  --hover:#F4F6F8;--hover-blue:#EDF3FA;--selected:#EAF1FA;--pressed:#DFEAFB;
  /* Controls and elevation. */
@@ -1386,7 +1386,7 @@ body{font-size:14.5px}
  --travel-main:#77A9ED;--travel-via:#F2A6E6;--travel-night:#929EC3;
  --ink:#EDF1F6;--ink-strong:#F6F8FA;--ink-soft:#D7E1EC;
  --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#95A7BA;
- --surface:#181F29;--map:#111923;--hair:#354353;
+ --surface:#181F29;--map:#0B121A;--map-land:#162029;--hair:#354353;
  --stroke:#4E6175;--stroke-strong:#697D93;--stroke-soft:#324050;
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
  --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
@@ -2253,3 +2253,5 @@ body{font-size:14.5px}
 .rr-alert-leg{margin:8px 0 2px;font-size:12.5px}
 
 .keymark.regio{border-top-color:var(--rr-base-regio);border-top-width:2px}
+
+.land{fill:var(--map-land);stroke:none}
