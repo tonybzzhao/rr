@@ -530,9 +530,6 @@ body,.app{background:var(--rr-canvas)}
 .route-stn:hover{text-decoration:underline}
 .route-row.is-here .route-stn{font-weight:700}
 
-/* Airport glyph after airport station names */
-.rr-airport-glyph{display:inline-block;width:.95em;height:.95em;margin-left:.3em;vertical-align:-.12em;fill:currentColor;color:inherit;flex:none}
-.rr-airport-glyph-map{fill:currentColor;color:var(--ink)}
 
 /* Route details: ends joined by the site arrow; departures with status and platform; a station where every pattern stops
    gets one capsule spanning the lanes (like an interchange marker), so RS-only halts stand out as single rings. */
