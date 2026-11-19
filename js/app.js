@@ -174,7 +174,7 @@ function getTrainPath(t){
 }
 function makePath(ids){if(!ids.length)return'';return ids.map((i,j)=>(j?'L':'M')+P[i][0]+' '+P[i][1]).join('')}
 
-function stationList(){const names=[...S.keys()].sort((a,b)=>a.localeCompare(b));for(const id of ['stationSelect','from','to']){const el=$(id);el.replaceChildren(...names.map(name=>{const n=document.createElement('option');n.value=name;n.textContent=name;return n}))}stationSelect.value=currentStation;$('from').value='Mapleriver Central';$('to').value='Peiting Central'}
+function stationList(){const names=[...S.keys()].sort((a,b)=>a.localeCompare(b));for(const id of ['stationSelect','from','to']){const el=$(id);el.replaceChildren(...names.map(name=>{const n=document.createElement('option');n.value=name;n.textContent=name;return n}))}stationSelect.value=currentStation;for(const id of ['from','to']){const blank=document.createElement('option');blank.value='';blank.textContent='Choose station';$(id).prepend(blank);$(id).value=''}}   // journeys start empty
 function statusTone(s){const v=String(s).toLowerCase();return v.startsWith('cancel')?'cancelled':v.startsWith('expected')||v.includes('delay')?'expected':v.startsWith('on time')?'on-time':'neutral'}
 function statusTag(s){return `<span class="status-tag status-${statusTone(s)}">${s}</span>`}
 
@@ -1355,6 +1355,7 @@ function findJourneys(from,to,highSpeedOnly=false){
 function updateBoardTabs(){
  const journey=viewMode==='journeys',arrival=viewMode==='arrivals';
  app.classList.toggle('journey-mode',journey);
+ if(!journey)document.querySelector('.journey-results-head').hidden=true;
  $('journeyPanel').hidden=!journey;$('stationPanel').hidden=journey;
  for(const [id,active] of [['departuresTab',!journey&&!arrival],['arrivalsTab',arrival],['journeysTab',journey]]){
   $(id).classList.toggle('active',active);
@@ -1394,6 +1395,7 @@ function renderJourneyResults(){
  const query=appliedJourneyQuery;
  const from=query?.from??$('from').value,to=query?.to??$('to').value;
  $('journeyFromName').textContent=from;$('journeyToName').textContent=to;
+ document.querySelector('.journey-results-head').hidden=!query;   // the summary appears once a search has run
  board.replaceChildren();
  if(!query){
   $('journeyCount').textContent='';
@@ -1609,6 +1611,9 @@ const rrPlannerDesktopHome=document.querySelector('.map-header');
 const rrPlannerMobileHome=document.getElementById('mobilePlannerSlot');
 function rrPlacePlanner(){
  const parent=document.getElementById('journeyPlannerSlot')||(rrPlannerMobileQuery.matches?rrPlannerMobileHome:rrPlannerDesktopHome);   // planner belongs to the Journeys tab
+ const actions=rrPlannerTools.querySelector('.map-actions')||document.querySelector('.map-actions');
+ const actionsHome=document.getElementById('journeyActionsSlot');
+ if(actions&&actionsHome&&actions.parentElement!==actionsHome)actionsHome.append(actions);
  if(rrPlannerTools.parentElement!==parent){
   pickerViews.get('from')?.shut();pickerViews.get('to')?.shut();
   parent.append(rrPlannerTools);
@@ -1696,6 +1701,7 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
+ 'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
  'South Radeland':'Radeland-Sud',
  'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voie de magistrale',
@@ -1876,16 +1882,16 @@ function rrLocalizeSubtree(root,reset=false){
 const rrLocaleTargets=[...document.querySelectorAll(rrUIRegions)];
 let rrLocaleObserver=null;
 function rrRefreshBrand(code){
- const english=code!=='fr', light=english?'rr-mainline-long-light.svg':'rr-magistrale-long-light.svg';
- const dark=english?'rr-mainline-long-dark.svg':'rr-magistrale-long-dark.svg';
+ // One RR Info logo for every language.
+ const english=true, light='rr-info-long-light.svg', dark='rr-info-long-dark.svg';
  const brand=document.querySelector('.longmark');
  if(brand){
   for(const img of brand.querySelectorAll('img')){
    const file=img.classList.contains('logo-dark')?dark:light;
    const path='./assets/branding/'+file;
    if(img.getAttribute('src')!==path)img.setAttribute('src',path);
-   img.alt=english?'RR Mainline':'RR Magistrale';
-   img.width=english?410:466;img.height=90;
+   img.alt='RR Info';
+   img.width=257;img.height=90;
   }
  }
 }

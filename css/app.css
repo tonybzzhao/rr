@@ -5,7 +5,7 @@
 :root{
  /* Operators, travelled paths, railway lines and first class. */
  /* Immutable source colours are used only to identify service types in data. */
- --rr-base-main:#0057B8;--ui:#23364E;--ui-deep:#1B2A3D;--ui-hover:#33496A;--ui-on:#FFFFFF;--local:#D62828;--rr-base-regio:#146E78;--rr-base-travel-regio:#5FB1BA;--rr-base-via:#D162C0;--rr-base-night:#394779;
+ --rr-base-main:#0057B8;--ui:#1E1F21;--ui-deep:#141414;--ui-hover:#3A3C40;--ui-on:#FFFFFF;--local:#D62828;--rr-base-regio:#146E78;--rr-base-travel-regio:#5FB1BA;--rr-base-via:#D162C0;--rr-base-night:#394779;
  --rr-base-travel-main:#4D8EE9;--rr-base-travel-via:#F08ADF;--rr-base-travel-night:#7080B1;
  /* Exactly one visible colour per service in each appearance.
     Light VIA and travelled shades are AA-adjusted for text on light surfaces. */
@@ -19,7 +19,7 @@
  --travel-main:#2373E4;--travel-via:#D41BB6;--travel-night:#6374AA;--travel-regio:#2A8C97;
  --rail:#9DC8EE;--rail-regio:#74C2B5;--rail-regio-strong:#2E8F86;--first-class:#FAC800;--first-class-ink:#23364E;--on-accent:#FFFFFF;
  /* Text: primary neutral, strong navy, softer navy, grey and two subdued levels. */
- --ink:#1D1D1D;--ink-strong:#23364E;--ink-soft:#34495E;
+ --ink:#1D1D1D;--ink-strong:#1E1F21;--ink-soft:#34495E;
  --muted:#666666;--muted-slate:#667588;--text-faint:#8795A5;
  /* Surfaces and strokes. */
  --surface:#FFFFFF;--map:#E3EDF5;--map-land:#FBFBFA;--hair:#DDDDDA;
@@ -1382,7 +1382,7 @@ body{font-size:14.5px}
    Official service, travelled-route and First Class colours remain untouched. */
 :root[data-theme="dark"]{
  /* One-to-one dark equivalents for the six light-mode railway accents. */
- --ui:#E6ECF2;--ui-deep:#F6F8FA;--ui-hover:#C9D3DD;--ui-on:#111923;--local:#FF6B6B;--main:#1584FF;--via:#D162C0;--night:#7384BD;--rr:#009A4D;--regio:#3DB0BC;--travel-regio:#8CD3DA;--rr-fill-regio:#178089;
+ --ui:#ECEEF1;--ui-deep:#F7F8F9;--ui-hover:#D3D7DC;--ui-on:#141414;--local:#FF6B6B;--main:#1584FF;--via:#D162C0;--night:#7384BD;--rr:#009A4D;--regio:#3DB0BC;--travel-regio:#8CD3DA;--rr-fill-regio:#178089;
  --travel-main:#77A9ED;--travel-via:#F2A6E6;--travel-night:#929EC3;
  --ink:#EDF1F6;--ink-strong:#F6F8FA;--ink-soft:#D7E1EC;
  --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#95A7BA;
