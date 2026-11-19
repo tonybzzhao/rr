@@ -12,7 +12,7 @@
  /* White-on-accent fills always use the accessible light-mode palette,
     including in dark mode; text, outlines and lines use themed accents. */
  --rr-fill-main:var(--rr-base-main);--rr-fill-via:#C53BB0;
- --rr-fill-night:var(--rr-base-night);--rr-fill-rr:#00783C;
+ --rr-fill-night:var(--rr-base-night);--rr-fill-regio:#146E78;--regio:#146E78;--rr-fill-rr:#00783C;
  --rr-fill-main-hover:#004A9A;
  --main:var(--rr-fill-main);--via:var(--rr-fill-via);
  --night:var(--rr-fill-night);--rr:var(--rr-fill-rr);
