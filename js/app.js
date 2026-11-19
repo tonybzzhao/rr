@@ -977,7 +977,6 @@ function drawMap(){
  const selectedSet=new Set(selectedNames);
  const progressIndex=selectedTrain?rrTrainProgressIndex(selectedTrain):0;
  const passedStationNames=new Set(progressIndex>0?selectedTrain.route.slice(0,progressIndex).map(([name])=>name):[]);
- const rrNextStop=selectedTrain&&progressIndex+1<selectedTrain.route.length?selectedTrain.route[progressIndex+1][0]:null;   // the stop after the one you board at
  const passedTrainColor=progressIndex>0?rrTraveledColor(routeColor):null;
  const legStationColors=journeyStationColors(selectedJourney);
  const selectedLabelColors=new Map();
@@ -1075,7 +1074,7 @@ function drawMap(){
   const minor=(!!byVisible.get(name)?.regio&&!important)||tripHub;
   const fontSize=minor?12.5:15.625,weight=important||mixedServiceInterchange?700:500,lh=minor?14.5:18.125;
   ctx.font=`${weight} ${fontSize}px Frutiger,Arial`;
-  const splits=name===rrNextStop?splitName(name).map(l=>[...l,'Next stop']):splitName(name);
+  const splits=splitName(name);
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
   // Prefer a side label. Left-side labels are right-aligned; right-side labels are left-aligned.
   const preferredSide=s.sx>W*.68?'W':s.sx<W*.32?'E':hint[2]==='end'?'W':hint[2]==='start'?'E':s.sx<W/2?'E':'W';
@@ -1128,7 +1127,7 @@ function drawMap(){
   }
   if(tripHub)text.setAttribute('data-trip','hub');
   if(selectedTrain&&passedStationNames.has(name)&&name!==currentStation)text.setAttribute('data-trip','passed');
-  chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});if(name===rrNextStop&&i===chosen.lines.length-1)span.setAttribute('class','label-next');span.textContent=line;text.append(span)});
+  chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});span.textContent=line;text.append(span)});
   group.append(text);
   group.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(name)});
   group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(name)}});
@@ -1764,7 +1763,6 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
- 'Next stop':'Prochain arrêt',
  'Show more trains':'Afficher plus de trains',
  'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
