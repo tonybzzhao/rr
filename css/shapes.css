@@ -410,18 +410,22 @@ body,.app{background:var(--rr-canvas)}
 .station-hero .station-name-band{background:transparent!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
 .rr-card .station-picto-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))!important;gap:14px 8px!important}
 
-/* Right panel: a tinted tray that holds white cards. The tray's own top row (icon, title, actions, close) belongs to the
-   tray, so closing it clearly closes every card. One left edge for everything: tray padding + card padding. */
-.details,aside#details.details{--tray-pad:10px;background:var(--rr-tray)!important;border-radius:var(--rr-radius-card);box-shadow:none;margin-right:var(--rr-gutter);overflow:hidden}
-.details .details-head{margin:0!important;min-height:52px;padding:0 calc(var(--tray-pad) + 4px) 0 calc(var(--tray-pad) + var(--rr-card-pad))!important;background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
-.details .details-body{padding:0 var(--tray-pad) var(--tray-pad)!important}
-.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stop-list,.details-body .rr-formation,.details-body .jt-timeline,.details-body .rr-card{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)!important;border:0!important;border-radius:var(--rr-radius-card)!important;margin:0 0 var(--rr-gap)!important;padding-left:var(--rr-card-pad)!important;padding-right:var(--rr-card-pad)!important}
-.details-body .stops-heading{background:var(--surface)!important;margin:0!important;padding:var(--rr-card-pad) var(--rr-card-pad) 4px!important;border-radius:var(--rr-radius-card) var(--rr-radius-card) 0 0!important;box-shadow:var(--rr-card-shadow)!important;clip-path:inset(-10px -10px 0 -10px)!important}
-.details-body .stops-heading+.stop-list{border-radius:0 0 var(--rr-radius-card) var(--rr-radius-card)!important;clip-path:inset(0 -10px -10px -10px)!important;margin-top:-1px!important}
+/* Right panel: one large white card; its sections are smaller tinted cards nested inside it. The panel's header row
+   (icon, title, actions, close) and every inner card share one left edge: panel padding + inner card padding. */
+.details,aside#details.details{--tray-pad:12px;background:var(--surface)!important;border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow);margin-right:var(--rr-gutter);overflow:hidden}
+.details .details-head{margin:0!important;min-height:54px;padding:0 calc(var(--tray-pad) - 2px) 0 calc(var(--tray-pad) + 14px)!important;background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important}
+.details .details-body{padding:0 var(--tray-pad) var(--tray-pad)!important;background:transparent!important}
+.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stop-list,.details-body .rr-formation,.details-body .jt-timeline,.details-body .rr-card{background:var(--rr-canvas)!important;box-shadow:none!important;border:0!important;border-radius:12px!important;margin:0 0 8px!important;padding-left:14px!important;padding-right:14px!important}
+.details-body .stops-heading{background:var(--rr-canvas)!important;margin:0!important;padding:14px 14px 4px!important;border-radius:12px 12px 0 0!important;box-shadow:none!important;clip-path:none!important}
+.details-body .stops-heading+.stop-list{border-radius:0 0 12px 12px!important;margin-top:0!important}
 .details-body>:last-child{margin-bottom:0!important}
-.details-body .back-to-train{margin:0 0 var(--rr-gap)!important}
-.details-body .rr-alert-banner{margin:0 0 var(--rr-gap)!important}
-.details-body .empty{background:var(--surface);border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow);padding:var(--rr-card-pad)!important}
+.details-body .back-to-train{margin:0 0 8px!important}
+.details-body .rr-alert-banner{margin:0 0 8px!important}
+.details-body .empty{background:var(--rr-canvas);border-radius:12px;padding:14px!important}
+/* Things that were canvas-on-white become white-on-canvas inside the nested cards */
+.details-body .station-action,.details-body .fac-detail,.details-body .jt-card,.details-body .facility.has-hours:hover,.details-body .facility.has-hours[aria-expanded="true"]{background:var(--surface)!important}
+.details-body .station-action:hover{background:var(--hover)!important}
+.details-body .station-services .station-svc,.details-body .station-svc-foot{border-color:var(--stroke)}
 /* Station services: each service is a disclosure row (like Train formation); open it to see its trains */
 .station-svc{border-top:1px solid var(--stroke-soft)}
 .station-svc:first-child{border-top:0}
