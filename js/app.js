@@ -132,10 +132,12 @@ function rrServiceLabel(type,network=''){
  const c=C[type]||RR_UI_CSS_COLOR('--ink-strong');
  const contrastToken=rrServiceAccentToken(type);
  const readable=contrastToken?`var(${contrastToken})`:c;
- return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type)}${network?' '+network:''}</span></span>`;
+ return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type)}${network?` <span class="rr-network">${network}</span>`:''}</span></span>`;
 }
 function rrTrainLabel(t){return t.label||t.id}
 function rrOutline(t){return t.type==='InterCity'||t.pattern==='RS'}
+// The one train badge: service colour, outline for InterCity and Regio RS, label (Regio shows the line, e.g. RX 37).
+function rrBadge(t){return `<span class="service${rrOutline(t)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${rrTrainLabel(t)}</span>`}
 function isHighSpeed(train){return train.type==='Max'||train.type==='VIA'}
 const P=GRAPH.pts, E=GRAPH.edges;
 const $=id=>document.getElementById(id);
@@ -400,23 +402,22 @@ function trainFacilities(train){
  if(items.includes('Accessible')&&items.includes('Toilet')&&!items.includes('Accessible Toilet'))items.push('Accessible Toilet');
  return items;
 }
-// Services calling at a station: one row per service (Regio per network), departures a day, Regio line labels.
+// Services calling at a station: one row per service (Regio per network) with departures a day and its trains (Regio: lines).
 function rrStationServices(name){
  const m=new Map(),order=['Max','VIA','InterCity','Nightline','Regio'];
  for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===name);if(i<0)continue;
-  const k=t.type+'|'+(t.network||'');if(!m.has(k))m.set(k,{type:t.type,network:t.network||'',n:0,lines:new Set()});
-  const e=m.get(k);if(i<t.route.length-1)e.n++;if(t.type==='Regio')e.lines.add(t.label||t.line)}
+  const k=t.type+'|'+(t.network||'');if(!m.has(k))m.set(k,{type:t.type,network:t.network||'',n:0,badges:new Map()});
+  const e=m.get(k);if(i<t.route.length-1)e.n++;const l=rrTrainLabel(t);if(!e.badges.has(l))e.badges.set(l,t)}
  return [...m.values()].sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
 }
 function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
- const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span><span class="service${rrOutline(returnTrain.train)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(returnTrain.train.type)};--rr-white-text-fill:${rrCssWhiteTextFill(returnTrain.train.type)}">${rrTrainLabel(returnTrain.train)}</span></button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
+ const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
- const systems=[...new Set(svc.map(s=>s.type==='Regio'?'Regio'+(s.network?' '+s.network:''):'Mainline'))];
- detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div><div class="station-sub">${systems.map(s=>`<span>${s}</span>`).join('<span class="jr-sep">·</span>')}</div></div>
- <section class="rr-card"><h3 class="rr-card-title">Services</h3><ul class="station-services">${svc.map(s=>`<li><div class="station-svc-name">${rrServiceLabel(s.type,s.network)}</div><span class="station-svc-meta">${s.n} ${s.n===1?'departure':'departures'} a day</span>${s.lines.size?`<div class="station-svc-lines">${[...s.lines].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(l=>`<span class="service" style="--service-color:${rrCssServiceAccent('Regio')};--rr-white-text-fill:${rrCssWhiteTextFill('Regio')}">${l}</span>`).join('')}</div>`:''}</li>`).join('')}</ul>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
+ detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div></div>
+ <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="station-svc-meta">${s.n} ${s.n===1?'departure':'departures'} a day</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>rrBadge(t)).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
  <section class="rr-card"><h3 class="rr-card-title">Facilities</h3><h4 class="rr-card-sub">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
  ${additional.length?`<h4 class="rr-card-sub">Additional</h4><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}</section>`;
  if(returnTrain){
@@ -655,12 +656,10 @@ function rrCoachDetail(t,form,index){
   </div>${fac?`<div class="rr-facility-list">${fac}</div>`:''}`;
 }
 function rrCoachSelectionOutline(shape){
- // Measured ink bounds of each coach shape in its 32-unit viewBox [minX,maxX,minY,maxY]
- // (First Class shapes include the yellow stripe). The selector keeps the same clearance on all four sides.
- const ink={'car':[2,30,4,24],'first-car':[2,30,4,29],'end-car-left':[3,30,4,24],'end-car-right':[2,29,4,24],
-  'end-first-car-left':[2,30,4,29],'end-first-car-right':[2,30,4,29]};
- const [x0,x1,y0,y1]=ink[shape]||ink.car,pad=1.2+.45;   // clearance + half of the .9-unit stroke
- return `<svg class="rr-car-selection-outline" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="${x0-pad}" y="${y0-pad}" width="${x1-x0+2*pad}" height="${y1-y0+2*pad}" rx="1.4"/></svg>`;
+ // Painted ink of every coach shape (2-unit strokes included) spans x 2-30, y 3-25; First Class adds the stripe down to y 29.
+ // The selector keeps one clearance on all four sides.
+ const y1=shape.includes('first')?29:25,pad=1.2+.45;   // clearance + half of the .9-unit stroke
+ return `<svg class="rr-car-selection-outline" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="${2-pad}" y="${3-pad}" width="${28+2*pad}" height="${y1-3+2*pad}" rx="1.4"/></svg>`;
 }
 function rrCoachFormation(t,fromStation=null,toStation=null){
  const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
@@ -1494,7 +1493,7 @@ function renderJourneyResults(){
   if(j.whenTomorrow&&!dividerShown){dividerShown=true;const d=document.createElement('div');d.className='rr-day-divider';d.textContent=rrJourneyDayLabel(1);board.append(d)}
   const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
   el.style.setProperty('--journey-color',rrCssServiceAccent(j.legs[0].train.type));
-  const badges=j.legs.map(l=>`<span class="service${rrOutline(l.train)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(l.train.type)};--rr-white-text-fill:${rrCssWhiteTextFill(l.train.type)}">${rrTrainLabel(l.train)}</span>`).join('');
+  const badges=j.legs.map(l=>`${rrBadge(l.train)}`).join('');
   const depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx);
   el.innerHTML=`<div class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></div><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
   el.addEventListener('click',()=>chooseJourney(j));board.append(el);
@@ -1581,7 +1580,7 @@ function fillJourneyDetails(j){
   rows+=`<li class="jt-leg" style="${accent}"><ol class="jt-leg-list">`;
   rows+=rrJourneyNode(t,leg.fromIdx,leg.from,'board',index?'dot':'none','solid',index);
   rows+=`<li class="jt-row jt-ride"><div class="jt-time"></div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"></div><div class="jt-card">
-   <h3 class="jt-card-head"><span class="service${rrOutline(t)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}">${rrTrainLabel(t)}</span><span class="jt-service">${rrServiceLabel(t.type,t.network)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
+   <h3 class="jt-card-head">${rrBadge(t)}<span class="jt-service">${rrServiceLabel(t.type,t.network)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
    <div class="jt-towards"><span class="jt-towards-label">towards</span> <span>${t.dest}</span></div>
    <div class="jt-meta"><span>${fmtDuration(leg.arr-leg.dep)}</span><span class="jt-sep" aria-hidden="true">·</span>${calls.length?`<button type="button" class="jt-calls-toggle" aria-expanded="false" aria-controls="${callsId}"><span>${stopsLabel}</span><span class="jt-chevron" aria-hidden="true"></span></button>`:`<span>${stopsLabel}</span>`}</div>
    ${rrJourneyCoachSummary(t,leg.from,leg.to)}

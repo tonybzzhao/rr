@@ -403,20 +403,33 @@ body,.app{background:var(--rr-canvas)}
 .rr-card-title{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--ink-strong)}
 .rr-card-sub{margin:4px 0 0;font-size:12px;font-weight:500;color:var(--muted-slate)}
 .rr-card .station-picto-grid{margin:12px 0 18px}.rr-card .station-picto-grid:last-child{margin-bottom:4px}
-.station-hero .station-name-band{margin:0 0 6px}
-.station-sub{display:flex;flex-wrap:wrap;gap:0 6px;font-size:13px;color:var(--muted-slate)}
-.station-services{list-style:none;margin:0;padding:0}
-.station-services li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 10px;padding:10px 0;border-top:1px solid var(--stroke-soft)}
-.station-services li:first-child{border-top:0;padding-top:2px}
-.station-svc-name{font-size:13px;font-weight:700;color:var(--ink-strong)}
-.station-svc-meta{font-size:12px;color:var(--muted-slate);white-space:nowrap}
-.station-svc-lines{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px}
-.station-svc-foot{margin-top:6px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
 
-/* Right panel = one container: a tinted tray whose top row (title + close) owns every card below it */
-.details,aside#details.details{background:var(--rr-panel)!important;border-radius:var(--rr-radius-card);margin:var(--rr-gap) var(--rr-gutter) var(--rr-gutter) 0;overflow:hidden}
-.details .details-head{margin:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:6px 6px 0 var(--rr-card-pad)!important}
-.details .details-body{padding:var(--rr-gap) var(--rr-gap) var(--rr-gap)!important}
 @media(min-width:751px){.details,aside#details.details{margin-top:var(--head)!important;margin-bottom:0!important}}
 .station-hero .station-name-band{background:transparent!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
 .rr-card .station-picto-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))!important;gap:14px 8px!important}
+
+/* Right panel: ONE white sheet. Its header row (icon, title, actions, close) and every section below share
+   the card padding as their left/right edge; sections are divided by hairlines instead of nested cards. */
+.details,aside#details.details{background:var(--surface)!important;border-radius:var(--rr-radius-card);box-shadow:var(--rr-card-shadow);margin-right:var(--rr-gutter);overflow:hidden}
+.details .details-head{margin:0!important;min-height:56px;padding:0 10px 0 var(--rr-card-pad)!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;border-bottom:1px solid var(--stroke-soft)!important}
+.details .details-body{padding:0!important}
+.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stops-heading,.details-body .stop-list,.details-body .rr-formation,.details-body .jt-timeline,.details-body .rr-card{background:transparent!important;box-shadow:none!important;border-radius:0!important;clip-path:none!important;margin:0!important;padding-left:var(--rr-card-pad)!important;padding-right:var(--rr-card-pad)!important}
+.details-body .train-hero,.details-body .journey-hero,.details-body .info-grid,.details-body .stop-list,.details-body .jt-timeline,.details-body .rr-card{border-bottom:1px solid var(--stroke-soft)!important}
+.details-body>:last-child,.details-body .rr-formation{border-bottom:0!important}
+.details-body .back-to-train{margin:var(--rr-card-pad) var(--rr-card-pad) 0!important}
+.details-body .rr-alert-banner{margin:var(--rr-card-pad) var(--rr-card-pad) 0!important}
+.details-body .empty{padding:var(--rr-card-pad)!important}
+/* Station services: each service is a disclosure row (like Train formation); open it to see its trains */
+.station-svc{border-top:1px solid var(--stroke-soft)}
+.station-svc:first-child{border-top:0}
+.station-svc>summary{display:grid;grid-template-columns:minmax(0,1fr) 12px;grid-template-rows:auto auto;align-items:center;column-gap:10px;row-gap:3px;padding:10px 0;cursor:pointer;list-style:none}
+.station-svc>summary .station-svc-meta{grid-row:2}
+.station-svc>summary .jt-chevron{grid-column:2;grid-row:1 / 3}
+.station-svc>summary::-webkit-details-marker{display:none}
+.station-svc>summary .jt-chevron{color:var(--ink-soft);justify-self:end}
+.station-svc[open]>summary .jt-chevron{transform:translateY(1px) rotate(-135deg)}
+.station-svc-name{font-size:13px;font-weight:700;color:var(--ink-strong);min-width:0}
+.station-svc-meta{font-size:12px;color:var(--muted-slate);white-space:nowrap}
+.station-svc-lines{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 14px}
+.station-svc-foot{padding-top:12px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
+.rr-network{font-weight:500;color:var(--muted-slate)}
