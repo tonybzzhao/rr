@@ -207,7 +207,7 @@ body,.app{background:var(--rr-canvas)}
 .details-body .back-to-train{display:inline-flex!important;align-items:center;gap:8px!important;height:36px;box-sizing:border-box;margin:0 0 var(--rr-gap)!important;padding:0 14px 0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;line-height:1!important}
 .details-body .back-to-train:hover{background:var(--hover-blue)!important;color:var(--ui)!important}
 .details-body .back-to-train span[aria-hidden]{font-size:16px!important;line-height:1}
-.details-body .back-to-train .service{margin-left:2px;font-size:11.25px;font-weight:500;line-height:normal}
+.details-body .back-to-train .service{margin-left:2px;font-size:11px;font-weight:500;line-height:normal}
 
 /* Arrows use the RR arrow pictograms instead of the → / ← characters. They
    take the text colour and scale with the text around them. */
@@ -259,7 +259,7 @@ body,.app{background:var(--rr-canvas)}
 }
 /* Service filter: each option outlined in its system colour; the selected one fills solid. */
 .service-filter{gap:6px!important;height:auto!important;padding:5px!important}
-.service-chip{height:34px!important;border:2px solid var(--chip-color)!important;background:var(--surface)!important;color:var(--muted-slate)!important;font-weight:500!important;font-size:12.5px!important}
+.service-chip{height:34px!important;border:2px solid var(--chip-color)!important;background:var(--surface)!important;color:var(--muted-slate)!important;font-weight:500!important;font-size:12px!important}
 .service-chip[data-filter="all"]{--chip-fill:var(--ui);--chip-on:var(--ui-on)}
 .service-chip[data-filter="mainline"]{--chip-fill:var(--rr-fill-main);--chip-on:#fff}
 .service-chip[data-filter="regio"]{--chip-fill:var(--rr-fill-regio);--chip-on:#fff}
@@ -269,7 +269,7 @@ body,.app{background:var(--rr-canvas)}
 
 /* Board tabs follow the filter's standard: same container padding, gap and corner radius, slightly larger. */
 .board-tabs{padding:5px!important;gap:6px!important;height:auto!important;min-height:0!important}
-.board-tab{height:40px!important;min-height:40px!important;border:2px solid transparent!important;border-radius:8px!important;font-size:13.5px!important}
+.board-tab{height:40px!important;min-height:40px!important;border:2px solid transparent!important;border-radius:8px!important;font-size:13px!important}
 .board-tab:not(.active){color:var(--muted-slate)!important}
 @media(max-width:750px){.longmark img{height:32px!important;width:auto!important}}
 /* Journey planner inside the Journeys tab */
@@ -313,7 +313,7 @@ body,.app{background:var(--rr-canvas)}
 /* Secondary buttons inside the sidebar cards look exactly like the input fields beside them:
    canvas-grey fill, no border, 10px radius, ink text. (Find trains is the only primary button.) */
 .side-controls #swapStations,.side-controls #clear,.side-controls .rr-when-now{background:var(--rr-canvas)!important;border:0!important;box-shadow:none!important;border-radius:10px!important;color:var(--ink-strong)!important;font-weight:500!important}
-.side-controls #clear{font-size:13.5px!important}
+.side-controls #clear{font-size:13px!important}
 .side-controls #swapStations:hover,.side-controls #clear:hover,.side-controls .rr-when-now:hover{background:var(--hair)!important}
 .side-controls #swapStations .rr-action-icon,.side-controls #clear .rr-action-icon,.side-controls #swapStations svg{color:var(--ink-strong)!important}
 .side-controls #clear{padding:0 14px!important;gap:6px!important}
@@ -324,7 +324,7 @@ body,.app{background:var(--rr-canvas)}
 .journey-results-head{margin:0 0 6px!important;padding:4px 16px 0!important;border-top:0!important}
 .journey-results-head[hidden]{display:none!important}
 /* primary button: neutral fill */
-.journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:0!important;border-radius:10px!important;font-weight:700!important;font-size:13.5px!important;gap:8px!important}
+.journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:0!important;border-radius:10px!important;font-weight:700!important;font-size:13px!important;gap:8px!important}
 .journey-actions-slot #trace:hover{background:var(--ui-hover)!important}
 .journey-actions-slot #trace .rr-action-icon{color:var(--ui-on)!important;fill:currentColor}
 
@@ -334,7 +334,7 @@ body,.app{background:var(--rr-canvas)}
 .label[data-trip="hub"]{fill:var(--muted-slate)!important;opacity:.7}
 
 /* "Show more trains / journeys": a full-width card like the train rows, with a down chevron. */
-.board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13.5px!important;font-weight:500!important;cursor:pointer;box-shadow:none!important}
+.board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;cursor:pointer;box-shadow:none!important}
 .board .journey-more::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
 .board .journey-more.journey-earlier::after{transform:translateY(2px) rotate(-135deg)}
 .board .journey-more:hover{background:var(--hover)!important}
@@ -363,13 +363,20 @@ body,.app{background:var(--rr-canvas)}
 /* Journey results: a summary card (route as a mini line, then count and search time) */
 .journey-results-head{margin:0 0 var(--rr-gap)!important;padding:var(--rr-card-pad)!important;border-radius:var(--rr-radius-card);background:var(--surface);box-shadow:var(--rr-card-shadow)}
 .journey-results-head .eyebrow{margin-bottom:10px}
-.journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:15px}
+.journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:16px}
 .journey-results-head .journey-pair .rr-arrow{display:none}
 .journey-results-head .journey-pair strong{grid-column:2;font-weight:700;color:var(--ink-strong);line-height:1.25}
 .journey-results-head .journey-pair::before,.journey-results-head .journey-pair::after{content:"";grid-column:1;width:8px;height:8px;border-radius:50%;justify-self:center;box-sizing:border-box}
 .journey-results-head .journey-pair::before{grid-row:1;border:2px solid var(--ui);background:var(--surface);position:relative;z-index:1}
 .journey-results-head .journey-pair::after{grid-row:2;background:var(--ui)}
 .journey-results-head .journey-pair{background:linear-gradient(var(--stroke),var(--stroke)) 6px 50%/2px calc(100% - 20px) no-repeat}
-.journey-results-head .journey-count{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12.5px;color:var(--muted-slate)}
+.journey-results-head .journey-count{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
 .journey-results-head .jr-time{font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
 .journey-results-head .jr-sep{color:var(--text-faint)}
+
+/* Journey controls share one 13px size; the time box only fits HH:MM */
+.side-controls .picker-input,.journey-when select,.journey-when input,.rr-when-date,.direct-filter{font-size:13px!important}
+.journey-when .rr-when-time{flex:0 0 auto!important}
+.journey-when .rr-when-time input{width:62px!important;padding:0 4px!important;text-align:center}
+.journey-when .rr-when-time input::-webkit-calendar-picker-indicator{display:none}
+.filter-hint{font-size:12px!important}
