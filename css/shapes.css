@@ -598,3 +598,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 /* lane labels above the diagram, one per lane column */
 .route-lane-tags{display:grid;grid-template-columns:repeat(var(--lanes),15px);gap:0;margin:0 0 6px}
 .route-lane-tags .route-branch-tag{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;padding:3px 0;width:13px;justify-self:center;text-align:center;border-width:1.5px}
+/* Facility tiles with opening hours are buttons: no extra padding, so their icon and label line up with plain tiles. */
+.station-picto-grid .facility.has-hours{padding:0!important;margin:0;border:0;background:none;font:inherit;line-height:inherit;vertical-align:top}
+.station-picto-grid{align-items:start}
+.station-picto-grid .facility svg{width:29px!important;height:29px!important;flex:none}
