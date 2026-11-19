@@ -249,7 +249,7 @@ function setupSearchPicker(id){
  toggle.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>';
  const list=document.createElement('div');list.className='picker-list';list.id=id+'List';list.setAttribute('role','listbox');
  trigger.append(input,toggle);shell.append(trigger,list);select.parentElement.insertBefore(shell,select);select.classList.add('native-select');
- const names=RR_STATION_NAMES,normalize=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
+ const names=RR_STATION_NAMES,normalize=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();const norm=names.map(n=>normalize(n));
  let open=false,items=[],active=0;
  function sync(){input.value=select.value;input.title=select.value;}
  function shut(){open=false;list.classList.remove('open');shell.classList.remove('open');input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');sync();}
@@ -257,8 +257,12 @@ function setupSearchPicker(id){
  function choose(name){rrSelectValue(select,name);shut();select.dispatchEvent(new Event('change',{bubbles:true}));input.focus({preventScroll:true});}
  function mark(){const opts=[...list.querySelectorAll('.picker-option')];opts.forEach((opt,i)=>{opt.classList.toggle('active',i===active);opt.setAttribute('aria-selected',String(items[i]===select.value))});if(opts[active]){input.setAttribute('aria-activedescendant',opts[active].id);opts[active].scrollIntoView({block:'nearest'});}}
  function render(q=''){
-  const term=normalize(q);items=names.filter(n=>normalize(n).includes(term));
-  if(term){items.sort((a,b)=>Number(!normalize(a).startsWith(term))-Number(!normalize(b).startsWith(term))||a.localeCompare(b));}
+  // Phones: never build thousands of option buttons. Empty box = the major stations; typing = the best 50 matches.
+  const term=normalize(q);
+  if(!term)items=[...LABELS].sort((a,b)=>a.localeCompare(b));
+  else{const hit=[];for(let i=0;i<names.length;i++){const k=norm[i].indexOf(term);if(k>=0)hit.push([k===0?0:1,names[i]])}
+   hit.sort((a,b)=>a[0]-b[0]||a[1].localeCompare(b[1]));items=hit.slice(0,50).map(h=>h[1])}
+  if(select.value&&!items.includes(select.value)&&!term)items.unshift(select.value);
   active=Math.max(0,items.indexOf(select.value));list.replaceChildren();
   if(!items.length){const empty=document.createElement('div');empty.className='picker-empty';empty.textContent='No matching stations';list.append(empty);return;}
   items.forEach((name,i)=>{const o=document.createElement('button');o.type='button';o.className='picker-option';o.id=id+'Opt'+i;o.setAttribute('role','option');o.textContent=name;o.addEventListener('pointerdown',e=>e.preventDefault());o.addEventListener('click',()=>choose(name));list.append(o)});mark();
@@ -1281,7 +1285,6 @@ function drawMap(){
     text.setAttribute('data-interchange-label','mixed');
    }
    text.setAttribute('data-route-label',selectedTrain&&passedStationNames.has(name)?'passed':'forthcoming');
-  if(/Airport/.test(name))requestAnimationFrame(()=>{if(!text.isConnected)return;const last=text.lastElementChild||text,b=last.getBBox(),sz=fontSize*0.95;const u=se('use',{href:'#rr-glyph-airport',x:b.x+b.width+fontSize*0.25,y:b.y+(b.height-sz)/2,width:sz,height:sz,class:'rr-airport-glyph-map','pointer-events':'none'});text.parentNode.insertBefore(u,text.nextSibling)});
   }
   if(tripHub)text.setAttribute('data-trip','hub');
   if(selectedTrain&&passedStationNames.has(name)&&name!==currentStation)text.setAttribute('data-trip','passed');
@@ -1847,10 +1850,6 @@ function rrPlacePlanner(){
 rrPlacePlanner();
 rrPlannerMobileQuery.addEventListener('change',()=>{rrPlacePlanner();requestAnimationFrame(resize)});
 
-// Airport glyph: every station name that contains "Airport" is followed by the RR airport pictogram, wherever it shows.
-const RR_AIRPORT_SEL='.dest,.stop-name,.jt-station,.station-name-band,.service-dest,.route-stn,.route-dep-dest,.journey-summary-time .station,.picker-option,#stationHeading,#journeyFromName,#journeyToName,.rr-home-station span:first-child';
-function rrAirportGlyphs(root){root.querySelectorAll?.(RR_AIRPORT_SEL).forEach(el=>{if(el.querySelector('.rr-airport-glyph')||!/Airport/.test(el.textContent))return;el.insertAdjacentHTML('beforeend','<svg class="rr-airport-glyph" viewBox="4 4 32 32" aria-hidden="true" focusable="false"><use href="#rr-glyph-airport"></use></svg>')})}
-new MutationObserver(recs=>{for(const r of recs)for(const n of r.addedNodes)if(n.nodeType===1){rrAirportGlyphs(n);if(n.matches?.(RR_AIRPORT_SEL))rrAirportGlyphs(n.parentElement)}else if(n.nodeType===3&&n.parentElement)rrAirportGlyphs(n.parentElement.parentElement||n.parentElement)}).observe(document.body,{subtree:true,childList:true});
 pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
 // Recompute map-label collision positions once the hosted fonts are available.
 if (document.fonts && document.fonts.load) {
