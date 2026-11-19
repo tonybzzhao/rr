@@ -1042,7 +1042,7 @@ function drawMap(){
  }
 }
 function zoomAt(factor,px=W/2,py=H/2){
- const old=zoom,next=Math.max(1,Math.min(4.5,old*factor));
+ const old=zoom,next=Math.max(1,Math.min(16,old*factor)); // deep zoom for dense Regio areas
  if(Math.abs(old-next)<0.000001)return;
  // Preserve the point beneath the cursor, but keep the fitted map centred on zoom-out.
  const previous=fit*old,ns=fit*next;
@@ -1062,7 +1062,7 @@ function focusRoute(){
  const left=Math.min(...coords.map(p=>p[0])),right=Math.max(...coords.map(p=>p[0]));
  const top=Math.min(...coords.map(p=>p[1])),bottom=Math.max(...coords.map(p=>p[1]));
  const targetScale=Math.min((W-96)/Math.max(125,right-left+90),(H-96)/Math.max(125,bottom-top+90));
- zoom=Math.max(1,Math.min(4.5,targetScale/fit));
+ zoom=Math.max(1,Math.min(8,targetScale/fit));
  const sc=fit*zoom;
  const centreX=(left+right)/2,centreY=(top+bottom)/2;
  panX=(W/2-centreX*sc)-((W-graphWidth*sc)/2-minX*sc);
