@@ -400,15 +400,25 @@ function trainFacilities(train){
  if(items.includes('Accessible')&&items.includes('Toilet')&&!items.includes('Accessible Toilet'))items.push('Accessible Toilet');
  return items;
 }
+// Services calling at a station: one row per service (Regio per network), departures a day, Regio line labels.
+function rrStationServices(name){
+ const m=new Map(),order=['Max','VIA','InterCity','Nightline','Regio'];
+ for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===name);if(i<0)continue;
+  const k=t.type+'|'+(t.network||'');if(!m.has(k))m.set(k,{type:t.type,network:t.network||'',n:0,lines:new Set()});
+  const e=m.get(k);if(i<t.route.length-1)e.n++;if(t.type==='Regio')e.lines.add(t.label||t.line)}
+ return [...m.values()].sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
+}
 function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span><span class="service${rrOutline(returnTrain.train)?' rr-ic-outline':''}" style="--service-color:${rrCssServiceAccent(returnTrain.train.type)};--rr-white-text-fill:${rrCssWhiteTextFill(returnTrain.train.type)}">${rrTrainLabel(returnTrain.train)}</span></button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
- detail.innerHTML=`<div class="station-name-band">${name}</div>
- ${backButton}<div class="facilities-heading">Standard facilities</div><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
- ${additional.length?`<div class="facilities-heading">Additional station facilities</div><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}
- `;
+ const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
+ const systems=[...new Set(svc.map(s=>s.type==='Regio'?'Regio'+(s.network?' '+s.network:''):'Mainline'))];
+ detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div><div class="station-sub">${systems.map(s=>`<span>${s}</span>`).join('<span class="jr-sep">·</span>')}</div></div>
+ <section class="rr-card"><h3 class="rr-card-title">Services</h3><ul class="station-services">${svc.map(s=>`<li><div class="station-svc-name">${rrServiceLabel(s.type,s.network)}</div><span class="station-svc-meta">${s.n} ${s.n===1?'departure':'departures'} a day</span>${s.lines.size?`<div class="station-svc-lines">${[...s.lines].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(l=>`<span class="service" style="--service-color:${rrCssServiceAccent('Regio')};--rr-white-text-fill:${rrCssWhiteTextFill('Regio')}">${l}</span>`).join('')}</div>`:''}</li>`).join('')}</ul>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
+ <section class="rr-card"><h3 class="rr-card-title">Facilities</h3><h4 class="rr-card-sub">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
+ ${additional.length?`<h4 class="rr-card-sub">Additional</h4><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}</section>`;
  if(returnTrain){
   $('backToTrain').addEventListener('click',()=>{
    viewMode=returnTrain.boardMode==='arrivals'?'arrivals':'departures';
@@ -645,24 +655,12 @@ function rrCoachDetail(t,form,index){
   </div>${fac?`<div class="rr-facility-list">${fac}</div>`:''}`;
 }
 function rrCoachSelectionOutline(shape){
- // A uniform 2.25px clearance from the painted bounding box, INCLUDING
- // the yellow First Class stripe. The selector itself is a .65px stroke
- // (.52 SVG units at a 40px render size). All six shapes use a rectangle.
- // Sloping end shapes have a narrower physical ink envelope than mid-cars.
- const envelopes={
-  'car':[2.5,37.5,31.25],
-  'first-car':[2.5,37.5,36.25],
-  'end-car-left':[3.75,37.5,31.25],
-  'end-car-right':[2.5,36.25,31.25],
-  'end-first-car-left':[2.5,37.5,36.25],
-  'end-first-car-right':[2.5,37.5,36.25]
- };
- const [minX,maxX,maxY]=envelopes[shape]||envelopes.car;
- const gap=2.25,halfStroke=.325,scale=40/32;
- const x=(minX-gap+halfStroke)/scale,y=(4-gap+halfStroke)/scale;
- const w=(maxX-minX+2*(gap-halfStroke))/scale;
- const h=(maxY-4+2*(gap-halfStroke))/scale;
- return `<svg class="rr-car-selection-outline" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="0.7"/></svg>`;
+ // Measured ink bounds of each coach shape in its 32-unit viewBox [minX,maxX,minY,maxY]
+ // (First Class shapes include the yellow stripe). The selector keeps the same clearance on all four sides.
+ const ink={'car':[2,30,4,24],'first-car':[2,30,4,29],'end-car-left':[3,30,4,24],'end-car-right':[2,29,4,24],
+  'end-first-car-left':[2,30,4,29],'end-first-car-right':[2,30,4,29]};
+ const [x0,x1,y0,y1]=ink[shape]||ink.car,pad=1.2+.45;   // clearance + half of the .9-unit stroke
+ return `<svg class="rr-car-selection-outline" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="${x0-pad}" y="${y0-pad}" width="${x1-x0+2*pad}" height="${y1-y0+2*pad}" rx="1.4"/></svg>`;
 }
 function rrCoachFormation(t,fromStation=null,toStation=null){
  const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
@@ -729,7 +727,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${t.tomorrow?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(t.tomorrow?1:0),false)}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type,t.network)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${t.tomorrow?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(t.tomorrow?1:0),false)}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrServiceLabel(t.type,t.network)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -1474,13 +1472,14 @@ function renderJourneyResults(){
  const query=appliedJourneyQuery;
  const from=query?.from??$('from').value,to=query?.to??$('to').value;
  $('journeyFromName').textContent=from;$('journeyToName').textContent=to;
- document.querySelector('.journey-results-head').hidden=!query;   // the summary appears once a search has run
+ document.querySelector('.journey-results-head').hidden=!query||!from||!to||from===to;   // the summary appears once a search has run
  board.replaceChildren();
  if(!query){
   $('journeyCount').textContent='';
   // nothing to show until a search has run
   return;
  }
+ if(!from||!to){$('journeyCount').textContent='';board.innerHTML='<div class="empty">Choose a From and a To station.</div>';return}
  const onlyDirect=query.directOnly;
  const list=rrJourneyWindow(journeyResults.filter(j=>(!onlyDirect||j.change===0)&&(!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train)))));
  {const w=rrJourneyWhen(),off=rrJourneyDayOffset();$('journeyCount').innerHTML=`<span>${list.length} ${list.length===1?'journey':'journeys'}</span><span class="jr-sep">·</span><span>${w.mode==='arrive'?'Arrive by':'Depart after'}</span> <span class="jr-time">${rrMinutesToInput(w.time)}</span><span class="jr-sep">·</span><span>${off===0?'Today':off===1?'Tomorrow':rrFmtDate(rrJourneyDate(),false)}</span>`}
@@ -1805,7 +1804,7 @@ const rrFrenchExact=Object.freeze({
  'Find trains':'Rechercher','Reset':'Effacer','From':'De','To':'À',
  'Direct only':'Sans correspondance','High-speed only':'Grande vitesse uniquement',
  'Time':'Heure','Train':'Train','Destination':'Destination',
- 'Origin':'Provenance','Platform':'Voie','Status':'Statut','Service':'Type de train',
+ 'Origin':'Provenance','Platform':'Voie','Status':'Statut','Service':'Type de train','Operator':'Exploitant','Services':'Services','Facilities':'Équipements','Standard':'Standard','Additional':'Supplémentaires','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
  'Departure':'Départ','Arrival':'Arrivée','Calling at':'Arrêts desservis',
  'On time':'À l’heure','Boarding':'Embarquement en cours','Cancelled':'Supprimé',
  'Direct':'Direct','Departs':'Départ','Arrives':'Arrivée',
@@ -1899,6 +1898,7 @@ function rrFrenchText(source){
   .replace(/\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday), (\d\d\/\d\d\/\d{4})/g,(_,d,n)=>RR_DAYS_FR[RR_DAYS.indexOf(d)]+' '+n)
   .replace(/\b(Sun|Mon|Tue|Wed|Thu|Fri|Sat), (\d\d\/\d\d)\b/g,(_,d,n)=>RR_DAYS_FR[RR_DAYS.findIndex(x=>x.startsWith(d))].slice(0,3)+'. '+n)
   .replace(/^Tomorrow · /,'Demain · ').replace(/^Today · /,'Aujourd’hui · ')
+  .replace(/^(\d+) departures a day$/,'$1 départs par jour').replace(/^1 departure a day$/,'1 départ par jour').replace(/^(\d+) platforms$/,'$1 voies')
   .replace(/^Coach (\d+)$/,'Voiture $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Pl\. (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard

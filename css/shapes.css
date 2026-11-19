@@ -393,3 +393,30 @@ body,.app{background:var(--rr-canvas)}
 .rr-when-tab.active{background:var(--ui);color:var(--ui-on);font-weight:700}
 /* Outline badges: transparent inside, so a highlighted row shows through */
 .service.rr-ic-outline,.train-number.rr-ic-outline,:root[data-theme="dark"] .service.rr-ic-outline,:root[data-theme="dark"] .train-number.rr-ic-outline{background:transparent!important}
+/* Formation arrows sit close to the train */
+.rr-car-line>.rr-arrow-unit:first-child{justify-content:flex-end}
+.rr-car-line>.rr-arrow-unit:last-child{justify-content:flex-start}
+.rr-car-line .rr-arrow{width:18px;height:18px;margin:0}
+
+/* Station information: hero, Services and Facilities cards */
+.rr-card{border-radius:var(--rr-radius-card);background:var(--surface);padding:var(--rr-card-pad);margin:0 0 var(--rr-gap);box-shadow:var(--rr-card-shadow)}
+.rr-card-title{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--ink-strong)}
+.rr-card-sub{margin:4px 0 0;font-size:12px;font-weight:500;color:var(--muted-slate)}
+.rr-card .station-picto-grid{margin:12px 0 18px}.rr-card .station-picto-grid:last-child{margin-bottom:4px}
+.station-hero .station-name-band{margin:0 0 6px}
+.station-sub{display:flex;flex-wrap:wrap;gap:0 6px;font-size:13px;color:var(--muted-slate)}
+.station-services{list-style:none;margin:0;padding:0}
+.station-services li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 10px;padding:10px 0;border-top:1px solid var(--stroke-soft)}
+.station-services li:first-child{border-top:0;padding-top:2px}
+.station-svc-name{font-size:13px;font-weight:700;color:var(--ink-strong)}
+.station-svc-meta{font-size:12px;color:var(--muted-slate);white-space:nowrap}
+.station-svc-lines{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px}
+.station-svc-foot{margin-top:6px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
+
+/* Right panel = one container: a tinted tray whose top row (title + close) owns every card below it */
+.details,aside#details.details{background:var(--rr-panel)!important;border-radius:var(--rr-radius-card);margin:var(--rr-gap) var(--rr-gutter) var(--rr-gutter) 0;overflow:hidden}
+.details .details-head{margin:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:6px 6px 0 var(--rr-card-pad)!important}
+.details .details-body{padding:var(--rr-gap) var(--rr-gap) var(--rr-gap)!important}
+@media(min-width:751px){.details,aside#details.details{margin-top:var(--head)!important;margin-bottom:0!important}}
+.station-hero .station-name-band{background:transparent!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
+.rr-card .station-picto-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))!important;gap:14px 8px!important}
