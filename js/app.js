@@ -1799,8 +1799,8 @@ const rrFrenchExact=Object.freeze({
  'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
  'South Radeland':'Radeland-Sud','Southern':'Sud','Cathian':'cathien','Marenian':'marénien','Frisian':'frison','Sylvan':'sylvain','Novanglian':'novanglien',
- 'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voies Grandes lignes',
- 'All':'Tous','Mainline':'Grandes lignes','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
+ 'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voie de magistrale',
+ 'All':'Tous','Mainline':'Magistrale','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
  'No Local services yet.':'Aucun service de banlieue pour le moment.',
  'Regional Sprinter · 3-car single-deck EMU':'Régional omnibus · automotrice à un niveau, 3 voitures',
  'Regional Sprinter · two coupled 3-car EMUs':'Régional omnibus · deux automotrices de 3 voitures en unités multiples',
@@ -1833,8 +1833,8 @@ const rrFrenchExact=Object.freeze({
  'Additional station facilities':'Services complémentaires',
  'Coach formation & on-board facilities':'Composition du train et services à bord',
  'Train formation':'Composition du train',
- 'Standard':'2de classe','First Class':'1re classe',
- 'First Class seats':'Places de 1re classe','First Sleeper':'Voiture-lits 1re classe','First sleeper':'Voiture-lits 1re classe',
+ 'Standard':'Classe Standard','First Class':'Première classe',
+ 'First Class seats':'Places de première classe','First Sleeper':'Voiture-lits Première','First sleeper':'Voiture-lits Première',
  'Seated accommodation':'Voiture à places assises',
  'Dining':'Voiture-restaurant','Café':'Bar','Quiet Zone':'Espace calme',
  'Quiet zone':'Espace calme','Family Zone':'Espace famille','Family zone':'Espace famille',
@@ -1851,7 +1851,7 @@ const rrFrenchExact=Object.freeze({
  'Interchange':'Correspondances','Luggage':'Bagages','Cycles':'Vélos',
  'Baby Changing':'Table à langer','Baby changing':'Table à langer',
  'Airport':'Aéroport','Power':'Prises électriques','Seat':'Places réservées',
- 'Quiet':'Espace calme','Cabin':'Cabine-lit','First':'1re classe',
+ 'Quiet':'Espace calme','Cabin':'Cabine-lit','First':'Première classe',
  'Light':'Clair','Dark':'Sombre','System':'Système','Appearance':'Apparence',
  'Language':'Langue','Site preferences':'Préférences du site',
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
@@ -1865,22 +1865,22 @@ const rrFrenchExact=Object.freeze({
  'View station':'Voir la gare','Railway information':'Informations ferroviaires',
  'Journey planner':'Recherche de trajets',
  'Interactive RR Info railway map':'Carte ferroviaire interactive RR Info',
- 'High-speed available':'Grande vitesse disponible','Mainline only':'Grandes lignes uniquement',
- 'RR Mainline':'RR Grandes Lignes','RR InterCity':'RR Intercités','RR Nightline':'RR Nuit',
+ 'High-speed available':'Grande vitesse disponible','Mainline only':'Magistrale uniquement',
+ 'RR Mainline':'RR Magistrale','RR InterCity':'RR Intercités','RR Nightline':'RR Nocturne',
  'No journeys found between these stations in the current timetable.':'Aucun trajet trouvé entre ces gares dans les horaires disponibles.',
  'Back to journey':'Retour au trajet','Back to':'Retour au train','Engineering works':'Travaux',
  'Tomorrow':'Demain','Today':'Aujourd’hui','Depart after':'Partir après','Arrive by':'Arriver avant','Now':'Maintenant','Search by':'Rechercher par',
  'Map':'Carte','Timetable':'Horaires',
  'Show earlier journeys':'Afficher les trajets précédents','Arriving':'À l’approche',
  'Sleeper cabins':'Cabines-lits','Night catering':'Restauration de nuit',
- 'Standard accommodation':'Places en 2de classe',
+ 'Standard accommodation':'Places en classe Standard',
  'Dining coach with restaurant seating':'Voiture-restaurant avec places assises',
  'Café counter':'Bar','Couchettes':'Couchettes',
- 'First sleepers with showers':'Voitures-lits 1re classe avec douches',
- 'First sleeper with shower':'Voiture-lits 1re classe avec douche',
- 'First Class · Quiet Zone':'1re classe · Espace calme',
- 'First Class · driving cab':'1re classe · cabine de conduite',
- 'First Class':'1re classe',
+ 'First sleepers with showers':'Voitures-lits Première avec douches',
+ 'First sleeper with shower':'Voiture-lits Première avec douche',
+ 'First Class · Quiet Zone':'Première classe · Espace calme',
+ 'First Class · driving cab':'Première classe · cabine de conduite',
+ 'First Class':'Première classe',
  'Reserved seats · Quiet Zone':'Places réservées · Espace calme',
  'Accessible seated coach · priority seating':'Voiture accessible avec places prioritaires',
  'Bicycles and luggage':'Vélos et bagages',
@@ -1923,8 +1923,8 @@ function rrFrenchText(source){
   .replace(/\bBack to journey\b/g,'Retour au trajet')
   .replace(/\bBack to train ([\w -]+)/g,'Retour au train $1')
   .replace(/\bBack to ([A-Z]{1,5}\s*\d+)\b/g,'Retour au train $1')
-  .replace(/\bStops between sections ([A-F]) and ([A-F])\b/g,'Arrêt entre les secteurs $1 et $2')
-  .replace(/\bStops at section ([A-F])\b/g,'Arrêt en secteur $1')
+  .replace(/\bStops between sections ([A-F]) and ([A-F])\b/g,'Arrêt entre les repères $1 et $2')
+  .replace(/\bStops at section ([A-F])\b/g,'Arrêt au repère $1')
   .replace(/\bDay (\d+)\b/g,'Jour $1')
   .replace(/\bScheduled ([^;]+); revised (.+)/g,'Heure prévue : $1 ; heure estimée : $2')
   .replace(/\bShow departures at (.+)/g,'Afficher les départs de $1')
@@ -1935,9 +1935,9 @@ function rrFrenchText(source){
   .replace(/\bNo (high-speed )?(direct )?journeys found between these stations in the current timetable\./g,
    (_,high,direct)=>'Aucun trajet'+(high?' à grande vitesse':'')+(direct?' sans correspondance':'')+' trouvé entre ces gares dans les horaires disponibles.')
   .replace(/\bRR InterCity\b/g,'RR Intercités')
-  .replace(/\bRR Nightline\b/g,'RR Nuit')
+  .replace(/\bRR Nightline\b/g,'RR Nocturne')
   .replace(/\bRR Regio\b/g,'RR Régional')
-  .replace(/\bFirst Sleeper\b/g,'Voiture-lits 1re classe')
+  .replace(/\bFirst Sleeper\b/g,'Voiture-lits Première')
   .replace(/\bFirst Class\b/g,'Première classe')
   .replace(/\bPower car\b/g,'Motrice')
   .replace(/\bLocomotive\b/g,'Motrice');
