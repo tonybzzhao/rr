@@ -549,3 +549,8 @@ body,.app{background:var(--rr-canvas)}
 .route-row.all-stop .route-lane.lane-RS > i{display:none}
 .route-row.all-stop .route-lane.lane-RS::after{display:block!important;content:"";position:absolute;left:5px;top:50%;width:34px;height:12px;margin:-6px 0 0 0;border-radius:6px;box-sizing:border-box;border:3px solid var(--route);background:var(--rr-canvas)}
 .route-row.all-stop .route-lane.lane-RX{z-index:0}
+
+/* Single-character line badges (RR Local letters) are squares */
+.service.service-square{display:inline-flex;justify-content:center;align-items:center;min-width:0;width:auto;height:auto;aspect-ratio:1/1;align-self:start;justify-self:start;padding:0!important;box-sizing:border-box}
+.service.service-square{min-height:0!important;height:1.85em!important;width:1.85em!important}
+.train-number.service-square{display:inline-flex;justify-content:center;width:1.7em;padding-left:0!important;padding-right:0!important}
