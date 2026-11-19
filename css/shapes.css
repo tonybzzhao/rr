@@ -517,7 +517,7 @@ body,.app{background:var(--rr-canvas)}
 .route-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:-4px 0 10px;font-size:12px;color:var(--muted-slate)}
 .route-legend span{display:inline-flex;align-items:center;gap:6px}
 .route-diagram{display:grid}
-.route-row{display:grid;grid-template-columns:repeat(var(--lanes),22px) 1fr;align-items:center;min-height:30px}
+.route-row{display:grid;grid-template-columns:repeat(var(--lanes),15px) 1fr;align-items:center;min-height:30px}
 .route-head{min-height:28px}
 .route-lane-head{display:flex;justify-content:center}
 .route-lane-head .service{font-size:10px;padding:1px 3px}
@@ -541,13 +541,18 @@ body,.app{background:var(--rr-canvas)}
 .route-dep-status .status-tag{font-size:11px;padding:1px 5px}
 .route-dep-plat{font-size:13px;font-weight:700;color:var(--ink-strong);min-width:20px;text-align:right}
 .route-row.all-stop .route-lane.stops::after{display:none}
-.route-row.all-stop .route-lane.lane-RS::before{z-index:0}
-.route-row.all-stop .route-lane.lane-RS{z-index:1}
-.route-row.all-stop .route-lane.lane-RS > i{display:none}
-.route-row.all-stop .route-lane.lane-RS::after{display:block!important;content:"";position:absolute;left:5px;top:50%;width:34px;height:12px;margin:-6px 0 0 0;border-radius:6px;box-sizing:border-box;border:3px solid var(--route);background:var(--rr-canvas)}
-.route-row.all-stop .route-lane.lane-RX{z-index:0}
+.route-row.all-stop .route-lane:first-child{z-index:1}
+.route-row.all-stop .route-lane:first-child::after{display:block!important;content:"";position:absolute;left:1.5px;top:50%;width:27px;height:12px;margin:-6px 0 0 0;border-radius:6px;box-sizing:border-box;border:3px solid var(--route);background:var(--rr-canvas)}
 
 /* Single-character line badges (RR Local letters) are squares */
 .service.service-square{display:inline-flex;justify-content:center;align-items:center;min-width:0;width:auto;height:auto;aspect-ratio:1/1;align-self:start;justify-self:start;padding:0!important;box-sizing:border-box}
 .service.service-square{min-height:0!important;height:1.85em!important;width:1.85em!important}
 .train-number.service-square{display:inline-flex;justify-content:center;width:1.7em;padding-left:0!important;padding-right:0!important}
+
+/* Current station: a translucent halo in the line colour (Calling at, route details), like the map's current-station halo */
+.details-body .stop.current .stop-icon,.stop.current .stop-icon{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)!important}
+.route-row.is-here .route-lane.stops::after,.route-row.is-here.all-stop .route-lane:first-child::after{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
+.route-ends .route-arrow{color:var(--ink-strong)}
+button.train-number.train-route-link{border:0;font:inherit;font-weight:700;cursor:pointer}
+button.train-number.train-route-link:hover{text-decoration:underline}
+.picker-option.picker-city{font-weight:700}
