@@ -397,7 +397,7 @@ const STATION_HOURS={
  local:{'Café':{wk:RR_H(7,14),sat:null,sun:null}}
 };
 const STATION_HELP=['RR Services','Police','Mobility assistance','First Class lounge','Lost property'];
-const RR_FAC_NOTE={'RR Services':'Tickets, travel advice and help with your journey','Police':'Station police post','Mobility assistance':'Help getting on and off trains',
+const RR_FAC_NOTE={'RR Services':'Tickets, travel advice and help with your journey','Police':'Run by the Federal Police','Mobility assistance':'Help getting on and off trains',
  'First Class lounge':'For First Class ticket holders','Lost property':'Items found on trains and at the station','Café':'Food and drinks','Luggage':'Left luggage'};
 function rrStationTier(name){return NATIONAL_HUBS.has(name)?'national':MAJOR_STATIONS.has(name)?'major':(REGIONAL_INTERCHANGES.has(name)||AIRPORT_STATIONS.has(name))?'regional':'local'}
 function rrHoursOn(h,day){return day===0?h.sun:day===6?h.sat:h.wk}
@@ -478,7 +478,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  const hours=STATION_HOURS[rrStationTier(name)],help=STATION_HELP.filter(f=>hours[f]);
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
- detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
+ detail.innerHTML=`${backButton}<div class="train-hero station-hero" data-station="${name}"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
  <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>s.type!=='Regio'?`<div class="station-svc"><div class="station-svc-row"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span></div></div>`:`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>rrBadge(t)).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
  <section class="rr-card"><h3 class="rr-card-title">Facilities</h3>${help.length?`<h4 class="rr-card-sub">Help and services</h4><div class="station-picto-grid">${help.map(f=>rrFacilityTile(f,hours[f])).join('')}</div>`:''}<h4 class="rr-card-sub" data-rr-fr="Standard">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
  ${additional.length?`<h4 class="rr-card-sub" data-rr-fr="Supplémentaires">Additional</h4><div class="station-picto-grid">${additional.map(f=>rrFacilityTile(f,hours[f])).join('')}</div>`:''}</section>`;
@@ -501,6 +501,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  detail.scrollTop=0;
  app.classList.add('detail-open');
  requestAnimationFrame(resize);
+ rrSyncHash();
 }
 
 $('stationInfoLeft').addEventListener('click',()=>fillStationInfo(currentStation));
@@ -1871,7 +1872,7 @@ const rrFrenchExact=Object.freeze({
  'Find trains':'Rechercher','Reset':'Effacer','From':'Départ','To':'Arrivée',
  'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',
  'Time':'Heure','Train':'Train','Destination':'Destination',
- 'Origin':'Provenance','Platform':'Voie','Status':'État','Service':'Type de train','Help and services':'Aide et services','RR Services':'Services RR','Police':'Police','Mobility assistance':'Assistance PMR','First Class lounge':'Salon Première classe','Lost property':'Objets trouvés','Open 24 hours':'Ouvert 24 h/24','Closed':'Fermé','Daily':'Tous les jours','24 hours':'24 h/24','Mon–Fri':'Lun–ven','Saturday':'Samedi','Sunday':'Dimanche','Tickets, travel advice and help with your journey':'Billets, conseils et aide pour votre voyage','Station police post':'Poste de police de la gare','Help getting on and off trains':'Aide à la montée et à la descente des trains','For First Class ticket holders':'Réservé aux titulaires d’un billet de Première classe','Items found on trains and at the station':'Objets trouvés dans les trains et en gare','Food and drinks':'Restauration','Left luggage':'Consigne à bagages','Journey from here':'Trajet depuis cette gare','Journey to here':'Trajet vers cette gare','Choose a station':'Choisissez une gare','Major stations':'Grandes gares','Operator':'Transporteur','Services':'Services','Facilities':'Équipements','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
+ 'Origin':'Provenance','Platform':'Voie','Status':'État','Service':'Type de train','Help and services':'Aide et services','RR Services':'Services RR','Police':'Police','Mobility assistance':'Assistance PMR','First Class lounge':'Salon Première classe','Lost property':'Objets trouvés','Open 24 hours':'Ouvert 24 h/24','Closed':'Fermé','Daily':'Tous les jours','24 hours':'24 h/24','Mon–Fri':'Lun–ven','Saturday':'Samedi','Sunday':'Dimanche','Tickets, travel advice and help with your journey':'Billets, conseils et aide pour votre voyage','Run by the Federal Police':'Assuré par la Police fédérale','Help getting on and off trains':'Aide à la montée et à la descente des trains','For First Class ticket holders':'Réservé aux titulaires d’un billet de Première classe','Items found on trains and at the station':'Objets trouvés dans les trains et en gare','Food and drinks':'Restauration','Left luggage':'Consigne à bagages','Journey from here':'Trajet depuis cette gare','Journey to here':'Trajet vers cette gare','Choose a station':'Choisissez une gare','Major stations':'Grandes gares','Operator':'Transporteur','Services':'Services','Facilities':'Équipements','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
  'Departure':'Départ','Arrival':'Arrivée','Calling at':'Gares desservies',
  'On time':'À l’heure','Boarding':'À quai','Cancelled':'Supprimé',
  'Direct':'Direct','Departs':'Départ','Arrives':'Arrivée',
@@ -2132,7 +2133,7 @@ rrSetLanguage(rrInitialLanguage);
 
 
 /* Shareable links. The address mirrors what is on screen:
-   #departures/<station>, #arrivals/<station>, #train/<id>/<station>,
+   #departures/<station>, #arrivals/<station>, #station/<station>, #train/<id>/<station>,
    #journey/<from>/<to>/<dep|arr>-<hhmm>[/<journey>]. Opening such a link
    restores that view. */
 let rrApplyingHash=false;
@@ -2144,8 +2145,11 @@ function rrStateHash(){
   if(selectedJourney)h+='/'+e(selectedJourney.key);
   return h;
  }
+ const info=app.classList.contains('detail-open')&&detail.querySelector('.station-hero')?.dataset.station;
+ if(info)return `#station/${e(info)}`;
  if(selectedTrain)return `#train/${e(selectedTrain.id)}/${e(currentStation)}`;
  if(!currentStation)return '';   // home has a clean address: the logo link
+ return `#${viewMode==='arrivals'?'arrivals':'departures'}/${e(currentStation)}`;
 }
 function rrSyncHash(){
  if(rrApplyingHash)return;
@@ -2158,6 +2162,7 @@ function rrApplyHash(){
  rrApplyingHash=true;
  try{
   if((kind==='departures'||kind==='arrivals')&&S.has(a)){viewMode=kind;setCurrentStation(a)}
+  else if(kind==='station'&&S.has(a)){viewMode='departures';setCurrentStation(a);fillStationInfo(a)}
   else if(kind==='train'){
    const t=TRAINS.find(x=>x.id===a);
    if(t){
