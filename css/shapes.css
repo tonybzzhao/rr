@@ -481,3 +481,15 @@ body,.app{background:var(--rr-canvas)}
 
 /* Phone: the panel is a drawer from the right edge, so it meets the edge (no gutter) and rounds only its open side */
 @media(max-width:750px){.details,aside#details.details{margin:0!important;border-radius:var(--rr-radius-card) 0 0 var(--rr-radius-card)!important}}
+
+/* Calling at: passed stops fold behind one toggle row; the line keeps running through it in the passed colour */
+.stop-list .stop-folded{display:none}
+.stop-list.show-passed .stop-folded{display:grid}
+.stop-fold .stop-marker::before{background:var(--route-travelled)!important}
+.stop-fold .stop-fold-btn{align-self:center;justify-self:start;font-size:13px;color:var(--passed-ink)}
+/* Ring markers are hollow: their centre is the colour of the card they sit on */
+.details-body .stop-icon,.details-body .jt-dot{background:var(--rr-canvas)!important}
+.details-body .stop.current .stop-icon{background:var(--route)!important}
+.fac-dot.fault{background:var(--status-expected)}
+.fac-status.fault{color:var(--status-expected)}
+.rr-plat-delayed{justify-content:flex-end}
