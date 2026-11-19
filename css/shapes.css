@@ -449,3 +449,25 @@ body,.app{background:var(--rr-canvas)}
 .station-action{display:flex!important;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--rr-canvas)!important;box-shadow:none!important;font:inherit;font-size:13px;font-weight:500;color:var(--ink-strong);text-align:left;cursor:pointer}
 .station-action:hover{background:var(--hair)!important}
 .station-action .rr-arrow-icon{width:16px;height:16px;flex:none;fill:currentColor;color:var(--ink-soft)}
+
+/* Facilities with hours: tile shows a live open/closed dot; tapping opens the hours as a full-width panel under its row */
+.facility.has-hours{border:0;background:none;padding:4px 0;border-radius:var(--rr-radius-control);font:inherit;color:inherit;cursor:pointer}
+.facility.has-hours:hover,.facility.has-hours[aria-expanded="true"]{background:var(--rr-canvas)}
+.fac-icon{position:relative;display:block}
+.fac-icon svg{display:block}
+.fac-rr{width:30px!important;height:30px!important;color:var(--rr)}
+.fac-dot{position:absolute;right:-5px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--text-faint);box-shadow:0 0 0 2px var(--surface)}
+.fac-dot.open{background:var(--status-on-time)}
+.fac-detail{grid-column:1 / -1;border-radius:var(--rr-radius-control);background:var(--rr-canvas);padding:12px 14px;margin-top:-4px}
+.fac-detail-head{display:flex;align-items:center;gap:10px}
+.fac-detail-icon svg{width:28px;height:28px;display:block;fill:currentColor;color:var(--ink)}
+.fac-detail-icon .fac-rr{color:var(--rr)}
+.fac-detail-head strong{display:block;font-size:14px;font-weight:700;color:var(--ink-strong)}
+.fac-status{display:block;font-size:12px;font-weight:500;color:var(--muted-slate)}
+.fac-status.open{color:var(--status-on-time)}
+.fac-note{margin:8px 0 0;font-size:12px;color:var(--muted-slate)}
+.fac-hours{margin:10px 0 0;padding-top:8px;border-top:1px solid var(--stroke-soft)}
+.fac-hours div{display:flex;justify-content:space-between;padding:3px 0;font-size:13px}
+.fac-hours dt{color:var(--muted-slate)}
+.fac-hours dd{margin:0;font-weight:500;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+.facility .fac-rr{color:var(--rr)}
