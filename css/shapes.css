@@ -473,4 +473,3 @@ body,.app{background:var(--rr-canvas)}
 .fac-hours dd{margin:0;font-weight:500;color:var(--ink-strong);font-variant-numeric:tabular-nums}
 .facility .fac-rr{color:var(--rr)}
 
-.rr-tz-note::before{content:"·";margin:0 6px;color:var(--text-faint)}
