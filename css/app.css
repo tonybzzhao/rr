@@ -7,7 +7,7 @@
 :root{
  /* Operators, travelled paths, railway lines and first class. */
  /* Immutable source colours are used only to identify service types in data. */
- --rr-base-main:#0057B8;--ui:#2C3035;--ui-deep:#22262A;--ui-hover:#454B52;--ui-on:#FFFFFF;--local:#D62828;--rr-base-regio:#146E78;--rr-base-travel-regio:#5FB1BA;--rr-base-via:#D162C0;--rr-base-night:#394779;
+ --rr-base-main:#0057B8;--ui:#2C3035;--ui-deep:#22262A;--ui-hover:#454B52;--ui-on:#FFFFFF;--local:#D62828;--rr-base-local:#D62828;--rr-fill-local:#C8202A;--travel-local:#E26A6A;--rail-local:#EFA8A8;--rail-local-strong:#D65A5A;--rail-local-faded:#F3DCDC;--rr-base-regio:#146E78;--rr-base-travel-regio:#5FB1BA;--rr-base-via:#D162C0;--rr-base-night:#394779;
  --rr-base-travel-main:#4D8EE9;--rr-base-travel-via:#F08ADF;--rr-base-travel-night:#7080B1;
  /* Exactly one visible colour per service in each appearance.
     Light VIA and travelled shades are AA-adjusted for text on light surfaces. */
@@ -1394,7 +1394,7 @@ body{font-size:14px}
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
  --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
  --shadow:#00000066;--focus-ring:#8ABDF74A;
- --passed:#4F5B6A;--passed-ink:#7D8A9B;--rail-faded:#26313D;--rail-regio-faded:#233434;--hub-faded:#465160;--rr-tray:#0E1319;--rail:#56728D;--rail-strong:#8FB3D6;--rail-regio:#4B7F7A;--rail-regio-strong:#7FB5AE;--station-blue:#244E86;
+ --passed:#4F5B6A;--rail-local:#7C3F42;--rail-local-strong:#E58585;--rail-local-faded:#3A2A2D;--travel-local:#F49A9A;--passed-ink:#7D8A9B;--rail-faded:#26313D;--rail-regio-faded:#233434;--hub-faded:#465160;--rr-tray:#0E1319;--rail:#56728D;--rail-strong:#8FB3D6;--rail-regio:#4B7F7A;--rail-regio-strong:#7FB5AE;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
  --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
 }
