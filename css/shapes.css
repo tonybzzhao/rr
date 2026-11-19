@@ -308,16 +308,22 @@ body,.app{background:var(--rr-canvas)}
 .journey-actions-slot .map-actions{display:flex!important;gap:8px!important;width:100%!important;position:static!important;grid-area:auto!important}
 .journey-actions-slot .map-actions>button{position:static!important;display:inline-flex!important;height:40px!important;min-height:40px!important;margin:0!important}
 .journey-actions-slot #trace{flex:1 1 auto!important;width:auto!important;justify-content:center}
+.journey-actions-slot button:focus-visible{outline:2px solid var(--ui)!important;outline-offset:2px}
+
+/* Secondary buttons inside the sidebar cards look exactly like the input fields beside them:
+   canvas-grey fill, no border, 10px radius, ink text. (Find trains is the only primary button.) */
+.side-controls #swapStations,.side-controls #clear,.side-controls .rr-when-now{background:var(--rr-canvas)!important;border:0!important;box-shadow:none!important;border-radius:10px!important;color:var(--ink-strong)!important;font-weight:500!important}
+.side-controls #clear{font-size:13.5px!important}
+.side-controls #swapStations:hover,.side-controls #clear:hover,.side-controls .rr-when-now:hover{background:var(--hair)!important}
+.side-controls #swapStations .rr-action-icon,.side-controls #clear .rr-action-icon,.side-controls #swapStations svg{color:var(--ink-strong)!important}
+.side-controls #clear{padding:0 14px!important;gap:6px!important}
+
+/* restored planner rules */
 .journey-actions-slot #clear{flex:0 0 auto!important;width:auto!important;padding:0 14px!important}
 .journey-when{margin-top:12px}
 .journey-results-head{margin:0 0 6px!important;padding:4px 16px 0!important;border-top:0!important}
 .journey-results-head[hidden]{display:none!important}
-
-/* Uniform buttons: primary = neutral fill (Find trains), secondary = surface + hairline (Reset, Now, swap, icons). */
-.journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:1px solid var(--ui)!important;border-radius:10px!important;font-weight:600!important;font-size:13.5px!important;gap:8px!important}
-.journey-actions-slot #trace:hover{background:var(--ui-hover)!important;border-color:var(--ui-hover)!important}
+/* primary button: neutral fill */
+.journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:0!important;border-radius:10px!important;font-weight:600!important;font-size:13.5px!important;gap:8px!important}
+.journey-actions-slot #trace:hover{background:var(--ui-hover)!important}
 .journey-actions-slot #trace .rr-action-icon{color:var(--ui-on)!important;fill:currentColor}
-.journey-actions-slot #clear{background:var(--surface)!important;color:var(--ink-strong)!important;border:1px solid var(--hair)!important;border-radius:10px!important;font-weight:500!important;font-size:13.5px!important;gap:6px!important}
-.journey-actions-slot #clear:hover{background:var(--rr-canvas)!important}
-.journey-actions-slot #clear .rr-action-icon{color:var(--ink-strong)!important;fill:currentColor}
-.journey-actions-slot button:focus-visible{outline:2px solid var(--ui)!important;outline-offset:2px}

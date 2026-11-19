@@ -1399,7 +1399,7 @@ function renderJourneyResults(){
  board.replaceChildren();
  if(!query){
   $('journeyCount').textContent='';
-  board.innerHTML='<div class="empty">Choose stations, then press Find trains.</div>';
+  // nothing to show until a search has run
   return;
  }
  const onlyDirect=query.directOnly;
@@ -1607,10 +1607,8 @@ const ro=new ResizeObserver(()=>resize());ro.observe(container);
 /* v46: relocate the functional From/To planner under mobile timetable. */
 const rrPlannerMobileQuery=window.matchMedia('(max-width:750px)');
 const rrPlannerTools=document.querySelector('.map-tools');
-const rrPlannerDesktopHome=document.querySelector('.map-header');
-const rrPlannerMobileHome=document.getElementById('mobilePlannerSlot');
 function rrPlacePlanner(){
- const parent=document.getElementById('journeyPlannerSlot')||(rrPlannerMobileQuery.matches?rrPlannerMobileHome:rrPlannerDesktopHome);   // planner belongs to the Journeys tab
+ const parent=document.getElementById('journeyPlannerSlot');   // the planner belongs to the Journeys tab on every screen size
  const actions=rrPlannerTools.querySelector('.map-actions')||document.querySelector('.map-actions');
  const actionsHome=document.getElementById('journeyActionsSlot');
  if(actions&&actionsHome&&actions.parentElement!==actionsHome)actionsHome.append(actions);
