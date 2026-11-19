@@ -1,3 +1,4 @@
+/* Type weights: three faces only. 400 Regular = body copy and notes; 500 Medium = UI text, labels, secondary buttons, inactive tabs/chips, calling points; 700 Bold = headings, times, key values, active tabs/chips, primary buttons. No other weights. */
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
@@ -5,7 +6,7 @@
 :root{
  /* Operators, travelled paths, railway lines and first class. */
  /* Immutable source colours are used only to identify service types in data. */
- --rr-base-main:#0057B8;--ui:#1E1F21;--ui-deep:#141414;--ui-hover:#3A3C40;--ui-on:#FFFFFF;--local:#D62828;--rr-base-regio:#146E78;--rr-base-travel-regio:#5FB1BA;--rr-base-via:#D162C0;--rr-base-night:#394779;
+ --rr-base-main:#0057B8;--ui:#2C3035;--ui-deep:#22262A;--ui-hover:#454B52;--ui-on:#FFFFFF;--local:#D62828;--rr-base-regio:#146E78;--rr-base-travel-regio:#5FB1BA;--rr-base-via:#D162C0;--rr-base-night:#394779;
  --rr-base-travel-main:#4D8EE9;--rr-base-travel-via:#F08ADF;--rr-base-travel-night:#7080B1;
  /* Exactly one visible colour per service in each appearance.
     Light VIA and travelled shades are AA-adjusted for text on light surfaces. */
@@ -17,10 +18,10 @@
  --main:var(--rr-fill-main);--via:var(--rr-fill-via);
  --night:var(--rr-fill-night);--rr:var(--rr-fill-rr);
  --travel-main:#2373E4;--travel-via:#D41BB6;--travel-night:#6374AA;--travel-regio:#2A8C97;
- --rail:#9DC8EE;--rail-strong:#4F8FD0;--rail-regio:#74C2B5;--rail-regio-strong:#2E8F86;--first-class:#FAC800;--first-class-ink:#23364E;--on-accent:#FFFFFF;
+ --rail:#9DC8EE;--rail-strong:#4F8FD0;--rail-regio:#74C2B5;--rail-regio-strong:#2E8F86;--first-class:#FAC800;--first-class-ink:#24282C;--passed:#C2C8CF;--on-accent:#FFFFFF;
  /* Text: primary neutral, strong navy, softer navy, grey and two subdued levels. */
- --ink:#1D1D1D;--ink-strong:#1E1F21;--ink-soft:#34495E;
- --muted:#666666;--muted-slate:#667588;--text-faint:#8795A5;
+ --ink:#2C3035;--ink-strong:#24282C;--ink-soft:#3E4852;
+ --muted:#676D74;--muted-slate:#68727D;--text-faint:#8D959E;
  /* Surfaces and strokes. */
  --surface:#FFFFFF;--map:#E3EDF5;--map-land:#FBFBFA;--hair:#DDDDDA;
  --stroke:#C4CCD5;--stroke-strong:#AEBCCD;--stroke-soft:#E4E9EE;
@@ -360,9 +361,9 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .train-hero .service-dest{font-size:23px;font-weight:700;line-height:1.2;margin:4px 0 0;color:var(--ink-strong);overflow-wrap:break-word}
 .info-grid{row-gap:10px;padding-bottom:17px}
 .info-grid .keylabel{color:var(--muted-slate)}
-.info-grid .infoval{font-weight:600}
+.info-grid .infoval{font-weight:700}
 .back-to-train{display:inline-flex;align-items:center;gap:8px;width:max-content;max-width:100%;padding:8px 10px 8px 9px;margin:13px 0 0;
- border:1px solid var(--stroke);background:var(--surface);border-radius:3px;color:var(--ui-deep);font-size:12px;font-weight:700;line-height:1.2;text-align:left}
+ border:1px solid var(--stroke);background:var(--surface);border-radius:3px;color:var(--ui-deep);font-size:12px;font-weight:500;line-height:1.2;text-align:left}
 .back-to-train:hover{background:var(--hover-blue);border-color:var(--accent-stroke)}
 .back-to-train span{font-size:16px;line-height:1}
 @media(min-width:751px) and (max-width:1260px){
@@ -418,10 +419,10 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .journey-line:before{left:0}.journey-line:after{right:0}
 .journey-row-meta{margin-top:9px;display:flex;align-items:center;flex-wrap:wrap;gap:7px 9px;font-size:12px;color:var(--muted-slate)}
 .journey-row-meta .service{--service-color:var(--journey-color);font-size:10.5px}
-.journey-row-meta .duration{color:var(--ink-strong);font-weight:600;font-variant-numeric:tabular-nums}
+.journey-row-meta .duration{color:var(--ink-strong);font-weight:700;font-variant-numeric:tabular-nums}
 .journey-row-meta .change{white-space:normal}
 .journey-via{font-size:11.5px;color:var(--muted-slate);margin-top:6px;line-height:1.3}
-.journey-more{width:calc(100% - 26px);margin:14px 13px 18px;border:1px solid var(--stroke);background:var(--surface);color:var(--ui-deep);border-radius:3px;padding:10px;font-size:12px;font-weight:700}
+.journey-more{width:calc(100% - 26px);margin:14px 13px 18px;border:1px solid var(--stroke);background:var(--surface);color:var(--ui-deep);border-radius:3px;padding:10px;font-size:12px;font-weight:500}
 .journey-more:hover{background:var(--hover-blue)}
 .journey-hero{border-bottom:1px solid var(--hair);padding-bottom:18px;margin-bottom:15px}
 .journey-summary-time{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:9px;margin-bottom:13px}
@@ -429,15 +430,15 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .journey-summary-time .journey-arrival{text-align:right}
 .journey-summary-time strong{font-size:29px;font-weight:700;color:var(--ink-strong);line-height:1.1;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
 .journey-summary-time small{display:block;font-size:11px;color:var(--muted-slate);margin-top:5px}
-.journey-summary-time .station{display:block;font-size:13px;font-weight:600;margin-top:7px;color:var(--ink-strong);line-height:1.25;overflow-wrap:break-word}
+.journey-summary-time .station{display:block;font-size:13px;font-weight:700;margin-top:7px;color:var(--ink-strong);line-height:1.25;overflow-wrap:break-word}
 .journey-summary-sub{font-size:12px;color:var(--muted-slate)}
 .journey-leg{padding:10px 0 4px}
 .journey-leg-heading{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 7px;font-size:12px;color:var(--muted-slate);font-weight:500}
 .journey-leg-heading .service{font-size:12px;padding:6px 9px}
-.journey-leg-end{font-size:13px;color:var(--ink-strong);font-weight:600;margin:12px 0 16px;line-height:1.35}
+.journey-leg-end{font-size:13px;color:var(--ink-strong);font-weight:700;margin:12px 0 16px;line-height:1.35}
 .journey-transfer{border-left:3px solid var(--accent-stroke);padding:9px 11px;background:var(--hover);font-size:12px;line-height:1.5;color:var(--ink-strong);margin:8px 0 12px}
 .journey-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:13px 0 18px}
-.journey-actions button{background:var(--surface);border:1px solid var(--stroke);border-radius:3px;color:var(--ui-deep);font-size:12px;font-weight:700;padding:9px 10px}
+.journey-actions button{background:var(--surface);border:1px solid var(--stroke);border-radius:3px;color:var(--ui-deep);font-size:12px;font-weight:500;padding:9px 10px}
 .journey-actions button:hover{background:var(--hover-blue)}
 @media (max-width:1260px){.journey-row{padding:12px 11px}.journey-clock{font-size:17px}}
 @media (max-width:990px) and (min-width:751px){.journey-clock{font-size:16px}.journey-row-meta{gap:6px}.journey-times{gap:5px}}
@@ -523,7 +524,7 @@ body{font-size:14.5px}
 .info-grid .fact-row:last-child{border-bottom:0}
 .info-grid dt,.info-grid dd{margin:0;min-width:0;white-space:normal;overflow-wrap:break-word}
 .info-grid .keylabel{font-size:14px;font-weight:500;color:var(--muted-slate);line-height:1.4}
-.info-grid .infoval{font-size:14.5px;font-weight:650;color:var(--ink-strong);line-height:1.4}
+.info-grid .infoval{font-size:14.5px;font-weight:700;color:var(--ink-strong);line-height:1.4}
 .info-grid .status-tag{font-size:13.5px;line-height:1.4;font-weight:700;white-space:normal}
 .facilities-heading,.stops-heading{font-size:15px;line-height:1.35;font-weight:700;margin-top:22px;margin-bottom:14px}
 .facilities{gap:15px 9px;justify-content:flex-start}
@@ -907,7 +908,7 @@ body{font-size:14.5px}
 .rr-selected-main{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:34px;color:var(--rr-strong)}
 .rr-selected-type{width:32px;height:32px;flex:0 0 32px;color:var(--rr-strong)}
 .rr-selected-main strong{font-size:27px;font-weight:700;line-height:1.12;font-variant-numeric:tabular-nums;color:var(--rr-strong)}
-.rr-selected-role{font-size:14px;font-weight:600;line-height:1.3;color:var(--rr-strong)}
+.rr-selected-role{font-size:14px;font-weight:700;line-height:1.3;color:var(--rr-strong)}
 .rr-selected-role.rr-first-label{display:inline-flex;align-items:center;background:var(--first-class);color:var(--first-class-ink);padding:4px 8px;border-radius:2px;white-space:nowrap}
 .rr-section-info{color:var(--rr-muted);font-size:12px;margin-left:41px}
 .rr-facility-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
@@ -964,7 +965,7 @@ body{font-size:14.5px}
 /* Train detail Service fact: exactly 125% of the v15 emblem, text unchanged. */
 .info-grid .rr-service-logo{height:.625em;width:1.35em;flex:0 0 1.35em}
 .info-grid .rr-service-identity{justify-content:flex-start}
-.journey-leg-heading .rr-service-identity{font-size:inherit;font-weight:650}
+.journey-leg-heading .rr-service-identity{font-size:inherit;font-weight:700}
 .station-fac-link{justify-content:flex-start;gap:7px}
 /* Keep the network map full-width unless the user opens a train, journey or station. */
 .app:not(.detail-open)>.details{display:none!important}
@@ -1382,16 +1383,16 @@ body{font-size:14.5px}
    Official service, travelled-route and First Class colours remain untouched. */
 :root[data-theme="dark"]{
  /* One-to-one dark equivalents for the six light-mode railway accents. */
- --ui:#ECEEF1;--ui-deep:#F7F8F9;--ui-hover:#D3D7DC;--ui-on:#141414;--local:#FF6B6B;--main:#1584FF;--via:#D162C0;--night:#7384BD;--rr:#009A4D;--regio:#3DB0BC;--travel-regio:#8CD3DA;--rr-fill-regio:#178089;
+ --ui:#ECEEF1;--ui-deep:#F7F8F9;--ui-hover:#D3D7DC;--ui-on:#1C2127;--local:#FF6B6B;--main:#1584FF;--via:#D162C0;--night:#7384BD;--rr:#009A4D;--regio:#3DB0BC;--travel-regio:#8CD3DA;--rr-fill-regio:#178089;
  --travel-main:#77A9ED;--travel-via:#F2A6E6;--travel-night:#929EC3;
  --ink:#EDF1F6;--ink-strong:#F6F8FA;--ink-soft:#D7E1EC;
  --muted:#BCC5D0;--muted-slate:#A9B9C9;--text-faint:#95A7BA;
- --surface:#181F29;--map:#0B121A;--map-land:#162029;--hair:#354353;
+ --surface:#1C232C;--map:#111820;--map-land:#1A232D;--hair:#354353;
  --stroke:#4E6175;--stroke-strong:#697D93;--stroke-soft:#324050;
  --hover:#243241;--hover-blue:#253B51;--selected:#253E59;--pressed:#30516E;
  --main-hover:#276EBB;--main-deep:#9CC8FC;--accent-stroke:#7C9CBE;
  --shadow:#00000066;--focus-ring:#8ABDF74A;
- --rail:#56728D;--rail-strong:#8FB3D6;--rail-regio:#4B7F7A;--rail-regio-strong:#7FB5AE;--station-blue:#244E86;
+ --passed:#4A5562;--rail:#56728D;--rail-strong:#8FB3D6;--rail-regio:#4B7F7A;--rail-regio-strong:#7FB5AE;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
  --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
 }
@@ -2084,7 +2085,7 @@ body{font-size:14.5px}
 .jt-timeline,.jt-leg-list,.jt-calls-list{list-style:none;margin:0;padding:0}
 .jt-timeline{margin-top:18px;--jt-dot-color:var(--text-faint)}
 .jt-row{display:grid;grid-template-columns:58px 24px minmax(0,1fr) auto;column-gap:10px;align-items:center;position:relative}
-.jt-time{font-size:14px;font-weight:600;color:var(--ink-strong);line-height:1.2;font-variant-numeric:tabular-nums}
+.jt-time{font-size:14px;font-weight:700;color:var(--ink-strong);line-height:1.2;font-variant-numeric:tabular-nums}
 .jt-time .time-delayed{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
 .jt-time .scheduled-time{font-size:11px;font-weight:500;color:var(--text-faint);text-decoration:line-through}
 .jt-time .retime-box{background:var(--hover-blue);color:var(--ui-deep);font-weight:700;padding:2px 4px;border-radius:2px;white-space:nowrap}
@@ -2102,7 +2103,7 @@ body{font-size:14.5px}
 .jt-station{font:inherit;background:none;border:0;padding:6px 0;text-align:left;cursor:pointer;color:var(--ink-strong);min-width:0;line-height:1.3}
 .jt-station:hover{color:var(--ui-deep);text-decoration:underline;text-underline-offset:3px}
 .jt-station:focus-visible,.jt-calls-toggle:focus-visible,.jt-coach summary:focus-visible{outline:2px solid var(--ui);outline-offset:2px;border-radius:2px}
-.jt-plat{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap;justify-self:end}
+.jt-plat{font-size:13px;font-weight:500;color:var(--ink-soft);white-space:nowrap;justify-self:end}
 .jt-call{min-height:36px}
 .jt-call .jt-time{font-size:12.5px;font-weight:500;color:var(--ink-soft)}
 .jt-call .jt-station{font-size:13px;font-weight:500;color:var(--ink-soft)}
@@ -2110,11 +2111,11 @@ body{font-size:14.5px}
 .jt-ride .jt-card{grid-column:3 / 5;margin:6px 0 10px;padding:12px 14px;background:var(--hover);border:1px solid var(--stroke-soft);border-left:3px solid var(--leg);border-radius:4px;min-width:0}
 .jt-card-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;font-size:12px;font-weight:500;color:var(--muted-slate)}
 .jt-card-head .service{font-size:12px;padding:5px 8px}
-.jt-towards{margin-top:9px;font-size:13.5px;font-weight:600;color:var(--ink-strong)}
+.jt-towards{margin-top:9px;font-size:13.5px;font-weight:700;color:var(--ink-strong)}
 .jt-towards-label{font-weight:500;color:var(--muted-slate)}
 .jt-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
 .jt-sep{color:var(--text-faint)}
-.jt-calls-toggle{display:inline-flex;align-items:center;gap:5px;font:inherit;color:var(--ui-deep);background:none;border:0;padding:2px 0;cursor:pointer;font-weight:600}
+.jt-calls-toggle{display:inline-flex;align-items:center;gap:5px;font:inherit;color:var(--ui-deep);background:none;border:0;padding:2px 0;cursor:pointer;font-weight:500}
 .jt-calls-toggle:hover{text-decoration:underline;text-underline-offset:3px}
 .jt-chevron{display:inline-block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s;flex:none}
 .jt-calls-toggle[aria-expanded="true"] .jt-chevron,.jt-coach[open]>summary .jt-chevron{transform:translateY(1px) rotate(-135deg)}
@@ -2124,7 +2125,7 @@ body{font-size:14.5px}
 .jt-coach>summary .jt-chevron{color:var(--ink-soft)}
 .jt-coach-text{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:12.5px;min-width:0}
 .jt-coach-no{font-weight:700}
-.jt-coach-role{font-weight:600}
+.jt-coach-role{font-weight:700}
 .jt-coach-role.is-first{background:var(--first-class);color:var(--first-class-ink);padding:1px 5px;border-radius:2px}
 .jt-coach-section{color:var(--muted-slate)}
 .jt-coach .rr-formation{margin-top:8px}
@@ -2133,7 +2134,7 @@ body{font-size:14.5px}
 .jt-transfer{min-height:58px}
 .jt-transfer-box{grid-column:3 / 5;display:flex;flex-direction:column;gap:3px;margin:8px 0;padding:9px 12px;background:var(--hover);border-left:3px solid var(--stroke-strong);font-size:12.5px;color:var(--muted-slate)}
 .jt-transfer-box strong{color:var(--ink-strong);font-size:13px}
-.jt-transfer-time{font-weight:600;color:var(--ink-soft)}
+.jt-transfer-time{font-weight:700;color:var(--ink-soft)}
 @media(max-width:750px){.jt-row{grid-template-columns:50px 20px minmax(0,1fr) auto;column-gap:8px}.jt-ride .jt-card{padding:11px 12px}}
 
 /* Day divider in boards and journey lists. */

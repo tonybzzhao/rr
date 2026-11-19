@@ -16,8 +16,8 @@
  --rr-radius-card:14px;--rr-radius-control:10px;--rr-radius-badge:6px;
  --rr-card-pad:16px;--rr-card-shadow:0 1px 2px #001F5A0F,0 2px 8px #001F5A0A
 }
-:root[data-theme="dark"]{--rr-canvas:#0F151D;--rr-card-shadow:0 1px 2px #00000040}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rr-canvas:#0F151D;--rr-card-shadow:0 1px 2px #00000040}}
+:root[data-theme="dark"]{--rr-canvas:#151B22;--rr-card-shadow:0 1px 2px #00000040}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rr-canvas:#151B22;--rr-card-shadow:0 1px 2px #00000040}}
 
 /* Canvas and panels: no hairlines anywhere. */
 body,.app{background:var(--rr-canvas)}
@@ -183,7 +183,7 @@ body,.app{background:var(--rr-canvas)}
 
 /* View route: a neutral grey fill, the same as the controls inside cards
    (station and time boxes), so it reads as a button on the white card. */
-#focusRoute{background:var(--rr-canvas)!important;color:var(--ink-strong)!important;box-shadow:none!important;font-weight:600}
+#focusRoute{background:var(--rr-canvas)!important;color:var(--ink-strong)!important;box-shadow:none!important;font-weight:500}
 #focusRoute:hover{background:color-mix(in srgb,var(--ink-strong) 8%,var(--rr-canvas))!important}
 #focusRoute svg,#focusRoute .rr-action-icon{color:var(--ink-strong)!important}
 /* Tablet widths: the panel is too narrow for the title and the labelled
@@ -204,7 +204,7 @@ body,.app{background:var(--rr-canvas)}
 /* Back to train / Back to journey: a 36px control like the other buttons
    (white fill on the canvas, 10px corners, soft shadow, neutral text),
    spaced from the cards above and below by the standard 10px gap. */
-.details-body .back-to-train{display:inline-flex!important;align-items:center;gap:8px!important;height:36px;box-sizing:border-box;margin:0 0 var(--rr-gap)!important;padding:0 14px 0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important;font-size:13px!important;font-weight:600!important;line-height:1!important}
+.details-body .back-to-train{display:inline-flex!important;align-items:center;gap:8px!important;height:36px;box-sizing:border-box;margin:0 0 var(--rr-gap)!important;padding:0 14px 0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;line-height:1!important}
 .details-body .back-to-train:hover{background:var(--hover-blue)!important;color:var(--ui)!important}
 .details-body .back-to-train span[aria-hidden]{font-size:16px!important;line-height:1}
 .details-body .back-to-train .service{margin-left:2px;font-size:11.25px;font-weight:500;line-height:normal}
@@ -222,7 +222,7 @@ body,.app{background:var(--rr-canvas)}
 
 /* Service filter: same shape as the board tabs; the active chip takes its system's colour. */
 .service-filter{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:0!important;margin:0 0 var(--rr-gap)!important;box-sizing:border-box!important;height:40px!important;padding:3px!important;border:0!important;border-radius:11px!important;background:var(--surface)!important}
-.service-chip{box-sizing:border-box!important;height:34px!important;min-width:0!important;border:0!important;border-radius:8px!important;padding:0 4px!important;background:transparent!important;color:var(--muted-slate)!important;font-size:12px!important;font-weight:600!important;display:flex!important;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.service-chip{box-sizing:border-box!important;height:34px!important;min-width:0!important;border:0!important;border-radius:8px!important;padding:0 4px!important;background:transparent!important;color:var(--muted-slate)!important;font-size:12px!important;font-weight:500!important;display:flex!important;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .service-chip[data-filter="all"]{--chip-color:var(--ui)}.service-chip[data-filter="mainline"]{--chip-color:var(--main)}
 .service-chip[data-filter="regio"]{--chip-color:var(--regio)}.service-chip[data-filter="local"]{--chip-color:var(--local)}
 .service-chip:not(.active):hover{background:var(--rr-canvas)!important;color:var(--ink-strong)!important}
@@ -324,7 +324,7 @@ body,.app{background:var(--rr-canvas)}
 .journey-results-head{margin:0 0 6px!important;padding:4px 16px 0!important;border-top:0!important}
 .journey-results-head[hidden]{display:none!important}
 /* primary button: neutral fill */
-.journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:0!important;border-radius:10px!important;font-weight:600!important;font-size:13.5px!important;gap:8px!important}
+.journey-actions-slot #trace{background:var(--ui)!important;color:var(--ui-on)!important;border:0!important;border-radius:10px!important;font-weight:700!important;font-size:13.5px!important;gap:8px!important}
 .journey-actions-slot #trace:hover{background:var(--ui-hover)!important}
 .journey-actions-slot #trace .rr-action-icon{color:var(--ui-on)!important;fill:currentColor}
 
@@ -334,7 +334,7 @@ body,.app{background:var(--rr-canvas)}
 .label[data-trip="hub"]{fill:var(--muted-slate)!important;opacity:.7}
 
 /* "Show more trains / journeys": a full-width card like the train rows, with a down chevron. */
-.board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13.5px!important;font-weight:600!important;cursor:pointer;box-shadow:none!important}
+.board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13.5px!important;font-weight:500!important;cursor:pointer;box-shadow:none!important}
 .board .journey-more::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
 .board .journey-more.journey-earlier::after{transform:translateY(2px) rotate(-135deg)}
 .board .journey-more:hover{background:var(--hover)!important}
@@ -350,3 +350,27 @@ body,.app{background:var(--rr-canvas)}
 .pl-short{display:none}
 #detailsBody{container-type:inline-size}
 @container (max-width:330px){.jt-plat .pl-long{display:none}.jt-plat .pl-short{display:inline}}
+
+/* Calling points: passed and upcoming stops share one ringed marker (passed = --passed); the current stop is a solid disc in the service colour. */
+.stop:first-child .stop-icon,.stop:last-child .stop-icon,.stop.travelled:first-child .stop-icon{background:var(--surface)}
+.stop.current .stop-icon,.stop.current:first-child .stop-icon,.stop.current:last-child .stop-icon{background:var(--route);border-color:var(--route);box-shadow:none}
+.details-body .stop.travelled .stop-time,.details-body .stop.travelled .stop-time *{color:var(--muted)!important}
+
+/* Journey date: short-form label over a native date picker */
+.rr-when-date{position:relative;flex:0 0 auto!important;display:flex;align-items:center;padding:0 10px;font-size:13px;color:var(--ink-strong);white-space:nowrap;cursor:pointer}
+.rr-when-date input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+.depart-date{font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;white-space:nowrap}
+
+/* Journey results: a summary card (route as a mini line, then count and search time) */
+.journey-results-head{margin:0 0 var(--rr-gap)!important;padding:var(--rr-card-pad)!important;border-radius:var(--rr-radius-card);background:var(--surface);box-shadow:var(--rr-card-shadow)}
+.journey-results-head .eyebrow{margin-bottom:10px}
+.journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:15px}
+.journey-results-head .journey-pair .rr-arrow{display:none}
+.journey-results-head .journey-pair strong{grid-column:2;font-weight:700;color:var(--ink-strong);line-height:1.25}
+.journey-results-head .journey-pair::before,.journey-results-head .journey-pair::after{content:"";grid-column:1;width:8px;height:8px;border-radius:50%;justify-self:center;box-sizing:border-box}
+.journey-results-head .journey-pair::before{grid-row:1;border:2px solid var(--ui);background:var(--surface);position:relative;z-index:1}
+.journey-results-head .journey-pair::after{grid-row:2;background:var(--ui)}
+.journey-results-head .journey-pair{background:linear-gradient(var(--stroke),var(--stroke)) 6px 50%/2px calc(100% - 20px) no-repeat}
+.journey-results-head .journey-count{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12.5px;color:var(--muted-slate)}
+.journey-results-head .jr-time{font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+.journey-results-head .jr-sep{color:var(--text-faint)}
