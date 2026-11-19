@@ -243,3 +243,11 @@ body,.app{background:var(--rr-canvas)}
  .app.folded .map-header{padding-left:calc(var(--rr-folded-width) - 88px + var(--rr-gutter) + 48px)!important}
 }
 .service-region{color:var(--muted-slate);font-weight:500}.service-sep{margin:0 5px}
+
+/* The service filter also focuses the map on that system (not on the Journeys tab). */
+.app:not(.journey-mode)[data-sys-focus="mainline"] .rail.regio{opacity:.12}
+.app:not(.journey-mode)[data-sys-focus="mainline"] .rail.regio-shared{opacity:0}
+.app:not(.journey-mode)[data-sys-focus="regio"] .rail.hsl,.app:not(.journey-mode)[data-sys-focus="regio"] .rail.ml{opacity:.28}
+.app:not(.journey-mode)[data-sys-focus="regio"] .rail.regio-shared{stroke:var(--rail-regio);stroke-width:2.8;opacity:1}
+.app:not(.journey-mode)[data-sys-focus="local"] .rail{opacity:.18}
+.rail{transition:opacity .2s ease}
