@@ -65,7 +65,7 @@ body,.app{background:var(--rr-canvas)}
 .board-tabs{margin-top:0!important;margin-bottom:var(--rr-gap)!important;box-sizing:border-box!important;height:44px!important;min-height:44px!important;padding:3px!important;border-radius:11px!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);display:grid!important;width:round(down,100%,1px)!important;--rr-tab-w:round(down,calc((100% - 6px) / 3),1px);grid-template-columns:var(--rr-tab-w) 1fr var(--rr-tab-w)!important;gap:3px}
 .board-tab{box-sizing:border-box!important;border:0!important;border-radius:8px!important;min-height:38px!important;height:38px!important;padding:0 8px!important;display:flex!important;align-items:center;justify-content:center;line-height:1;width:auto!important;margin:0!important;font-weight:500}
 .board-tab:not(.active):hover{background:var(--rr-canvas)!important}
-.board-tab.active{background:var(--main)!important;color:#fff!important;font-weight:700;box-shadow:none!important}
+.board-tab.active{background:var(--ui)!important;color:var(--ui-on)!important;font-weight:700;box-shadow:none!important}
 .board-tab.active::after,.board-tab.active::before,.board-tab::after{display:none!important}
 
 /* Station or journey-search block as a card. */
@@ -79,7 +79,7 @@ body,.app{background:var(--rr-canvas)}
 
 /* Each train or journey is its own card. */
 .trainrow,.journey-row{border:0!important;border-radius:var(--rr-radius-card)!important;background:var(--surface)!important;margin:0 0 var(--rr-gap)!important;box-shadow:var(--rr-card-shadow);padding-left:var(--rr-card-pad)!important;padding-right:var(--rr-card-pad)!important}
-.trainrow.selected,.journey-row.selected{background:var(--selected)!important;box-shadow:inset 0 0 0 2px var(--main)!important}
+.trainrow.selected,.journey-row.selected{background:var(--selected)!important;box-shadow:inset 0 0 0 2px var(--ui)!important}
 .trainrow::before,.journey-row::before{display:none!important}
 .rr-day-divider{border:0!important;background:transparent!important;padding:6px var(--rr-card-pad) 8px!important}
 .journey-more,.journey-earlier{border-radius:var(--rr-radius-control)!important}
@@ -103,7 +103,7 @@ body,.app{background:var(--rr-canvas)}
 .rr-when-mode select{padding-right:40px}
 .swap-stations,#swapStations,#clear,.rr-when-now,.appearance-toggle,.station-info-button,#focusRoute{background:var(--surface)!important;box-shadow:var(--rr-card-shadow)}
 .side-controls .rr-when-now{background:var(--rr-canvas)!important;box-shadow:none!important}
-.picker-control:focus-within{box-shadow:0 0 0 2px var(--main)!important}
+.picker-control:focus-within{box-shadow:0 0 0 2px var(--ui)!important}
 
 /* Badges and tags share one small corner. */
 .status-tag{border-radius:var(--rr-radius-badge)!important}
@@ -165,7 +165,7 @@ body,.app{background:var(--rr-canvas)}
  .side{position:relative}
  .app:not(.folded) .side-header{padding-right:0!important}
  .fold-button{position:absolute!important;top:17px;right:0;width:36px!important;height:36px!important;margin:0!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important}
- .fold-button:hover{background:var(--hover-blue)!important;color:var(--main)!important}
+ .fold-button:hover{background:var(--hover-blue)!important;color:var(--ui)!important}
  .fold-button svg.chevron{display:none!important}
  .fold-button::before{content:"";width:24px;height:24px;background:currentColor;-webkit-mask:var(--rr-sidebar-icon) center/24px no-repeat;mask:var(--rr-sidebar-icon) center/24px no-repeat}
  .app.folded .fold-button{top:70px;left:28px;right:auto}
@@ -205,7 +205,7 @@ body,.app{background:var(--rr-canvas)}
    (white fill on the canvas, 10px corners, soft shadow, neutral text),
    spaced from the cards above and below by the standard 10px gap. */
 .details-body .back-to-train{display:inline-flex!important;align-items:center;gap:8px!important;height:36px;box-sizing:border-box;margin:0 0 var(--rr-gap)!important;padding:0 14px 0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important;font-size:13px!important;font-weight:600!important;line-height:1!important}
-.details-body .back-to-train:hover{background:var(--hover-blue)!important;color:var(--main)!important}
+.details-body .back-to-train:hover{background:var(--hover-blue)!important;color:var(--ui)!important}
 .details-body .back-to-train span[aria-hidden]{font-size:16px!important;line-height:1}
 .details-body .back-to-train .service{margin-left:2px;font-size:11.25px;font-weight:500;line-height:normal}
 
@@ -219,3 +219,15 @@ body,.app{background:var(--rr-canvas)}
 .journey-hero .arrow .rr-arrow-icon{width:22px;height:22px}
 .details-body .back-to-train span[aria-hidden]{display:inline-flex;align-items:center}
 .details-body .back-to-train .rr-arrow-icon{width:18px;height:18px}
+
+/* Service filter: same shape as the board tabs; the active chip takes its system's colour. */
+.service-filter{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:0!important;margin:0 0 var(--rr-gap)!important;box-sizing:border-box!important;height:40px!important;padding:3px!important;border:0!important;border-radius:11px!important;background:var(--surface)!important}
+.service-chip{box-sizing:border-box!important;height:34px!important;min-width:0!important;border:0!important;border-radius:8px!important;padding:0 4px!important;background:transparent!important;color:var(--muted-slate)!important;font-size:12px!important;font-weight:600!important;display:flex!important;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.service-chip::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--chip-color)}
+.service-chip[data-filter="all"]{--chip-color:var(--ui)}.service-chip[data-filter="mainline"]{--chip-color:var(--main)}
+.service-chip[data-filter="regio"]{--chip-color:var(--regio)}.service-chip[data-filter="local"]{--chip-color:var(--local)}
+.service-chip[data-filter="all"]::before{display:none}
+.service-chip:not(.active):hover{background:var(--rr-canvas)!important;color:var(--ink-strong)!important}
+.service-chip.active{background:var(--chip-color)!important;color:#fff!important;font-weight:700!important}
+.service-chip[data-filter="all"].active{color:var(--ui-on)!important}
+.service-chip.active::before{background:currentColor}
