@@ -145,7 +145,7 @@ const app=$('app'), map=$('map'), board=$('board'), stationSelect=$('stationSele
 const layer=$('stationLayer'), labels=$('labelLayer'), routeWorld=$('routeWorld'), world=$('world');
 const detail=$('detailsBody'), container=$('mapContainer'), tooltip=$('tooltip');
 const S=new Map(STATIONS.map(s=>[s.name,s]));
-let currentStation='Mapleriver Central', selectedTrain=null, selectedPath=[], selectedNames=[], routeColor=C.Max, manualTrace=false;
+let currentStation=null, selectedTrain=null, selectedPath=[], selectedNames=[], routeColor=C.Max, manualTrace=false;
 let zoom=1, panX=0, panY=0, fit=1, offX=0, offY=0, W=0, H=0;
 const minX=Math.min(...P.map(p=>p[0])),maxX=Math.max(...P.map(p=>p[0]));
 const minY=Math.min(...P.map(p=>p[1])),maxY=Math.max(...P.map(p=>p[1]));
@@ -289,6 +289,15 @@ document.querySelectorAll('.service-chip').forEach(b=>b.addEventListener('click'
 function drawBoard(){
  if(viewMode==='journeys'){renderJourneyResults();return}
  const isArrival=viewMode==='arrivals';
+ app.classList.toggle('no-station',!currentStation);
+ $('stationBoardTitle').textContent=isArrival?'Arrivals':'Departures';
+ if(!currentStation){
+  // Home: no station is assumed. The passenger picks one, or starts from a major station.
+  $('stationHeading').textContent='Choose a station';
+  board.innerHTML=`<div class="rr-home"><div class="rr-home-title">Major stations</div>${[...LABELS].sort((a,b)=>a.localeCompare(b)).map(n=>`<button type="button" class="rr-home-station" data-station="${n}"><span>${n}</span><span class="jt-chevron" aria-hidden="true"></span></button>`).join('')}</div>`;
+  board.querySelectorAll('.rr-home-station').forEach(b=>b.addEventListener('click',()=>setCurrentStation(b.dataset.station)));
+  return;
+ }
  rrStationNetwork=rrNetworkAt(currentStation);
  departures=(isArrival?arriving(currentStation):upcoming(currentStation)).filter(rrMatchesFilter);
  board.replaceChildren();
@@ -323,8 +332,8 @@ function setCurrentStation(name){
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
  updateBoardTabs();
  selectedJourney=null;selectedLegPaths=[];currentStation=name;
- stationSelect.value=name;pickerViews.get('stationSelect')?.sync();
- selectedTrain=null;selectedPath=[];selectedNames=[name];manualTrace=false;
+ stationSelect.value=name||'';pickerViews.get('stationSelect')?.sync();
+ selectedTrain=null;selectedPath=[];selectedNames=name?[name]:[];manualTrace=false;
  routeWorld.replaceChildren();drawBoard();app.classList.remove('detail-open');
  requestAnimationFrame(resize);
  detail.innerHTML='<div class="empty">Select a train to view details.</div>';
@@ -402,12 +411,12 @@ function trainFacilities(train){
  if(items.includes('Accessible')&&items.includes('Toilet')&&!items.includes('Accessible Toilet'))items.push('Accessible Toilet');
  return items;
 }
-// Services calling at a station: one row per service (Regio per network) with departures a day and its trains (Regio: lines).
+// Services calling at a station: one row per service (Regio per network). Regio rows open to list their lines; Mainline numbers are not routes, so they are not listed.
 function rrStationServices(name){
  const m=new Map(),order=['Max','VIA','InterCity','Nightline','Regio'];
  for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===name);if(i<0)continue;
-  const k=t.type+'|'+(t.network||'');if(!m.has(k))m.set(k,{type:t.type,network:t.network||'',n:0,badges:new Map()});
-  const e=m.get(k);if(i<t.route.length-1)e.n++;const l=rrTrainLabel(t);if(!e.badges.has(l))e.badges.set(l,t)}
+  const k=t.type+'|'+(t.network||'');if(!m.has(k))m.set(k,{type:t.type,network:t.network||'',badges:new Map()});
+  const e=m.get(k),l=rrTrainLabel(t);if(t.type==='Regio'&&!e.badges.has(l))e.badges.set(l,t)}
  return [...m.values()].sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
 }
 function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){
@@ -416,10 +425,15 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
- detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div></div>
- <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="station-svc-meta">${s.n} ${s.n===1?'departure':'departures'} a day</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>rrBadge(t)).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
- <section class="rr-card"><h3 class="rr-card-title">Facilities</h3><h4 class="rr-card-sub">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
- ${additional.length?`<h4 class="rr-card-sub">Additional</h4><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}</section>`;
+ detail.innerHTML=`${backButton}<div class="train-hero station-hero"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
+ <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>s.type!=='Regio'?`<div class="station-svc"><div class="station-svc-row"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span></div></div>`:`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>rrBadge(t)).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
+ <section class="rr-card"><h3 class="rr-card-title">Facilities</h3><h4 class="rr-card-sub" data-rr-fr="Standard">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(pictoItem).join('')}</div>
+ ${additional.length?`<h4 class="rr-card-sub" data-rr-fr="Supplémentaires">Additional</h4><div class="station-picto-grid">${additional.map(pictoItem).join('')}</div>`:''}</section>`;
+ detail.querySelectorAll('.station-action').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.action;
+  if(k==='departures'||k==='arrivals'){viewMode=k;setCurrentStation(name);return}
+  $(k).value=name;pickerViews.get(k)?.sync();setViewMode('journeys');
+ }));
  if(returnTrain){
   $('backToTrain').addEventListener('click',()=>{
    viewMode=returnTrain.boardMode==='arrivals'?'arrivals':'departures';
@@ -1057,7 +1071,7 @@ function drawMap(){
   if(focusedStation===s.name){rrPendingMapFocus=s.name;requestAnimationFrame(()=>{if(hit.isConnected){hit.focus({preventScroll:true});if(document.activeElement===hit)rrPendingMapFocus=null}})}
  }
  const byVisible=new Map(visible.map(v=>[v.name,v]));
- const priorities=[currentStation];
+ const priorities=currentStation?[currentStation]:[];
  for(const n of selectedNames)if(!priorities.includes(n))priorities.push(n);
  for(const n of LABELS)if(!priorities.includes(n))priorities.push(n);
  if(rrTrip){
@@ -1784,9 +1798,9 @@ const rrFrenchExact=Object.freeze({
  'Show more trains':'Afficher plus de trains',
  'Choose station':'Choisir une gare',
  'RR Regio Southern':'RR Régional Sud','RR Regio Cathian':'RR Régional Cathien','RR Regio Marenian':'RR Régional Marénien','RR Regio Frisian':'RR Régional Frison','RR Regio Sylvan':'RR Régional Sylvain','RR Regio Novanglian':'RR Régional Novanglien',
- 'South Radeland':'Radeland-Sud',
- 'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voie de magistrale',
- 'All':'Tous','Mainline':'Magistrale','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
+ 'South Radeland':'Radeland-Sud','Southern':'Sud','Cathian':'cathien','Marenian':'marénien','Frisian':'frison','Sylvan':'sylvain','Novanglian':'novanglien',
+ 'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voies Grandes lignes',
+ 'All':'Tous','Mainline':'Grandes lignes','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
  'No Local services yet.':'Aucun service de banlieue pour le moment.',
  'Regional Sprinter · 3-car single-deck EMU':'Régional omnibus · automotrice à un niveau, 3 voitures',
  'Regional Sprinter · two coupled 3-car EMUs':'Régional omnibus · deux automotrices de 3 voitures en unités multiples',
@@ -1800,12 +1814,12 @@ const rrFrenchExact=Object.freeze({
  'Available journeys':'Trajets disponibles','Station information':'Informations sur la gare',
  'Train details':'Détails du train','Journey details':'Détails du trajet',
  'Train information':'Informations sur le train','View route':'Itinéraire',
- 'Find trains':'Rechercher','Reset':'Effacer','From':'De','To':'À',
- 'Direct only':'Sans correspondance','High-speed only':'Grande vitesse uniquement',
+ 'Find trains':'Rechercher','Reset':'Effacer','From':'Départ','To':'Arrivée',
+ 'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',
  'Time':'Heure','Train':'Train','Destination':'Destination',
- 'Origin':'Provenance','Platform':'Voie','Status':'Statut','Service':'Type de train','Operator':'Exploitant','Services':'Services','Facilities':'Équipements','Standard':'Standard','Additional':'Supplémentaires','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
- 'Departure':'Départ','Arrival':'Arrivée','Calling at':'Arrêts desservis',
- 'On time':'À l’heure','Boarding':'Embarquement en cours','Cancelled':'Supprimé',
+ 'Origin':'Provenance','Platform':'Voie','Status':'État','Service':'Type de train','Journey from here':'Trajet depuis cette gare','Journey to here':'Trajet vers cette gare','Choose a station':'Choisissez une gare','Major stations':'Grandes gares','Operator':'Transporteur','Services':'Services','Facilities':'Équipements','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
+ 'Departure':'Départ','Arrival':'Arrivée','Calling at':'Gares desservies',
+ 'On time':'À l’heure','Boarding':'À quai','Cancelled':'Supprimé',
  'Direct':'Direct','Departs':'Départ','Arrives':'Arrivée',
  'Show more journeys':'Afficher plus de trajets',
  'No departures.':'Aucun départ.','No arrivals.':'Aucune arrivée.',
@@ -1814,16 +1828,15 @@ const rrFrenchExact=Object.freeze({
  'Select a train to view details.':'Sélectionnez un train pour voir les détails.',
  'Select a journey to see train-specific facilities.':'Sélectionnez un trajet pour consulter les équipements à bord.',
  'Choose two different stations.':'Choisissez deux gares différentes.',
- 'Choose stations, then press Find trains.':'Choisissez les gares, puis cliquez sur Rechercher.',
- 'No matching stations':'Aucune gare trouvée',
+  'No matching stations':'Aucune gare trouvée',
  'Standard facilities':'Équipements et services',
  'Additional station facilities':'Services complémentaires',
  'Coach formation & on-board facilities':'Composition du train et services à bord',
  'Train formation':'Composition du train',
- 'Standard':'Classe Standard','First Class':'Première classe',
- 'First Class seats':'Places de première classe','First Sleeper':'Voiture-lits Première','First sleeper':'Voiture-lits Première',
+ 'Standard':'2de classe','First Class':'1re classe',
+ 'First Class seats':'Places de 1re classe','First Sleeper':'Voiture-lits 1re classe','First sleeper':'Voiture-lits 1re classe',
  'Seated accommodation':'Voiture à places assises',
- 'Dining':'Voiture-restaurant','Café':'Café','Quiet Zone':'Espace calme',
+ 'Dining':'Voiture-restaurant','Café':'Bar','Quiet Zone':'Espace calme',
  'Quiet zone':'Espace calme','Family Zone':'Espace famille','Family zone':'Espace famille',
  'Family':'Espace famille','Reserved seats':'Places réservées','Reserved Seats':'Places réservées',
  'Priority seats':'Places prioritaires','Priority Seating':'Places prioritaires',
@@ -1831,14 +1844,14 @@ const rrFrenchExact=Object.freeze({
  'Bicycle spaces':'Emplacements vélos','Power sockets':'Prises électriques',
  'Couchette':'Couchette','Sleeper':'Voiture-lits','Sleeper cabin':'Cabine-lit',
  'Shower':'Douche','Parent-and-child compartment':'Compartiment parents-enfants',
- 'Locomotive':'Motrice','Power car':'Motrice',
+ 'Locomotive':'Locomotive','Power car':'Motrice',
  'Information':'Information','Accessible':'Accès PMR',
  'Accessible Toilet':'Toilettes accessibles','Accessible toilet':'Toilettes accessibles',
  'Toilet':'Toilettes','Lift':'Ascenseur','Escalator':'Escalier mécanique',
  'Interchange':'Correspondances','Luggage':'Bagages','Cycles':'Vélos',
  'Baby Changing':'Table à langer','Baby changing':'Table à langer',
  'Airport':'Aéroport','Power':'Prises électriques','Seat':'Places réservées',
- 'Quiet':'Espace calme','Cabin':'Cabine-lit','First':'Première classe',
+ 'Quiet':'Espace calme','Cabin':'Cabine-lit','First':'1re classe',
  'Light':'Clair','Dark':'Sombre','System':'Système','Appearance':'Apparence',
  'Language':'Langue','Site preferences':'Préférences du site',
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
@@ -1852,22 +1865,22 @@ const rrFrenchExact=Object.freeze({
  'View station':'Voir la gare','Railway information':'Informations ferroviaires',
  'Journey planner':'Recherche de trajets',
  'Interactive RR Info railway map':'Carte ferroviaire interactive RR Info',
- 'High-speed available':'Grande vitesse disponible','Mainline only':'Magistrale uniquement',
- 'RR Mainline':'RR Magistrale','RR InterCity':'RR Intercités','RR Nightline':'RR Nocturne',
+ 'High-speed available':'Grande vitesse disponible','Mainline only':'Grandes lignes uniquement',
+ 'RR Mainline':'RR Grandes Lignes','RR InterCity':'RR Intercités','RR Nightline':'RR Nuit',
  'No journeys found between these stations in the current timetable.':'Aucun trajet trouvé entre ces gares dans les horaires disponibles.',
  'Back to journey':'Retour au trajet','Back to':'Retour au train','Engineering works':'Travaux',
- 'Tomorrow':'Demain','Today':'Aujourd’hui','Depart after':'Départ après','Arrive by':'Arrivée avant','Now':'Maintenant','Search by':'Rechercher par',
+ 'Tomorrow':'Demain','Today':'Aujourd’hui','Depart after':'Partir après','Arrive by':'Arriver avant','Now':'Maintenant','Search by':'Rechercher par',
  'Map':'Carte','Timetable':'Horaires',
  'Show earlier journeys':'Afficher les trajets précédents','Arriving':'À l’approche',
  'Sleeper cabins':'Cabines-lits','Night catering':'Restauration de nuit',
- 'Standard accommodation':'Places en classe Standard',
+ 'Standard accommodation':'Places en 2de classe',
  'Dining coach with restaurant seating':'Voiture-restaurant avec places assises',
- 'Café counter':'Espace café','Couchettes':'Couchettes',
- 'First sleepers with showers':'Voitures-lits Première avec douches',
- 'First sleeper with shower':'Voiture-lits Première avec douche',
- 'First Class · Quiet Zone':'Première classe · Espace calme',
- 'First Class · driving cab':'Première classe · cabine de conduite',
- 'First Class':'Première classe',
+ 'Café counter':'Bar','Couchettes':'Couchettes',
+ 'First sleepers with showers':'Voitures-lits 1re classe avec douches',
+ 'First sleeper with shower':'Voiture-lits 1re classe avec douche',
+ 'First Class · Quiet Zone':'1re classe · Espace calme',
+ 'First Class · driving cab':'1re classe · cabine de conduite',
+ 'First Class':'1re classe',
  'Reserved seats · Quiet Zone':'Places réservées · Espace calme',
  'Accessible seated coach · priority seating':'Voiture accessible avec places prioritaires',
  'Bicycles and luggage':'Vélos et bagages',
@@ -1922,9 +1935,9 @@ function rrFrenchText(source){
   .replace(/\bNo (high-speed )?(direct )?journeys found between these stations in the current timetable\./g,
    (_,high,direct)=>'Aucun trajet'+(high?' à grande vitesse':'')+(direct?' sans correspondance':'')+' trouvé entre ces gares dans les horaires disponibles.')
   .replace(/\bRR InterCity\b/g,'RR Intercités')
-  .replace(/\bRR Nightline\b/g,'RR Nocturne')
+  .replace(/\bRR Nightline\b/g,'RR Nuit')
   .replace(/\bRR Regio\b/g,'RR Régional')
-  .replace(/\bFirst Sleeper\b/g,'Voiture-lits Première')
+  .replace(/\bFirst Sleeper\b/g,'Voiture-lits 1re classe')
   .replace(/\bFirst Class\b/g,'Première classe')
   .replace(/\bPower car\b/g,'Motrice')
   .replace(/\bLocomotive\b/g,'Motrice');
@@ -1937,7 +1950,8 @@ function rrLocalizeTextNode(node,reset=false){
  if(!reset&&previous!==undefined&&previous===current)return;
  if(!reset||!rrEnglishText.has(node)||(previous!==undefined&&previous!==current))rrEnglishText.set(node,current);
  const original=rrEnglishText.get(node);
- const wanted=rrActiveLocale==='fr'?rrFrenchText(original):original;
+ const fr=node.parentElement?.dataset?.rrFr;   // a context-specific French string wins over the shared dictionary
+ const wanted=rrActiveLocale==='fr'?(fr??rrFrenchText(original)):original;
  rrTranslatedText.set(node,wanted);
  if(current!==wanted)node.nodeValue=wanted;
 }
@@ -2075,12 +2089,12 @@ function rrStateHash(){
   return h;
  }
  if(selectedTrain)return `#train/${e(selectedTrain.id)}/${e(currentStation)}`;
- return `#${viewMode==='arrivals'?'arrivals':'departures'}/${e(currentStation)}`;
+ if(!currentStation)return '';   // home has a clean address: the logo link
 }
 function rrSyncHash(){
  if(rrApplyingHash)return;
  const h=rrStateHash();
- if(location.hash!==h)try{history.replaceState(null,'',h)}catch(_){}
+ if(location.hash!==h)try{history.replaceState(null,'',h||location.pathname+location.search)}catch(_){}
 }
 function rrApplyHash(){
  let parts;try{parts=location.hash.replace(/^#/,'').split('/').map(decodeURIComponent)}catch(_){return}

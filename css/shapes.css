@@ -422,9 +422,8 @@ body,.app{background:var(--rr-canvas)}
 /* Station services: each service is a disclosure row (like Train formation); open it to see its trains */
 .station-svc{border-top:1px solid var(--stroke-soft)}
 .station-svc:first-child{border-top:0}
-.station-svc>summary{display:grid;grid-template-columns:minmax(0,1fr) 12px;grid-template-rows:auto auto;align-items:center;column-gap:10px;row-gap:3px;padding:10px 0;cursor:pointer;list-style:none}
-.station-svc>summary .station-svc-meta{grid-row:2}
-.station-svc>summary .jt-chevron{grid-column:2;grid-row:1 / 3}
+.station-svc>summary,.station-svc-row{display:grid;grid-template-columns:minmax(0,1fr) 12px;align-items:center;column-gap:10px;min-height:44px;list-style:none}
+.station-svc>summary{cursor:pointer}
 .station-svc>summary::-webkit-details-marker{display:none}
 .station-svc>summary .jt-chevron{color:var(--ink-soft);justify-self:end}
 .station-svc[open]>summary .jt-chevron{transform:translateY(1px) rotate(-135deg)}
@@ -433,3 +432,24 @@ body,.app{background:var(--rr-canvas)}
 .station-svc-lines{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 14px}
 .station-svc-foot{padding-top:12px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
 .rr-network{font-weight:500;color:var(--muted-slate)}
+
+/* Home (no station chosen): no station-only controls; a card listing the major stations */
+.app.no-station #stationInfoLeft,.app.no-station .service-filter,.app.no-station .boardhead{display:none!important}
+.rr-home{border-radius:var(--rr-radius-card);background:var(--surface);box-shadow:var(--rr-card-shadow);padding:6px var(--rr-card-pad) 8px;margin:0 0 var(--rr-gap)}
+.rr-home-title{font-size:12px;font-weight:500;color:var(--muted-slate);padding:8px 0 6px}
+.rr-home-station{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0;border:0;border-top:1px solid var(--stroke-soft);background:none;font:inherit;font-size:14px;font-weight:500;color:var(--ink-strong);text-align:left;cursor:pointer}
+.rr-home-station:hover{color:var(--ui-deep)}
+.rr-home-station .jt-chevron{transform:rotate(-45deg);color:var(--ink-soft)}
+
+/* Tabs read one tier larger than controls */
+.board-tab{font-size:14px!important}
+
+/* Station actions: a 2x2 grid of tiles under the station name (canvas fill, control radius, arrow at the end) */
+.station-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.station-action{display:flex!important;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--rr-canvas)!important;box-shadow:none!important;font:inherit;font-size:13px;font-weight:500;color:var(--ink-strong);text-align:left;cursor:pointer}
+.station-action:hover{background:var(--hair)!important}
+.station-action .rr-arrow-icon{width:16px;height:16px;flex:none;fill:currentColor;color:var(--ink-soft)}
+
+/* Filter chips size to their label (French "Grandes lignes" is long) and still fill the row */
+.service-filter{grid-template-columns:repeat(4,auto)!important;justify-content:stretch}
+.service-chip{padding:0 4px!important;white-space:nowrap}
