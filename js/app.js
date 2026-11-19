@@ -691,7 +691,7 @@ function rrTraveledColor(color){
 }
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  const stops=t.route.map(([name,time],i)=>`<div class="stop${i===here?' current':''}${i<here?' travelled':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrCssTravelAccent(t.type)}">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrCssServiceAccent(t.type)};--rr-white-text-fill:${rrCssWhiteTextFill(t.type)}"><div class="train-hero-top"><div class="service-title"><div class="train-number${rrOutline(t)?' rr-ic-outline':''}">${rrTrainLabel(t)}</div></div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${isArrival?t.origin:t.dest}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div><div class="fact-row"><dt class="keylabel">Service</dt><dd class="infoval">${rrServiceLabel(t.type)}${t.region?`<span class="service-region"><span class="service-sep" aria-hidden="true">·</span><span>${t.region}</span></span>`:''}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${t.origin}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrCssServiceAccent(t.type)};--route-travelled:${rrCssTravelAccent(t.type)}">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
@@ -942,10 +942,17 @@ function drawMap(){
  const legStationColors=journeyStationColors(selectedJourney);
  const selectedLabelColors=new Map();
  const interchangeMarkers=journeyInterchangeMarkers(selectedJourney);
- for(const s of STATIONS){
+ if(!window.RR_DOT_ORDER){const rank=s=>LABELS.includes(s.name)?0:s.sys==='MR'?1:!s.regio?2:3;window.RR_DOT_ORDER=[...STATIONS].sort((a,b)=>rank(a)-rank(b))}
+ const rrDotGrid=new Map(),RR_DOT_GAP=10;
+ const rrDotFree=(x,y)=>{const gx=Math.floor(x/RR_DOT_GAP),gy=Math.floor(y/RR_DOT_GAP);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const [px,py] of rrDotGrid.get((gx+i)+','+(gy+j))||[])if(Math.hypot(px-x,py-y)<RR_DOT_GAP)return false;return true};
+ const rrDotTake=(x,y)=>{const k=Math.floor(x/RR_DOT_GAP)+','+Math.floor(y/RR_DOT_GAP);if(!rrDotGrid.has(k))rrDotGrid.set(k,[]);rrDotGrid.get(k).push([x,y])};
+ for(const s of RR_DOT_ORDER){
   if(s.regio&&zoom<2.2&&!selectedSet.has(s.name)&&s.name!==currentStation)continue; // Regio halts appear when zoomed in
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
+  const keep=selectedSet.has(s.name)||s.name===currentStation||LABELS.includes(s.name)||s.sys==='MR';
+  if(!keep&&!rrDotFree(x,y))continue;                // too close to a dot already drawn at this zoom
+  rrDotTake(x,y);
   visible.push({...s,sx:x,sy:y});
   const selected=selectedSet.has(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
   const radius=selected?5.8:(important?4.7:(s.regio?2.2:3.2)),g=se('g',{'data-station':s.name});
@@ -979,7 +986,7 @@ function drawMap(){
    g.append(se('circle',{cx:x,cy:y,r:radius,fill:important?RR_UI_CSS_COLOR('--surface'):sysColor,stroke:important?RR_UI_CSS_COLOR('--muted-slate'):RR_UI_CSS_COLOR('--surface'),'stroke-width':important?1.8:1.1,'pointer-events':'none'}));
   }
   const hit=se('circle',{cx:x,cy:y,r:12,fill:'transparent',class:'mapnode',role:'button','aria-label':s.name,tabindex:0});
-  hit.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(s.name)});
+  hit.addEventListener('click',e=>{e.stopPropagation();if(app.classList.contains('folded'))rrSetFolded(false);setCurrentStation(s.name)});
   hit.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(s.name)}});
   hit.addEventListener('mouseenter',()=>{tooltip.textContent=s.name;tooltip.style.display='block';tooltip.style.left=x+'px';tooltip.style.top=(y-13)+'px'});
   hit.addEventListener('mouseleave',()=>tooltip.style.display='none');
@@ -1571,16 +1578,23 @@ $('swapStations').addEventListener('click',()=>{
 });
 
 stationSelect.addEventListener('change',e=>setCurrentStation(e.target.value));
-$('collapse').onclick=()=>{
- app.classList.toggle('folded');
- const is=app.classList.contains('folded');
+function rrSetFolded(is,persist=true){
+ app.classList.toggle('folded',is);
  const control=$('collapse');
  const action=is?'Expand departures':'Collapse departures';
  control.setAttribute('aria-label',action);
  control.setAttribute('aria-expanded',String(!is));
- control.title=action;
- setTimeout(resize,200);
-};
+ control.title=action+' ( [ )';
+ if(persist){try{localStorage.setItem('rrSidebarFolded',is?'1':'0')}catch(e){}}
+ setTimeout(resize,220);
+}
+$('collapse').onclick=()=>rrSetFolded(!app.classList.contains('folded'));
+try{if(localStorage.getItem('rrSidebarFolded')==='1'&&!window.matchMedia('(max-width:750px)').matches)rrSetFolded(true,false)}catch(e){}
+document.addEventListener('keydown',e=>{
+ if(e.key!=='['||e.metaKey||e.ctrlKey||e.altKey)return;
+ const t=e.target;if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))return;
+ e.preventDefault();rrSetFolded(!app.classList.contains('folded'));
+});
 $('closeDetail').onclick=()=>{app.classList.remove('detail-open');requestAnimationFrame(resize)};
 const ro=new ResizeObserver(()=>resize());ro.observe(container);
 
@@ -1678,6 +1692,7 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
+ 'South Radeland':'Radeland-Sud',
  'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voie de magistrale',
  'All':'Tous','Mainline':'Magistrale','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
  'No Local services yet.':'Aucun service de banlieue pour le moment.',
