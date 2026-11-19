@@ -329,7 +329,7 @@ body,.app{background:var(--rr-canvas)}
 /* Selected train / journey: the trip stands out, the network steps back. */
 .app.trip-focus .rail{opacity:.32}
 .label-time{font-weight:500;fill:var(--muted-slate);font-size:.82em}
-.label[data-trip="hub"]{fill:var(--muted-slate)!important;opacity:.7}
+.label[data-trip="hub"]{fill:var(--text-faint)!important;opacity:.5}
 
 /* "Show more trains / journeys": a full-width card like the train rows, with a down chevron. */
 .board .journey-more{display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%!important;height:46px;margin:6px 0 18px!important;padding:0 16px!important;border:0!important;border-radius:14px!important;background:var(--surface)!important;color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;cursor:pointer;box-shadow:none!important}
@@ -339,7 +339,7 @@ body,.app{background:var(--rr-canvas)}
 .board .journey-more:focus-visible{outline:2px solid var(--ui)!important;outline-offset:2px}
 
 /* Running train: passed stops grey out; the next stop is called out. Journey rows: name and platform never touch. */
-.label[data-trip="passed"]{fill:var(--muted-slate)!important;opacity:.6}
+.label[data-trip="passed"]{fill:var(--passed-ink)!important;opacity:1}
 /* Journey stops: name and platform on one line; "Pl. 1" when the panel is narrow. */
 .jt-row{column-gap:8px!important}
 .jt-node .jt-station{min-width:0;overflow-wrap:normal;word-break:normal}
@@ -351,7 +351,7 @@ body,.app{background:var(--rr-canvas)}
 /* Calling points: passed and upcoming stops share one ringed marker (passed = --passed); the current stop is a solid disc in the service colour. */
 .stop:first-child .stop-icon,.stop:last-child .stop-icon,.stop.travelled:first-child .stop-icon{background:var(--surface)}
 .stop.current .stop-icon,.stop.current:first-child .stop-icon,.stop.current:last-child .stop-icon{background:var(--route);border-color:var(--route);box-shadow:none}
-.details-body .stop.travelled .stop-time,.details-body .stop.travelled .stop-time *{color:var(--muted)!important}
+.details-body .stop.travelled .stop-time,.details-body .stop.travelled .stop-time *,.details-body .stop.travelled .stop-name.stop-station{color:var(--passed-ink)!important}
 
 /* Journey date: short-form label over a native date picker */
 .rr-when-date{position:relative;flex:0 0 auto!important;display:flex;align-items:center;padding:0 10px;font-size:13px;color:var(--ink-strong);white-space:nowrap;cursor:pointer}
