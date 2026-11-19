@@ -1784,8 +1784,6 @@ function rrPlacePlanner(){
 rrPlacePlanner();
 rrPlannerMobileQuery.addEventListener('change',()=>{rrPlacePlanner();requestAnimationFrame(resize)});
 
-// Footer: say which time zone times are shown in when it differs from Radeland's.
-if(RR_SHOW_SHIFT)document.querySelectorAll('.rr-tz-note').forEach(n=>{n.hidden=false;n.textContent='Times shown in your time zone · Radeland: '+(rrRadelandOffset()?'RST (UTC−1)':'RDT (UTC±0)')});
 pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
 // Recompute map-label collision positions once the hosted fonts are available.
 if (document.fonts && document.fonts.load) {
@@ -1983,7 +1981,6 @@ function rrFrenchText(source){
   .replace(/^(\d+) departures a day$/,'$1 départs par jour').replace(/^1 departure a day$/,'1 départ par jour').replace(/^(\d+) platforms$/,'$1 voies')
   .replace(/^Open now · closes (\S+)$/,'Ouvert · ferme à $1').replace(/^Closed · opens tomorrow (\S+)$/,'Fermé · ouvre demain à $1').replace(/^Closed · opens (\d\d:\d\d)$/,'Fermé · ouvre à $1')
   .replace(/^Closed · opens (Sun|Mon|Tue|Wed|Thu|Fri|Sat) (\S+)$/,(_,d,t)=>'Fermé · ouvre '+RR_DAYS_FR[RR_DAYS.findIndex(x=>x.startsWith(d))]+' à '+t)
-  .replace(/^Times shown in your time zone · Radeland: (.+)$/,'Horaires affichés dans votre fuseau horaire · Radeland : $1')
   .replace(/^Coach (\d+)$/,'Voiture $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
   .replace(/^Pl\. (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard
