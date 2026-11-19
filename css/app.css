@@ -864,11 +864,12 @@ body{font-size:14px}
    2.25px outside clearance. The top edge sits between roof and section bar. */
 .rr-car[aria-pressed="true"]{background:transparent;box-shadow:none;z-index:3}
 .rr-car[aria-pressed="true"]:hover{background:transparent}
+.rr-car:hover:not([aria-pressed="true"]){background:var(--hover)}
 .rr-car-selection-outline{
  position:absolute;width:var(--rr-outline-size);height:var(--rr-outline-size);
  top:calc((var(--rr-car-height) - var(--rr-outline-size))/2);
  left:calc((var(--rr-car-width) - var(--rr-outline-size))/2);
- display:block;fill:var(--hover);stroke:var(--accent-stroke);stroke-width:.52;
+ display:block;fill:var(--selected);stroke:var(--ui);stroke-width:1.6;
  stroke-linejoin:round;pointer-events:none;
  z-index:0;opacity:0;overflow:visible
 }

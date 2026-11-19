@@ -364,10 +364,10 @@ body,.app{background:var(--rr-canvas)}
 .journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:16px}
 .journey-results-head .journey-pair .rr-arrow{display:none}
 .journey-results-head .journey-pair strong{grid-column:2;font-weight:700;color:var(--ink-strong);line-height:1.25}
-.journey-results-head .journey-pair::before,.journey-results-head .journey-pair::after{content:"";grid-column:1;width:12px;height:12px;border-radius:50%;justify-self:center;box-sizing:border-box}
-.journey-results-head .journey-pair::before{grid-row:1;border:3px solid var(--ui);background:var(--surface);position:relative;z-index:1}
-.journey-results-head .journey-pair::after{grid-row:2;border:3px solid var(--ui);background:var(--surface)}
-.journey-results-head .journey-pair{background:linear-gradient(var(--ui),var(--ui)) 5.5px 50%/3px calc(100% - 20px) no-repeat}
+.journey-results-head .journey-pair::before,.journey-results-head .journey-pair::after{content:"";grid-column:1;width:10px;height:10px;border-radius:50%;justify-self:center;box-sizing:border-box}
+.journey-results-head .journey-pair::before{grid-row:1;border:2px solid var(--ui);background:var(--surface);position:relative;z-index:1}
+.journey-results-head .journey-pair::after{grid-row:2;border:2px solid var(--ui);background:var(--surface)}
+.journey-results-head .journey-pair{background:linear-gradient(var(--ui),var(--ui)) 6px 50%/2px calc(100% - 20px) no-repeat}
 .journey-results-head .journey-count{display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
 .journey-results-head .jr-time{font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
 .journey-results-head .jr-sep{color:var(--text-faint)}
@@ -385,3 +385,11 @@ body,.app{background:var(--rr-canvas)}
 .journey-when{flex-wrap:wrap!important;row-gap:6px}
 .journey-when .rr-when-mode{flex:1 1 100%!important}
 .journey-when .rr-when-date{flex:1 1 auto!important;justify-content:center}
+
+/* Depart after / Arrive by: same segmented-tab standard as Departures/Arrivals/Journeys */
+.journey-when .rr-when-tabs{flex:1 1 100%;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;border-radius:11px;background:var(--rr-canvas)}
+.rr-when-tab{height:32px;border:0;border-radius:8px;background:transparent;color:var(--muted-slate);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.rr-when-tab:hover{color:var(--ink-strong)}
+.rr-when-tab.active{background:var(--ui);color:var(--ui-on);font-weight:700}
+/* Outline badges: transparent inside, so a highlighted row shows through */
+.service.rr-ic-outline,.train-number.rr-ic-outline,:root[data-theme="dark"] .service.rr-ic-outline,:root[data-theme="dark"] .train-number.rr-ic-outline{background:transparent!important}

@@ -1448,7 +1448,8 @@ function rrMinutesToInput(n){n=((n%1440)+1440)%1440;return String(Math.floor(n/6
 function rrJourneyDate(){const v=$('journeyWhenDate').value,m=v.match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(+m[1],+m[2]-1,+m[3],12):rrDay(0)}
 function rrJourneyDayOffset(){return Math.max(0,Math.round((rrJourneyDate()-rrDay(0))/864e5))}
 function rrJourneyDayLabel(extra){const off=rrJourneyDayOffset()+extra;return rrDayLabel(off)}
-function rrSyncWhenDate(){$('journeyWhenDateLabel').textContent=rrJourneyDayOffset()===0?'Today':rrFmtDate(rrJourneyDate(),false)}
+function rrSyncWhenTabs(){const v=$('journeyWhenMode').value;document.querySelectorAll('.rr-when-tab').forEach(b=>{const on=b.dataset.when===v;b.classList.toggle('active',on);b.setAttribute('aria-selected',on)})}
+function rrSyncWhenDate(){rrSyncWhenTabs();$('journeyWhenDateLabel').textContent=rrJourneyDayOffset()===0?'Today':rrFmtDate(rrJourneyDate(),false)}
 function rrJourneyWhen(){return{mode:$('journeyWhenMode').value,time:rrTimeInputMinutes($('journeyWhenTime').value)}}
 // Order journeys around the chosen time. Depart after: from that time on,
 // wrapping into tomorrow. Arrive by: the latest arrivals before that time first.
@@ -1624,7 +1625,8 @@ $('journeyWhenDate').value=$('journeyWhenDate').min=rrIsoDate(rrDay(0));rrSyncWh
 $('journeyWhenDate').addEventListener('change',()=>{if(!$('journeyWhenDate').value||$('journeyWhenDate').value<$('journeyWhenDate').min)$('journeyWhenDate').value=$('journeyWhenDate').min;rrSyncWhenDate();rrJourneyWhenChanged()});
 $('journeyWhenDate').addEventListener('click',e=>{try{e.target.showPicker()}catch(_){}});
 function rrJourneyWhenChanged(){if(!appliedJourneyQuery)return;journeyShown=12;renderJourneyResults();board.scrollTop=rrJourneyWhen().mode==='arrive'?board.scrollHeight:0}
-$('journeyWhenMode').addEventListener('change',()=>rrJourneyWhenChanged());
+$('journeyWhenMode').addEventListener('change',()=>{rrSyncWhenTabs();rrJourneyWhenChanged()});
+document.querySelectorAll('.rr-when-tab').forEach(b=>b.addEventListener('click',()=>{if($('journeyWhenMode').value===b.dataset.when)return;$('journeyWhenMode').value=b.dataset.when;$('journeyWhenMode').dispatchEvent(new Event('change'))}));
 $('journeyWhenTime').addEventListener('change',()=>rrJourneyWhenChanged());
 $('journeyWhenNow').addEventListener('click',()=>{$('journeyWhenMode').value='depart';$('journeyWhenDate').value=rrIsoDate(rrDay(0));rrSyncWhenDate();$('journeyWhenTime').value=rrMinutesToInput(rrNowMinutes());rrJourneyWhenChanged()});
 // Keep the clock moving: refresh live status every minute, and start a new
@@ -2100,7 +2102,7 @@ function rrApplyHash(){
   else if(kind==='journey'&&S.has(a)&&S.has(b)&&a!==b){
    $('from').value=a;$('to').value=b;pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();
    const m=String(c||'').match(/^(dep|arr)-(\d{2})(\d{2})$/);
-   if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';$('journeyWhenTime').value=m[2]+':'+m[3]}
+   if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';rrSyncWhenTabs();$('journeyWhenTime').value=m[2]+':'+m[3]}
    searchJourneys();
    if(d){const j=journeyResults.find(x=>x.key===d);if(j)chooseJourney(j)}
   }
