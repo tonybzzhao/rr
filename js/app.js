@@ -277,6 +277,10 @@ let RR_STATION_NAMES=[];
 // Journeys can start or end at a whole city: "Peiting (any station)" stands for every station in it (STATIONS[].city).
 const RR_CITIES=new Map();for(const x of STATIONS)if(x.city){const k=x.city+' (any station)';if(!RR_CITIES.has(k))RR_CITIES.set(k,new Set());RR_CITIES.get(k).add(x.name)}
 function rrPlace(v){return RR_CITIES.get(v)||new Set([v])}
+// French names of the cities for the whole-city choice: "Pétine (toutes gares)" (approved by the user 2026-11-20; station names stay as they are).
+const RR_CITY_FR=new Map([["Peiting", "Pétine"], ["Mapleriver", "Érableuve"], ["Windale", "Vindelle"], ["Victoria", "Victoria"], ["Prinsburg", "Princebourg"], ["Yenchia", "Yenchia"], ["Touraine", "Touraine"], ["Somerfield", "Somerfield"], ["Havenbolme", "Havenbolme"], ["Bayarfort", "Bayarfort"], ["Amptonside", "Amptonside"], ["Yuchow", "Yuchou"], ["Cranford", "Cranford"], ["Southend", "Southend"], ["Hiltsbury", "Hiltsbury"], ["Binchester", "Bincastre"], ["Barton", "Barton"], ["Norbourne", "Norbourne"], ["Medway", "Medway"], ["Rotherham", "Rotherham"], ["Whitehurst", "Blanchebois"], ["Grafton", "Grafton"], ["Wardour", "Wardour"], ["Ribeauvillé", "Ribeauvillé"], ["Farinport", "Farinport"], ["Kingsbury", "Bourg-le-Roi"], ["Marlbury", "Marlbury"], ["Pinehurst", "Pinehurst"], ["Hanjin", "Hanjin"], ["Chatham", "Chatham"], ["Sulgen", "Sulgen"], ["Belwich", "Belwich"], ["Königstadt", "Villeroi"], ["Yungang", "Yungang"], ["Brunswick", "Brunswick"], ["Linhai New Town", "Linhai-Ville-Nouvelle"], ["Hengchu", "Hengchu"]]);
+function rrCityFr(v){const c=v.slice(0,-' (any station)'.length);return (RR_CITY_FR.get(c)||c)+' (toutes gares)'}
+function rrPlaceLabel(v){let fr=false;try{fr=rrActiveLocale==='fr'}catch(_){}return fr&&RR_CITIES.has(v)?rrCityFr(v):v}
 const RR_CITY_LABELS=[...RR_CITIES.keys()].sort((a,b)=>a.localeCompare(b));
 function rrSelectValue(el,name){if(name&&![...el.options].some(o=>o.value===name))el.append(new Option(name,name));el.value=name||''}
 function stationList(){RR_STATION_NAMES=[...S.keys()].sort((a,b)=>a.localeCompare(b));for(const id of ['stationSelect','from','to'])$(id).replaceChildren(new Option(id==='stationSelect'?'Choose station':'Choose station',''));rrSelectValue(stationSelect,currentStation);for(const id of ['from','to'])$(id).value=''}   // journeys start empty
@@ -300,7 +304,7 @@ function setupSearchPicker(id){
  trigger.append(input);shell.append(trigger,list);select.parentElement.insertBefore(shell,select);select.classList.add('native-select');
  const names=RR_STATION_NAMES,normalize=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();const norm=names.map(n=>normalize(n));
  let open=false,items=[],active=0;
- function sync(){input.value=select.value;input.title=select.value;}
+ function sync(){input.value=rrPlaceLabel(select.value);input.title=input.value;}
  function shut(){open=false;list.classList.remove('open');shell.classList.remove('open');input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');sync();}
  function closeOthers(){for(const [key,v] of pickerViews)if(key!==id)v.shut();}
  function choose(name){rrSelectValue(select,name);shut();select.dispatchEvent(new Event('change',{bubbles:true}));input.focus({preventScroll:true});}
@@ -311,7 +315,7 @@ function setupSearchPicker(id){
   if(!term)items=[...LABELS].sort((a,b)=>a.localeCompare(b));
   else{const hit=[];for(let i=0;i<names.length;i++){const k=norm[i].indexOf(term);if(k>=0)hit.push([k===0?0:1,names[i]])}
    hit.sort((a,b)=>a[0]-b[0]||a[1].localeCompare(b[1]));items=hit.slice(0,50).map(h=>h[1]);
-   if(id!=='stationSelect')items.unshift(...RR_CITY_LABELS.filter(c=>normalize(c).startsWith(term)))}
+   if(id!=='stationSelect')items.unshift(...RR_CITY_LABELS.filter(c=>normalize(c).startsWith(term)||normalize(rrCityFr(c)).startsWith(term)))}
   if(select.value&&!items.includes(select.value)&&!term)items.unshift(select.value);
   active=Math.max(0,items.indexOf(select.value));list.replaceChildren();
   if(!items.length){const empty=document.createElement('div');empty.className='picker-empty';empty.textContent='No matching stations';list.append(empty);return;}
@@ -2061,7 +2065,7 @@ const rrFrenchExact=Object.freeze({
  'Available journeys':'Trajets disponibles','Station information':'Informations sur la gare',
  'Train details':'Détails du train','Journey details':'Détails du trajet',
  'Train information':'Informations sur le train','View route':'Itinéraire',
- 'Find trains':'Rechercher','Reset':'Effacer','From':'Départ','To':'Arrivée',
+ 'Find trains':'Rechercher','Reset':'Effacer','Edit':'Modifier','Edit search':'Modifier la recherche','From':'Départ','To':'Arrivée',
  'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',
  'Time':'Heure','Train':'Train','Destination':'Destination',
  'Origin':'Provenance','Platform':'Voie','Status':'État','Service':'Type de train','Route details':'Détails de la ligne','Route':'Parcours','all stations':'toutes les gares','main stations only':'gares principales uniquement','No more departures today.':'Plus de départs aujourd’hui.','RR Local · 4-car suburban EMU':'RR Banlieue · automotrice de banlieue, 4 voitures','RR Local · two coupled 4-car EMUs':'RR Banlieue · deux automotrices de 4 voitures','Frequent stopping service with wide doors and level boarding.':'Desserte fréquente, portes larges et accès de plain-pied.','Two L4 units at peak times; you cannot walk between the units.':'Deux unités L4 aux heures de pointe ; pas d’intercirculation entre les unités.','Driving cab · multi-purpose area for bicycles, pushchairs and wheelchairs':'Cabine de conduite · espace multifonction pour vélos, poussettes et fauteuils roulants','Priority seats':'Places prioritaires','Level boarding · wheelchair spaces':'Accès de plain-pied · emplacements PMR','Hide earlier stops':'Masquer les arrêts précédents','Out of order':'Hors service','Expected back':'Retour prévu','The lift to the platforms is out of order. Step-free access: ask RR staff for help or use the next station.':'L’ascenseur vers les quais est hors service. Accès de plain-pied : demandez de l’aide au personnel RR ou utilisez la gare suivante.','The escalator is stopped for repairs. Please use the stairs or the lift.':'L’escalier mécanique est arrêté pour réparation. Veuillez utiliser l’escalier ou l’ascenseur.','The accessible toilet is closed for repairs.':'Les toilettes accessibles sont fermées pour réparation.','The toilets are closed for cleaning.':'Les toilettes sont fermées pour nettoyage.','Show earlier stops':'Afficher les arrêts précédents','Help and services':'Aide et services','RR Services':'Services RR','Police':'Police','Mobility assistance':'Assistance PMR','First Class lounge':'Salon Première classe','Lost property':'Objets trouvés','Open 24 hours':'Ouvert 24 h/24','Closed':'Fermé','Daily':'Tous les jours','24 hours':'24 h/24','Mon–Fri':'Lun–ven','Saturday':'Samedi','Sunday':'Dimanche','Tickets, travel advice and help with your journey':'Billets, conseils et aide pour votre voyage','Run by the Federal Police':'Assuré par la Police fédérale','Help getting on and off trains':'Aide à la montée et à la descente des trains','For First Class ticket holders':'Réservé aux titulaires d’un billet de Première classe','Items found on trains and at the station':'Objets trouvés dans les trains et en gare','Food and drinks':'Restauration','Left luggage':'Consigne à bagages','Journey from here':'Trajet depuis cette gare','Journey to here':'Trajet vers cette gare','Choose a station':'Choisissez une gare','Major stations':'Grandes gares','Operator':'Transporteur','Services':'Services','Facilities':'Équipements','Choose a From and a To station.':'Choisissez une gare de départ et une gare d’arrivée.',
@@ -2144,6 +2148,7 @@ function rrFrenchText(source){
  const leading=source.match(/^\s*/)[0], trailing=source.match(/\s*$/)[0];
  let s=source.slice(leading.length,source.length-trailing.length);
  if(Object.prototype.hasOwnProperty.call(rrFrenchExact,s))return leading+rrFrenchExact[s]+trailing;
+ s=s.replace(/([^·:()]+?) \(any station\)/g,(m,c)=>{const k=c.trim()+' (any station)';return (c.match(/^\s*/)[0])+(RR_CITIES.has(k)?rrCityFr(k):c.trim()+' (toutes gares)')});
  if(RR_ALERT_FR.has(s))return leading+RR_ALERT_FR.get(s)+trailing;
  s=s
   .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard +'+n+' min')
@@ -2291,6 +2296,7 @@ function rrSetLanguage(code,persist=false){
  document.documentElement.lang=chosen;
  document.documentElement.dataset.language=chosen;
   rrApplyLocale(chosen);
+ for(const v of pickerViews.values())v.sync();   // the station boxes show the whole-city choice in the chosen language
  rrLanguageToggle.setAttribute('aria-label','Language: '+rrSupportedLanguages[chosen].label);
  rrLanguageMenu.querySelectorAll('[data-language-choice]').forEach(option=>{
    const locale=option.dataset.languageChoice;
