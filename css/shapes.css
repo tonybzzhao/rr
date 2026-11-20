@@ -621,11 +621,14 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 /* Changed time or platform (user 2026-11-20): one line, left to right - the old value struck through, then the new one.
    Only where there is no room does the new value break onto a second line. Every view: boards, train hero, stops,
    journeys, route departures, platform rows. */
-.time-delayed{display:inline-flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;
+.time-delayed{display:inline-flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;
  column-gap:6px!important;row-gap:2px!important;vertical-align:middle}
 .time-delayed .scheduled-time{margin-left:0!important}
 .train-hero .depart-time .time-delayed,.journey-summary-time .journey-arrival .time-delayed,.depart-time .time-delayed,
-.route-dep-plat .time-delayed{justify-content:flex-end}
+.route-dep-plat .time-delayed{justify-content:flex-end!important}
+/* timetable: the time column is too narrow for both, so the new time sits under the old one; its digits line up with the
+   old time and with every other row's time (the box's own padding hangs out to the left) */
+.trainrow .row-time .time-delayed .retime-box{margin-left:-7px}
 .jt-plat .time-delayed{column-gap:4px!important}
 /* calling-at lists with a changed time: the time column makes room for old and new side by side (all rows alike) */
 .stop-list.has-disruptions .stop{grid-template-columns:22px 104px minmax(0,1fr)!important}
@@ -702,25 +705,25 @@ button.train-number.train-route-link:hover{text-decoration:underline}
    display 28  big numbers (journey summary times, formation car)      hero 21  the subject of a details page
    primary 16  the main line of a list row, panel titles               body 14  facts, stops, list text, section titles (bold)
    small 12    labels and secondary notes, status tags                 caption 11  column headings, dates, small actions
-   Two weights only: medium 500 and bold 700. */
+   Two weights only: medium 500 and bold 700. The train formation is a drawing with its own fixed sizes: never part of the tiers. */
 :root{--fs-caption:11px;--fs-small:12px;--fs-body:14px;--fs-primary:16px;--fs-hero:21px;--fs-display:28px;--fw-regular:500;--fw-bold:700}
 .boardhead span,.depart-date{font-size:var(--fs-caption)!important}
-.rr-section-info,.route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span,
+.route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span,
 .service-chip,.depart-label,.destination-label,.rr-card-sub,.jt-service .rr-service-identity>span,
 .details-actions .station-info-button span,.jp-edit span,.eyebrow,.rr-station-fac-text,.stop-fold-btn,.stop-fold-btn span,.jt-calls-toggle,.jt-calls-toggle span,.jt-plat,.jt-plat .pl-short,.jt-plat .pl-long,
 .journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-size:var(--fs-small)!important}
 .journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-weight:var(--fw-regular)!important}
-.rr-section-info,.route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span:not(.jr-time){font-weight:var(--fw-regular)!important}
+.route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span:not(.jr-time){font-weight:var(--fw-regular)!important}
 .status-tag,.status-tag.status-tag{font-size:var(--fs-small)!important;font-weight:var(--fw-regular)!important}
-.rr-fac-item span,.route-dep-dest,.route-stn,.journey-row-meta .change,.journey-row-meta .duration,.journey-summary-sub,.board .journey-more,.keylabel,.stop-name,
-.rr-section-cell,.station-action span,.le-side li,.system-stn-name,.board-tab,.infoval,.infoval .rr-service-identity>span,.station-svc-name,
+.route-dep-dest,.route-stn,.journey-row-meta .change,.journey-row-meta .duration,.journey-summary-sub,.board .journey-more,.keylabel,.stop-name,
+.station-action span,.le-side li,.system-stn-name,.board-tab,.infoval,.infoval .rr-service-identity>span,.station-svc-name,
 .jt-towards span,.rr-alert-text,.route-dep-plat,.route-dep-time .time-primary,.stop-time .time-primary{font-size:var(--fs-body)!important}
-.rr-fac-item span,.rr-alert-text,.route-dep-dest,.route-stn:not(.is-here .route-stn),.journey-row-meta .change,.journey-summary-sub{font-weight:var(--fw-regular)}
-.rr-card-title,.details-body .rr-formation h3,.details .details-body .stops-heading,.rr-selected-role{font-size:var(--fs-body)!important;font-weight:var(--fw-bold)!important}
+.rr-alert-text,.route-dep-dest,.route-stn:not(.is-here .route-stn),.journey-row-meta .change,.journey-summary-sub{font-weight:var(--fw-regular)}
+.rr-card-title,.details-body .rr-formation h3,.details .details-body .stops-heading{font-size:var(--fs-body)!important;font-weight:var(--fw-bold)!important}
 .row-time .time-primary,.trainrow .dest,.board .trainrow .platform,.journey-pair strong,.journey-clock .time-primary,.jt-leg-list .jt-station,
 .details-head .details-heading h2,.line-ends.le-lg .le-side li{font-size:var(--fs-primary)!important}
 .route-hero .route-op,.system-hero .system-name,#stationHeading,.train-hero .depart-time .time-primary,.train-hero .service-dest .station-link,.details-body .train-hero .station-name-band{font-size:var(--fs-hero)!important;font-weight:var(--fw-bold)!important}
-.journey-summary-time strong .time-primary,.rr-selected-main strong,.rr-car .rr-car-number{font-size:var(--fs-display)!important}
+.journey-summary-time strong .time-primary{font-size:var(--fs-display)!important}
 @media(max-width:750px){:root{--fs-hero:19px;--fs-display:24px}}
 
 /* Route details, RX and RS (user's choice): one line; RX stops stand out (big ring, bold name), RS-only stops are a
@@ -740,3 +743,12 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .rp-key>span{display:inline-flex;align-items:center;gap:6px}
 .rp-key-mark{display:inline-block;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--route,var(--ink-soft));background:var(--rr-canvas)}
 .rp-key-mark.rp-key-major{width:13px;height:13px;border-width:3px}
+/* Phone timetable: columns sized to their content (time 52, widest badge 72, platform 42) so destinations get the rest
+   and long single-word names (Yulianshan) are not broken mid-word. */
+@media(max-width:750px){.boardhead,.trainrow{grid-template-columns:52px 72px minmax(0,1fr) 42px!important}}
+/* A changed value (revised time, new platform) looks the same in every view: the new value in dark ink on the light-blue
+   box (user 2026-11-20: the calling-at list still used the old navy, route departures an orange text without the box). */
+.time-delayed .retime-box,.stop-list.has-disruptions .stop-time .retime-box,.route-dep .time-delayed .retime-box{
+ color:var(--ink-strong)!important;background:var(--hover-blue)!important;border:0!important;border-radius:4px!important}
+.route-dep .time-delayed .retime-box{display:inline-flex!important;padding:2px 6px!important;font-size:inherit!important;margin-left:-6px}
+.route-dep .time-delayed{flex-direction:row!important}

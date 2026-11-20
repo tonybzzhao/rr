@@ -4,6 +4,7 @@
    - every station has its own map point on a drawn line;
    - every train / line view (getTrainPath): a connected route along drawn edges, every call on it in order, from its first
      call to its last, no out-and-back spike between calls, nothing drawn over a lake or the sea for more than 2 km (a bridge) except a listed Mainline causeway (GRAPH.causeways);
+   - drawn track: Regio / Local colour (own or shared lane) only where trains of that system run;
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
    - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
    - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
@@ -41,6 +42,13 @@
  for(const t of TRAINS){const key=(t.mp??'x')+'|'+t.route.map(x=>x[0]).join('>');if(seen.has(key))continue;seen.add(key);nt++;
   const r=getTrainPath(t),ends=routeStopPathEnds.get(t.id)||[];checkPath(rrTrainLabel(t)+' '+t.route[0][0]+' - '+t.route.at(-1)[0],r,t.route.map(x=>x[0]),ends,true)}
  out.counts['train routes checked']=nt;
+ // drawn track: a line is drawn in a system's colour (Regio, Local - its own colour or a shared lane) only where trains of that
+ // system run (2026-11-20: Local lanes were drawn on a stretch only Regio trains use)
+ {const key=(a,b)=>a<b?a+'_'+b:b+'_'+a,runs=new Map(),seenP=new Set(),sysOf=t=>t.type==='Regio'?'R':t.type==='Local'?'L':'M';
+  for(const t of TRAINS){const k=t.mp+'|'+sysOf(t);if(seenP.has(k))continue;seenP.add(k);const r=getTrainPath(t);for(let i=1;i<r.length;i++){const k2=key(r[i-1],r[i]);if(!runs.has(k2))runs.set(k2,new Set());runs.get(k2).add(sysOf(t))}}
+  let ne=0;for(const [a,b,t,sh] of E){ne++;const d=((sh?{1:'MR',2:'RL',3:'MRL',4:'ML'}[sh]:'')+({0:'M',1:'M',2:'R',3:'L'}[t]||'')),u=runs.get(key(a,b))||new Set();
+   for(const s of 'RL')if(d.includes(s)&&!u.has(s)){bad('track drawn for a system with no trains on it',(s==='R'?'Regio':'Local')+' at '+P[a]);break}}
+  out.counts['drawn track pieces checked']=ne}
  // journeys
  const names=STATIONS.map(s=>s.name),major=LABELS.filter(n=>S.has(n)),cities=[...RR_CITIES.keys()];
  let seed=20261120;const rnd=()=>(seed=(seed*1103515245+12345)%2147483648)/2147483648,pick=a=>a[Math.floor(rnd()*a.length)];
@@ -94,7 +102,7 @@
  let nb=0,ntx=0;const seenOff=new Set(),off=(k,m)=>{if(!seenOff.has(m)){seenOff.add(m);bad(k,m)}};
  const look=view=>{for(const root of [document.querySelector('.side'),detail,document.querySelector('.details-head')])if(root)for(const e of root.querySelectorAll('*')){if(!e.offsetParent)continue;const cs=getComputedStyle(e);
    if(e.matches('.service,.train-number')){nb++;const k=parseFloat(cs.fontSize)+'/'+Math.round(e.getBoundingClientRect().height);if(!badgeOK.has(k)||cs.fontWeight!=='700')off('badge off the tiers',view+': '+e.textContent.trim()+' '+k+' '+cs.fontWeight);continue}
-   if(e.closest('.service,.train-number,.close-detail,.day-offset,.scheduled-time,.rr-station-fac-chevron')||![...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()))continue;ntx++;
+   if(e.closest('.service,.train-number,.close-detail,.day-offset,.scheduled-time,.rr-station-fac-chevron,.rr-formation')||![...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()))continue;ntx++;
    if(!sizes.has(parseFloat(cs.fontSize))||!['500','700'].includes(cs.fontWeight))off('text off the type tiers',view+': "'+e.textContent.trim().slice(0,24)+'" '+cs.fontSize+'/'+cs.fontWeight+' ('+e.className+')')}};
  const st=LABELS.find(n=>upcoming(n).some(t=>t.type==='Regio')&&upcoming(n).some(t=>t.type==='Local'))||LABELS[0];
  setCurrentStation(st);look('timetable');
