@@ -749,11 +749,10 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 /* A changed value (revised time, new platform) looks the same in every view: the new value in dark ink on the light-blue
    box (user 2026-11-20: the calling-at list still used the old navy, route departures an orange text without the box). */
 .time-delayed .retime-box,.stop-list.has-disruptions .stop-time .retime-box,.route-dep .time-delayed .retime-box{
- color:var(--ink-strong)!important;background:var(--surface)!important;border:0!important;border-radius:4px!important;box-shadow:none!important}
-/* no outline (user 2026-11-20): the box takes the opposite tone to what it sits on - white on the grey cards, light grey on
-   white rows (timetable, journeys, journey legs), white again on the highlighted selected row */
-.trainrow .retime-box,.journey-row .retime-box,.jt-card .retime-box,.jt-leg-list .retime-box{background:var(--rr-canvas)!important}
-.trainrow.selected .retime-box,.trainrow[aria-current] .retime-box,.trainrow.active .retime-box{background:var(--surface)!important}
+ color:var(--ink-strong)!important;background:color-mix(in srgb,var(--ink-strong) 7%,var(--rr-canvas))!important;border:0!important;border-radius:4px!important;box-shadow:none!important}
+/* no outline, one fill everywhere (user 2026-11-20: white on the grey cards was "too high contrast"): a soft step darker
+   than the grey cards (7% of the text colour mixed into them) reads on white rows, grey cards and the selected row without
+   shouting; in dark mode it is a step lighter than the card. */
 /* (was the old blue scheme's hover tint #EDF3FA: the same tone as the grey cards, so the box could not be seen - user
    2026-11-20 "is this base color legacy? shape not legible". White with an outline reads on white rows, grey cards and the
    selected row alike.) */
