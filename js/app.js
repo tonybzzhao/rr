@@ -396,6 +396,7 @@ function drawBoard(){
 function setCurrentStation(name){
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
  updateBoardTabs();
+ const moved=!!name&&name!==currentStation;
  selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;currentStation=name;
  rrSelectValue(stationSelect,name);pickerViews.get('stationSelect')?.sync();
  selectedTrain=null;selectedPath=[];selectedNames=name?[name]:[];manualTrace=false;
@@ -403,6 +404,7 @@ function setCurrentStation(name){
  requestAnimationFrame(resize);
  detail.innerHTML='<div class="empty">Select a train to view details.</div>';
  $('focusRoute').hidden=true;
+ if(moved)rrFocusStation(name);
  drawMap();
 }
 
@@ -577,7 +579,7 @@ function fillRouteInfo(type,net,line,from=currentStation){
   if(pending.length)all.splice(cur+1,0,...pending)}
  const sample=Object.fromEntries(lanes.map(k=>[k,trains.find(t=>keyOf(t)===k)]));
  const span=Object.fromEntries(lanes.map(k=>{const ix=runs[k].map(n=>all.indexOf(n));return [k,[Math.min(...ix),Math.max(...ix)]]}));
- rrDetailsHeading('Route details','rr-ui-route');$('focusRoute').hidden=true;
+ rrDetailsHeading('Route details','rr-ui-route');$('focusRoute').hidden=false;
  let deps='';
  if(all.includes(from)){
   const up=upcoming(from).filter(t=>trains.includes(t)||(t.type===type&&t.network===net&&lanes.includes(keyOf(t))&&(type!=='Regio'||t.line===line))),groups=new Map();
@@ -591,7 +593,7 @@ function fillRouteInfo(type,net,line,from=currentStation){
  const ends=[0,1].map(side=>{const e=[...new Set(lanes.map(k=>side?runs[k][runs[k].length-1]:runs[k][0]))],outer=e.filter(n=>!inner.has(n));return outer.length?outer:e});
  const legend=type==='Regio'&&many?`<div class="route-legend">${lanes.map(k=>`<span>${rrBadge(sample[k])} ${k==='RS'?'all stations':'main stations only'}</span>`).join('')}<span class="route-legend-map"><span class="map-key-rx" aria-hidden="true"></span>RX stop<span class="map-key-rs" aria-hidden="true"></span>RS only</span></div>`
   :'';
- detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${(type==='Regio'?lanes:[lanes[0]]).map(k=>rrBadge(sample[k])).join('')}</div><div class="route-op">${rrServiceLabel(type,net)}</div>${`<div class="route-termini" style="--route:${rrTrainCss(sample[lanes[0]])}" aria-label="Runs between ${ends[0].join(' or ')} and ${ends[1].join(' or ')}">${ends.map(e=>`<div class="route-end"><span class="route-end-dot" aria-hidden="true"></span><span class="route-end-name">${e.map(rrStnLink).join(' · ')}</span></div>`).join('')}</div>`}</div>${deps}<section class="rr-card" style="--route:${rrTrainCss(sample[lanes[0]])}"><h3 class="rr-card-title">Route</h3>${legend}<div class="route-diagram" style="--route:${rrTrainCss(sample[lanes[0]])};--lanes:${lanes.length}">${rows}</div></section>`;
+ detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${(type==='Regio'?lanes:[lanes[0]]).map(k=>rrBadge(sample[k])).join('')}</div><div class="route-op">${rrSystemLink(type,net)}</div>${`<div class="route-termini" style="--route:${rrTrainCss(sample[lanes[0]])}" aria-label="Runs between ${ends[0].join(' or ')} and ${ends[1].join(' or ')}">${ends.map(e=>`<div class="route-end"><span class="route-end-dot" aria-hidden="true"></span><span class="route-end-name">${e.map(rrStnLink).join(' · ')}</span></div>`).join('')}</div>`}</div>${deps}<section class="rr-card" style="--route:${rrTrainCss(sample[lanes[0]])}"><h3 class="rr-card-title">Route</h3>${legend}<div class="route-diagram" style="--route:${rrTrainCss(sample[lanes[0]])};--lanes:${lanes.length}">${rows}</div></section>`;
  detail.querySelectorAll('.route-dep').forEach(b=>b.addEventListener('click',()=>{const row=upcoming(from).find(t=>t.id===b.dataset.train);if(row){setCurrentStation(from);chooseTrain(row)}}));
  detail.querySelectorAll('.route-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
  // the map shows the whole line: every branch, in the line colour; RS-only stops get a small dot, RX stops a ring
@@ -612,7 +614,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
  detail.innerHTML=`${backButton}<div class="train-hero station-hero" data-station="${name}"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
- <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>!s.badges.size?`<div class="station-svc"><div class="station-svc-row"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span></div></div>`:`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
+ <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>s.type==='Local'?`<div class="station-svc station-svc-local"><button type="button" class="station-svc-row rr-system-link" data-system="${s.network}" title="Network details"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>${s.badges.size?`<div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('')}</div>`:''}</div>`:!s.badges.size?`<div class="station-svc"><div class="station-svc-row"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span></div></div>`:`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
  <section class="rr-card"><h3 class="rr-card-title">Facilities</h3>${help.length?`<h4 class="rr-card-sub">Help and services</h4><div class="station-picto-grid">${help.map(f=>rrFacilityTile(f,hours[f])).join('')}</div>`:''}<h4 class="rr-card-sub" data-rr-fr="Standard">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(f=>rrFacilityTile(f,null,fault?.facility===f?fault:null)).join('')}</div>
  ${additional.length?`<h4 class="rr-card-sub" data-rr-fr="Supplémentaires">Additional</h4><div class="station-picto-grid">${additional.map(f=>rrFacilityTile(f,hours[f],fault?.facility===f?fault:null)).join('')}</div>`:''}</section>`;
  rrWireFacilityHours(detail,f=>hours[f],f=>fault?.facility===f?fault:null);
@@ -935,7 +937,7 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-informatio
  // Many passed stops fold between the origin and the stop before this one (same toggle as a journey leg's stops).
  const fold=here>=5?here-2:0;
  const stops=t.route.map(([name,time],i)=>`${fold&&i===1?`<div class="stop travelled stop-fold"><div class="stop-marker"></div><div class="stop-time"></div><button type="button" class="jt-calls-toggle stop-fold-btn" aria-expanded="${rrFoldOpen.has(t.id)}" data-count="${fold}"><span>${rrFoldOpen.has(t.id)?'Hide earlier stops':fold+' earlier stops'}</span><span class="jt-chevron" aria-hidden="true"></span></button></div>`:''}<div class="stop${i===here?' current':''}${i<here?' travelled':''}${fold&&i>=1&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrServiceLabel(t.type,t.network)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div><div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}</div></div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrSystemLink(t.type,t.network)}</dd></div><div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div></dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelector('.train-route-link')?.addEventListener('click',()=>fillRouteInfo(t.type,t.network,t.line,currentStation));
  detail.querySelector('.stop-fold-btn')?.addEventListener('click',e=>{const b=e.currentTarget,open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',open);b.firstElementChild.textContent=open?'Hide earlier stops':b.dataset.count+' earlier stops';open?rrFoldOpen.add(t.id):rrFoldOpen.delete(t.id);b.closest('.stop-list').classList.toggle('show-passed',open)});
@@ -1195,6 +1197,7 @@ function rrTripFocus(){
 }
 function drawMap(){
  if(!W||!H)return;
+ drawLocalColours();
  const focusedStation=document.activeElement?.classList?.contains('mapnode')?document.activeElement.getAttribute('aria-label'):rrPendingMapFocus;
  rrPendingMapFocus=null;
  layer.replaceChildren();labels.replaceChildren();tooltip.style.display='none';
@@ -1383,9 +1386,73 @@ function zoomAt(factor,px=W/2,py=H/2){
  }
  updateWorld();
 }
-function focusRoute(){
- if(!selectedPath.length||!W||!H)return;
- const coords=selectedPath.map(i=>P[i]);
+/* Local networks (user 2026-11-20). The map draws each Local line in its own colour on its real track - lines sharing track
+   run side by side - when the Local filter is on and the map is zoomed in to city level, and on a Local network's page.
+   "RR Local <network>" (train, route and station details) opens that network's page and fits the map to it. */
+const RR_LOCAL_COLOUR_ZOOM=5,RR_UNITS_PER_KM=1.93/0.857;
+let rrLocalEdges=null;
+function rrLocalLetter(t){return t.network==='Havenbolme'?t.line:String(t.line).replace(/\d+/g,'')}   // passengers see the letter only (S-lines are lines of their own)
+function rrLocalNetworkEdges(){   // network -> Map('a_b' (a<b) -> line colours on that track, in letter order)
+ if(rrLocalEdges)return rrLocalEdges;rrLocalEdges=new Map();const seen=new Set();
+ const L=TRAINS.filter(t=>t.type==='Local').sort((a,b)=>String(a.line).localeCompare(String(b.line),undefined,{numeric:true}));
+ for(const t of L){const col=rrMapColor(t),k0=t.network+'|'+t.mp+'|'+col;if(seen.has(k0))continue;seen.add(k0);
+  if(!rrLocalEdges.has(t.network))rrLocalEdges.set(t.network,new Map());const m=rrLocalEdges.get(t.network),r=getTrainPath(t);
+  for(let i=1;i<r.length;i++){const a=Math.min(r[i-1],r[i]),b=Math.max(r[i-1],r[i]);if(a===b)continue;const k=a+'_'+b;if(!m.has(k))m.set(k,[]);if(!m.get(k).includes(col))m.get(k).push(col)}}
+ return rrLocalEdges}
+function rrLocalSystemShown(){return app.classList.contains('detail-open')&&detail.querySelector('.system-hero')?.dataset.system||null}
+function rrLocalSystemPoints(){const net=rrLocalSystemShown(),m=net&&rrLocalNetworkEdges().get(net);return m?[...new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)))]:[]}
+function drawLocalColours(){
+ const g=$('localColours');if(!g)return;
+ const net=rrLocalSystemShown(),all=!net&&viewMode!=='journeys'&&serviceFilter==='local'&&zoom>=RR_LOCAL_COLOUR_ZOOM&&!selectedPath.length;
+ app.classList.toggle('local-colours',!!(net||all));app.classList.toggle('local-system',!!net);
+ const sc=fit*zoom,key=(net||(all?'*':''))+'|'+sc;if(g.dataset.key===key)return;g.dataset.key=key;g.replaceChildren();
+ if(!net&&!all)return;
+ const gap=3.4/sc,byCol=new Map(),f=v=>v.toFixed(2);   // 3.4 px between parallel lines at any zoom
+ for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;
+  for(const [k,cols] of m){const [a,b]=k.split('_').map(Number),[x1,y1]=P[a],[x2,y2]=P[b],L=Math.hypot(x2-x1,y2-y1)||1,nx=-(y2-y1)/L,ny=(x2-x1)/L;
+   cols.forEach((c,i)=>{const o=(i-(cols.length-1)/2)*gap;byCol.set(c,(byCol.get(c)||'')+`M${f(x1+nx*o)} ${f(y1+ny*o)}L${f(x2+nx*o)} ${f(y2+ny*o)}`)})}}
+ for(const [c,d] of byCol)g.append(se('path',{d,class:'local-colour',stroke:c}));
+}
+// Choosing a station brings it into view, close enough to see its neighbours (about 50 km across the map's shorter side);
+// a map already zoomed in further stays at its zoom.
+function rrFocusStation(name){const s=S.get(name);if(!s||!W||!H)return;
+ zoom=Math.max(1,Math.min(28,Math.max(zoom,Math.min(W,H)/(50*RR_UNITS_PER_KM)/fit)));const sc=fit*zoom;
+ panX=W/2-s.x*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.y*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()}
+function rrSystemLink(type,net){return type==='Local'&&net?`<button type="button" class="rr-system-link" data-system="${net}" title="Network details">${rrServiceLabel(type,net)}</button>`:rrServiceLabel(type,net)}
+/* Local network page: what the network is (lines, stations, where it meets Mainline and Regio trains), each line with
+   its ends (the letter only, as on the trains), the stations to change at, and when trains run. */
+function fillLocalSystem(net,from=currentStation){
+ const trains=TRAINS.filter(t=>t.type==='Local'&&t.network===net);if(!trains.length)return;
+ const letters=new Map();for(const t of trains){const k=rrLocalLetter(t);if(!letters.has(k))letters.set(k,[]);letters.get(k).push(t)}
+ const order=[...letters.keys()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+ const stations=new Set(trains.flatMap(t=>t.route.map(r=>r[0])));
+ const lettersAt=new Map();for(const [k,ts] of letters)for(const t of ts)for(const [n] of t.route){if(!lettersAt.has(n))lettersAt.set(n,new Set());lettersAt.get(n).add(k)}
+ const lines=order.map(k=>{const ts=letters.get(k),branches=[...new Set(ts.map(t=>t.line))];
+  const runs=branches.map(b=>ts.filter(t=>t.line===b&&t.dir===1).sort((x,y)=>y.route.length-x.route.length)[0]||ts.find(t=>t.line===b)).map(t=>t.route.map(r=>r[0]));
+  // ends as on the route page: every branch faces the longest one's way; a branch ending part-way along another is not an end
+  runs.sort((x,y)=>y.length-x.length);for(let i=1;i<runs.length;i++){const ix=runs[i].map(n=>runs[0].indexOf(n)).filter(j=>j>=0);if(ix.length>1&&ix[0]>ix.at(-1))runs[i]=[...runs[i]].reverse()}
+  const inner=new Set(runs.flatMap(r=>r.slice(1,-1))),side=f=>{const e=[...new Set(runs.map(f))],o=e.filter(n=>!inner.has(n));return o.length?o:e};
+  const a=side(r=>r[0]),z=side(r=>r.at(-1)),n=new Set(runs.flat()).size;
+  return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span><span class="system-line-ends">${a.join(' / ')} – ${z.join(' / ')}</span><span class="system-line-n"><span>${n}</span> <span>stations</span></span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}).join('');
+ const inter=[...stations].filter(n=>/[MR]/.test(S.get(n)?.sys||'')).sort((a,b)=>(LABELS.includes(b)-LABELS.includes(a))||(lettersAt.get(b).size-lettersAt.get(a).size)||a.localeCompare(b));
+ const sample=k=>letters.get(k)[0];
+ const interRows=inter.slice(0,10).map(n=>`<button type="button" class="system-stn" data-station="${n}"><span class="system-stn-name">${n}</span><span class="system-stn-lines">${[...lettersAt.get(n)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>rrBadge(sample(k))).join('')}</span></button>`).join('');
+ const firsts=trains.map(t=>t.route[0][1]).sort((a,b)=>timeOrdinal(a)-timeOrdinal(b));
+ rrDetailsHeading('Network details','rr-ui-route');$('focusRoute').hidden=false;
+ detail.innerHTML=`<div class="train-hero system-hero" data-system="${net}"><div class="system-name">${rrServiceLabel('Local',net)}</div><div class="system-stats"><div><strong>${order.length}</strong><span>lines</span></div><div><strong>${stations.size}</strong><span>stations</span></div><div><strong>${inter.length}</strong><span>interchanges</span></div></div></div>
+ <section class="rr-card"><h3 class="rr-card-title">Lines</h3><div class="system-lines">${lines}</div></section>
+ ${inter.length?`<section class="rr-card"><h3 class="rr-card-title">Change for Mainline and Regio</h3><div class="system-stns">${interRows}</div>${inter.length>10?`<div class="station-svc-foot"><span>${inter.length-10}</span> <span>more interchanges</span></div>`:''}</section>`:''}
+ <section class="rr-card"><h3 class="rr-card-title">Service hours</h3><dl class="info-grid"><div class="fact-row"><dt class="keylabel">First train</dt><dd class="infoval">${firsts[0]}</dd></div><div class="fact-row"><dt class="keylabel">Last train</dt><dd class="infoval">${firsts.at(-1)}</dd></div></dl></section>`;
+ detail.querySelectorAll('.system-line').forEach(b=>b.addEventListener('click',()=>fillRouteInfo('Local',net,b.dataset.line,from)));
+ detail.querySelectorAll('.system-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
+ selectedJourney=null;selectedLegPaths=[];selectedTrain=null;selectedRouteLine=null;selectedPath=[];selectedNames=from&&stations.has(from)?[from]:[];manualTrace=false;rrRouteMinor=new Set();
+ routeWorld.replaceChildren();drawBoard();
+ detail.scrollTop=0;app.classList.add('detail-open');drawMap();requestAnimationFrame(()=>{resize();focusRoute()});rrSyncHash();
+}
+detail.addEventListener('click',e=>{const b=e.target.closest('.rr-system-link');if(b){e.preventDefault();fillLocalSystem(b.dataset.system)}});
+function focusRoute(ids=selectedPath.length?selectedPath:rrLocalSystemPoints()){
+ if(!ids.length||!W||!H)return;
+ const coords=ids.map(i=>P[i]);
  const left=Math.min(...coords.map(p=>p[0])),right=Math.max(...coords.map(p=>p[0]));
  const top=Math.min(...coords.map(p=>p[1])),bottom=Math.max(...coords.map(p=>p[1]));
  // geographic map: a city trip is only a few km across, so fit it closely (the side panels' margin is in pixels)
@@ -1784,7 +1851,10 @@ function chooseJourney(j){
  requestAnimationFrame(()=>{resize();focusRoute()});
 }
 function rrPlatformAt(t,station){return t.platforms?.[station]||t.plat||''}
-function rrPlatformMarkup(p,old=''){return p?`<span class="jt-plat${old?' rr-plat-changed':''}" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}><span class="pl-long">Platform ${p}</span><span class="pl-short" aria-hidden="true">Pl. ${p}</span></span>`:'<span class="jt-plat"></span>'}
+function rrPlatformMarkup(p,old=''){if(!p)return '<span class="jt-plat"></span>';
+ // a changed platform reads like a changed time: the old value struck through, then the new one
+ const v=old?`<span class="time-delayed rr-plat-delayed" aria-hidden="true"><span class="scheduled-time">${old}</span> <span class="retime-box">${p}</span></span>`:p;
+ return `<span class="jt-plat" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}><span class="pl-long" aria-hidden="true">Platform ${v}</span><span class="pl-short" aria-hidden="true">Pl. ${v}</span></span>`}
 function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
  return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
@@ -2045,7 +2115,7 @@ const rrFrenchExact=Object.freeze({
  'Two RX4D units in multiple at busy times.':'Deux unités RX4D en unités multiples aux heures chargées.',
  'Departures':'Départs','Arrivals':'Arrivées','Journeys':'Trajets',
  'Available journeys':'Trajets disponibles','Station information':'Informations sur la gare',
- 'Train details':'Détails du train','Journey details':'Détails du trajet',
+ 'Train details':'Détails du train','Network details':'Détails du réseau','Lines':'Lignes','lines':'lignes','stations':'gares','interchanges':'correspondances','more interchanges':'autres correspondances','Change for Mainline and Regio':'Correspondances Magistrale et Regio','Service hours':'Horaires de service','First train':'Premier train','Last train':'Dernier train','Journey details':'Détails du trajet',
  'Train information':'Informations sur le train','View route':'Itinéraire',
  'Find trains':'Rechercher','Reset':'Effacer','Edit':'Modifier','Edit search':'Modifier la recherche','From':'Départ','To':'Arrivée',
  'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',
@@ -2328,6 +2398,8 @@ function rrStateHash(){
   if(selectedJourney)h+='/'+e(selectedJourney.key);
   return h;
  }
+ const sys=app.classList.contains('detail-open')&&detail.querySelector('.system-hero')?.dataset.system;
+ if(sys)return `#local/${e(sys)}${currentStation?'/'+e(currentStation):''}`;
  const route=app.classList.contains('detail-open')&&detail.querySelector('.route-hero')?.dataset.route;
  if(route){const [ty,nt,ln]=route.split('|');return `#route/${e(ty)}/${e(nt)}/${e(ln)}${currentStation?'/'+e(currentStation):''}`}
  const info=app.classList.contains('detail-open')&&detail.querySelector('.station-hero')?.dataset.station;
@@ -2348,6 +2420,7 @@ function rrApplyHash(){
  try{
   if((kind==='departures'||kind==='arrivals')&&S.has(a)){viewMode=kind;setCurrentStation(a)}
   else if(kind==='route'&&a&&b&&c){if(d&&S.has(d)){viewMode='departures';setCurrentStation(d)}fillRouteInfo(a,b,c,d||currentStation)}
+  else if(kind==='local'&&TRAINS.some(t=>t.type==='Local'&&t.network===a)){if(b&&S.has(b)){viewMode='departures';setCurrentStation(b)}fillLocalSystem(a,b||currentStation)}
   else if(kind==='station'&&S.has(a)){viewMode='departures';setCurrentStation(a);fillStationInfo(a)}
   else if(kind==='train'){
    const t=TRAINS.find(x=>x.id===a);
