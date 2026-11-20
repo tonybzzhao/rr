@@ -1330,7 +1330,7 @@ body{font-size:14px}
 .journey-leg-heading .rr-service-identity,
 .journey-leg-heading .rr-service-identity > span,
 .journey-leg-heading .status-tag,
-.journey-row-meta .service {font-weight:500!important}
+/* (journey-row badge weight now comes from the badge tiers) */
 
 /* v51: slightly relax character spacing only in the right details panel.
    Keep the mobile and desktop time hierarchy, tabular numerals, and
@@ -1893,7 +1893,7 @@ body{font-size:14px}
 }
 /* End v68 full-width copyright footer. */
 
-/* IC: 1px timetable outline and 3px train-detail outline. No light
+/* Outlined badges (IC, RS): the outline is as heavy as the bold letters' strokes at every size (.125em). No light
    background fill in dark mode; use the actual dark panel surface and the
    closest accessible Mainline-blue shade for text and borders. */
 .service.rr-ic-outline,
@@ -1902,10 +1902,10 @@ body{font-size:14px}
   color:var(--service-color)!important;
 }
 .service.rr-ic-outline{
-  box-shadow:inset 0 0 0 1.5px var(--service-color);
+  box-shadow:inset 0 0 0 .125em var(--service-color);
 }
 .train-number.rr-ic-outline{
-  box-shadow:inset 0 0 0 3px var(--service-color);
+  box-shadow:inset 0 0 0 .125em var(--service-color);
 }
 :root[data-theme="dark"] .service.rr-ic-outline,
 :root[data-theme="dark"] .train-number.rr-ic-outline{
@@ -1913,10 +1913,10 @@ body{font-size:14px}
   color:var(--service-color,var(--main))!important;
 }
 :root[data-theme="dark"] .service.rr-ic-outline{
-  box-shadow:inset 0 0 0 1.5px var(--service-color,var(--main));
+  box-shadow:inset 0 0 0 .125em var(--service-color,var(--main));
 }
 :root[data-theme="dark"] .train-number.rr-ic-outline{
-  box-shadow:inset 0 0 0 3px var(--service-color,var(--main));
+  box-shadow:inset 0 0 0 .125em var(--service-color,var(--main));
 }
 
 /* Exception to the one-colour-per-system theme rule: when white text sits

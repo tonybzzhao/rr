@@ -450,7 +450,7 @@ body,.app{background:var(--rr-canvas)}
 .station-svc-meta{font-size:12px;color:var(--muted-slate);white-space:nowrap}
 .station-svc-lines{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 14px}
 .station-svc-foot{padding-top:12px;border-top:1px solid var(--stroke-soft);font-size:12px;color:var(--muted-slate)}
-.rr-network{font-weight:500;color:var(--muted-slate)}
+.rr-network{font-weight:inherit;color:inherit}   /* the network is part of the operator's name: same colour and weight (user 2026-11-20) */
 
 /* Home (no station chosen): no station-only controls; a card listing the major stations */
 .app.no-station #stationInfoLeft,.app.no-station .service-filter,.app.no-station .boardhead{display:none!important}
@@ -617,3 +617,126 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .station-picto-grid .facility.has-hours{padding:0!important;margin:0;border:0;background:none;font:inherit;line-height:inherit;vertical-align:top}
 .station-picto-grid{align-items:start}
 .station-picto-grid .facility svg{width:29px!important;height:29px!important;flex:none}
+
+/* Changed time or platform (user 2026-11-20): one line, left to right - the old value struck through, then the new one.
+   Only where there is no room does the new value break onto a second line. Every view: boards, train hero, stops,
+   journeys, route departures, platform rows. */
+.time-delayed{display:inline-flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;
+ column-gap:6px!important;row-gap:2px!important;vertical-align:middle}
+.time-delayed .scheduled-time{margin-left:0!important}
+.train-hero .depart-time .time-delayed,.journey-summary-time .journey-arrival .time-delayed,.depart-time .time-delayed,
+.route-dep-plat .time-delayed{justify-content:flex-end}
+.jt-plat .time-delayed{column-gap:4px!important}
+/* calling-at lists with a changed time: the time column makes room for old and new side by side (all rows alike) */
+.stop-list.has-disruptions .stop{grid-template-columns:22px 104px minmax(0,1fr)!important}
+
+/* Local networks in their line colours (Local filter zoomed in; a Local network's page). */
+.local-colour{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.app.local-colours .rail.local{opacity:.35!important}
+.app.local-system .rail:not(.local){opacity:.22}
+.app.trip-focus #localColours{display:none}
+/* "RR Local <network>" opens the network's page */
+.rr-system-link{all:unset;cursor:pointer;display:inline-flex;align-items:center;border-radius:4px}
+.rr-system-link:hover .rr-service-identity>span,.rr-system-link:focus-visible .rr-service-identity>span{text-decoration:underline;text-underline-offset:3px}
+.rr-system-link:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.station-svc-local>.rr-system-link.station-svc-row{display:grid;grid-template-columns:minmax(0,1fr) 14px;width:100%;box-sizing:border-box;min-height:44px}
+.station-svc-local>.station-svc-row .rr-arrow-icon{width:14px;height:14px;fill:currentColor;color:var(--ink-soft);justify-self:end}
+/* Local network page */
+.system-line,.system-stn{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;align-items:center;column-gap:10px;min-height:48px;padding:8px 2px;border-top:1px solid var(--stroke-soft)}
+.system-line:first-child,.system-stn:first-child{border-top:0}
+.system-line{grid-template-columns:auto minmax(0,1fr) 14px;column-gap:8px}
+.system-line .rr-arrow-icon{width:14px;height:14px;fill:currentColor;color:var(--ink-soft)}
+.system-stn{grid-template-columns:minmax(0,1fr) auto}
+.system-stn-name{font-size:13px;font-weight:500;color:var(--ink-strong)}
+.system-stn-lines{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.system-line:hover,.system-stn:hover{background:var(--hover)}
+.system-line:focus-visible,.system-stn:focus-visible{outline:2px solid var(--ui);outline-offset:-2px}
+/* A line's ends, RER style: each side's ends stacked, their branches fork into the line (rrLineEnds). */
+.line-ends{display:grid;grid-template-columns:minmax(min-content,1fr) 14px minmax(min-content,1fr);align-items:center;min-width:0}
+.le-side{list-style:none;margin:0;padding:0;min-width:0}
+.le-side li{position:relative;padding:3px 0;font-size:13px;font-weight:500;line-height:1.25;color:var(--ink-strong)}
+.le-a li{text-align:right;padding-right:13px}
+.le-z li{text-align:left;padding-left:13px}
+.le-side li::before,.le-side li::after{content:"";position:absolute;width:9px;box-sizing:border-box;border:0 solid var(--le)}
+.le-a li::before,.le-a li::after{right:0}
+.le-z li::before,.le-z li::after{left:0}
+.le-side li:only-child::before{top:50%;height:3px;margin-top:-1.5px;border-top-width:3px}
+.le-side li:first-child:not(:only-child)::before{top:50%;bottom:0;margin-top:-1.5px;border-top-width:3px}
+.le-side li:last-child:not(:only-child)::before{top:0;height:50%;margin-bottom:-1.5px;height:calc(50% + 1.5px);border-bottom-width:3px}
+.le-side li:not(:first-child):not(:last-child)::before{top:0;bottom:0}
+.le-side li:not(:first-child):not(:last-child)::after{top:50%;height:3px;margin-top:-1.5px;border-top-width:3px}
+.le-a li:not(:only-child)::before{border-right-width:3px}
+.le-z li:not(:only-child)::before{border-left-width:3px}
+.le-a li:first-child:not(:only-child)::before{border-top-right-radius:8px}
+.le-a li:last-child:not(:only-child)::before{border-bottom-right-radius:8px}
+.le-z li:first-child:not(:only-child)::before{border-top-left-radius:8px}
+.le-z li:last-child:not(:only-child)::before{border-bottom-left-radius:8px}
+.le-trunk{height:3px;background:var(--le)}
+.line-ends.le-lg{margin-top:10px}
+.line-ends.le-lg .le-side li{font-size:15px;font-weight:700;padding-top:4px;padding-bottom:4px}
+.line-ends.le-lg .station-link{font:inherit;color:inherit;text-align:inherit}
+/* Route and network details: the line badge and the network name lead the page, at the train details' badge size. */
+.route-hero .route-badges{gap:8px;margin-bottom:12px}
+.route-hero .route-op,.system-hero .system-name{font-size:20px;line-height:1.25;font-weight:700;color:var(--ink-strong);margin:0}
+.route-hero .route-op .rr-service-logo,.system-hero .system-name .rr-service-logo{height:.62em;width:1.34em;flex:0 0 1.34em}
+.route-hero .route-op .rr-system-link{font-size:inherit}
+@media(max-width:750px){.route-hero .route-op,.system-hero .system-name{font-size:18px}}
+
+/* ===== Badge tiers (site-wide; user 2026-11-20: one presentation of badges everywhere) =====
+   S  every list: timetable, departures, journeys and journey legs, calling-at, station services, network pages
+   L  the top of train details and route details
+   Same weight (bold), same corner, same outline weight relative to the letters (.125em) in every tier;
+   squares (single-letter Local lines) are as wide as they are tall. These rules come last and win over older per-view sizes. */
+:root{--badge-s-fs:12px;--badge-s-h:22px;--badge-s-px:6px;--badge-l-fs:20px;--badge-l-h:40px;--badge-l-px:11px;--badge-outline:.125em}
+@media(max-width:750px){:root{--badge-l-fs:18px;--badge-l-h:36px;--badge-l-px:10px}}
+.service.service,.train-number.train-number{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
+ font-weight:700!important;line-height:1!important;letter-spacing:0!important;white-space:nowrap!important;min-height:0!important;max-width:none!important}
+.service.service{font-size:var(--badge-s-fs)!important;height:var(--badge-s-h)!important;padding:0 var(--badge-s-px)!important}
+.train-number.train-number,.route-hero .route-badges .service.service{font-size:var(--badge-l-fs)!important;height:var(--badge-l-h)!important;padding:0 var(--badge-l-px)!important}
+.service.service-square{width:var(--badge-s-h)!important;padding:0!important;aspect-ratio:1/1}
+.train-number.service-square,.route-hero .route-badges .service.service-square{width:var(--badge-l-h)!important;padding:0!important;aspect-ratio:1/1}
+.service.rr-ic-outline,.train-number.rr-ic-outline,
+:root[data-theme="dark"] .service.rr-ic-outline,:root[data-theme="dark"] .train-number.rr-ic-outline{box-shadow:inset 0 0 0 var(--badge-outline) var(--service-color,var(--main))!important}
+
+/* ===== Type tiers (site-wide; user 2026-11-20: tiers of font size and weight, no one-off sizes) =====
+   display 28  big numbers (journey summary times, formation car)      hero 21  the subject of a details page
+   primary 16  the main line of a list row, panel titles               body 14  facts, stops, list text, section titles (bold)
+   small 12    labels and secondary notes, status tags                 caption 11  column headings, dates, small actions
+   Two weights only: medium 500 and bold 700. */
+:root{--fs-caption:11px;--fs-small:12px;--fs-body:14px;--fs-primary:16px;--fs-hero:21px;--fs-display:28px;--fw-regular:500;--fw-bold:700}
+.boardhead span,.depart-date{font-size:var(--fs-caption)!important}
+.rr-section-info,.route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span,
+.service-chip,.depart-label,.destination-label,.rr-card-sub,.jt-service .rr-service-identity>span,
+.details-actions .station-info-button span,.jp-edit span,.eyebrow,.rr-station-fac-text,.stop-fold-btn,.stop-fold-btn span,.jt-calls-toggle,.jt-calls-toggle span,.jt-plat,.jt-plat .pl-short,.jt-plat .pl-long,
+.journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-size:var(--fs-small)!important}
+.journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-weight:var(--fw-regular)!important}
+.rr-section-info,.route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span:not(.jr-time){font-weight:var(--fw-regular)!important}
+.status-tag,.status-tag.status-tag{font-size:var(--fs-small)!important;font-weight:var(--fw-regular)!important}
+.rr-fac-item span,.route-dep-dest,.route-stn,.journey-row-meta .change,.journey-row-meta .duration,.journey-summary-sub,.board .journey-more,.keylabel,.stop-name,
+.rr-section-cell,.station-action span,.le-side li,.system-stn-name,.board-tab,.infoval,.infoval .rr-service-identity>span,.station-svc-name,
+.jt-towards span,.rr-alert-text,.route-dep-plat,.route-dep-time .time-primary,.stop-time .time-primary{font-size:var(--fs-body)!important}
+.rr-fac-item span,.rr-alert-text,.route-dep-dest,.route-stn:not(.is-here .route-stn),.journey-row-meta .change,.journey-summary-sub{font-weight:var(--fw-regular)}
+.rr-card-title,.details-body .rr-formation h3,.details .details-body .stops-heading,.rr-selected-role{font-size:var(--fs-body)!important;font-weight:var(--fw-bold)!important}
+.row-time .time-primary,.trainrow .dest,.board .trainrow .platform,.journey-pair strong,.journey-clock .time-primary,.jt-leg-list .jt-station,
+.details-head .details-heading h2,.line-ends.le-lg .le-side li{font-size:var(--fs-primary)!important}
+.route-hero .route-op,.system-hero .system-name,#stationHeading,.train-hero .depart-time .time-primary,.train-hero .service-dest .station-link,.details-body .train-hero .station-name-band{font-size:var(--fs-hero)!important;font-weight:var(--fw-bold)!important}
+.journey-summary-time strong .time-primary,.rr-selected-main strong,.rr-car .rr-car-number{font-size:var(--fs-display)!important}
+@media(max-width:750px){:root{--fs-hero:19px;--fs-display:24px}}
+
+/* Route details, RX and RS (user's choice): one line; RX stops stand out (big ring, bold name), RS-only stops are a
+   small dot with a plain name - the same marks as the map. */
+.route-pattern{display:grid}
+.rp-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;column-gap:8px;min-height:30px}
+.rp-row.rp-major{min-height:36px}
+.rp-line{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
+.rp-line::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--route)}
+.rp-row.is-first .rp-line::before{top:50%}.rp-row.is-last .rp-line::before{bottom:50%}
+.rp-line::after{content:"";position:relative;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--route);background:var(--rr-canvas)}
+.rp-row.rp-major .rp-line::after{width:15px;height:15px;border-width:3px}
+.rp-row.is-here .rp-line::after{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
+.rp-row .route-stn{padding:4px 0}
+.rp-row.rp-major .route-stn,.rp-row.is-here .route-stn{font-weight:var(--fw-bold)!important}
+.rp-key{display:flex;gap:6px 16px;margin:-4px 0 10px}
+.rp-key>span{display:inline-flex;align-items:center;gap:6px}
+.rp-key-mark{display:inline-block;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--route,var(--ink-soft));background:var(--rr-canvas)}
+.rp-key-mark.rp-key-major{width:13px;height:13px;border-width:3px}
