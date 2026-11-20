@@ -1048,7 +1048,17 @@ function clampPan(){
  panY=Math.min(maxY,Math.max(-maxY,panY));
  if(zoom<=1.000001){panX=0;panY=0;}
 }
-function updateWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap();$('zoomOut').disabled=zoom<=1.000001;}
+/* Moving the map (user 2026-11-20: panning got slow, slower on phones). Every pointer / touch event used to redraw the whole
+   map (all station marks, the name-placement search, a layout read) - several times a frame. Now a gesture only moves the
+   map: the world is re-placed and the drawn marks and names are shifted (and scaled while zooming) with one transform; the
+   full redraw runs once the gesture pauses (or once a frame for the wheel and buttons). */
+let rrDrawnAt={x:0,y:0,sc:1},rrRedrawTimer=0,rrRedrawFrame=0;
+function rrPlaceWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);
+ const k=sc/rrDrawnAt.sc,t=Math.abs(k-1)<1e-9&&offX===rrDrawnAt.x&&offY===rrDrawnAt.y?'':`translate(${offX} ${offY}) scale(${k}) translate(${-rrDrawnAt.x} ${-rrDrawnAt.y})`;
+ layer.setAttribute('transform',t);labels.setAttribute('transform',t);tooltip.style.display='none';$('zoomOut').disabled=zoom<=1.000001}
+function rrRedraw(){clearTimeout(rrRedrawTimer);cancelAnimationFrame(rrRedrawFrame);rrRedrawTimer=rrRedrawFrame=0;const sc=fit*zoom;if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap()}
+function rrRedrawSoon(pause=0){clearTimeout(rrRedrawTimer);if(pause)rrRedrawTimer=setTimeout(rrRedraw,pause);else if(!rrRedrawFrame)rrRedrawFrame=requestAnimationFrame(rrRedraw)}
+function updateWorld(){rrPlaceWorld();rrRedraw()}
 // Point and segment collision checks in screen pixels.
 const ctx=document.createElement('canvas').getContext('2d');
 function rectOverlap(a,b,g=5){return a.x-g<b.x+b.w && a.x+a.w+g>b.x && a.y-g<b.y+b.h && a.y+a.h+g>b.y}
@@ -1203,6 +1213,7 @@ function rrTripFocus(){
 }
 function drawMap(){
  if(!W||!H)return;
+ rrDrawnAt={x:offX,y:offY,sc:fit*zoom};layer.removeAttribute('transform');labels.removeAttribute('transform');
  drawLocalColours();
  const focusedStation=document.activeElement?.classList?.contains('mapnode')?document.activeElement.getAttribute('aria-label'):rrPendingMapFocus;
  rrPendingMapFocus=null;
@@ -1392,7 +1403,7 @@ function drawMap(){
   labels.append(group);
  }
 }
-function zoomAt(factor,px=W/2,py=H/2){
+function zoomAt(factor,px=W/2,py=H/2,pause=0){
  const old=zoom,next=Math.max(1,Math.min(28,old*factor)); // deep zoom for dense Regio areas
  if(Math.abs(old-next)<0.000001)return;
  // Preserve the point beneath the cursor, but keep the fitted map centred on zoom-out.
@@ -1405,7 +1416,7 @@ function zoomAt(factor,px=W/2,py=H/2){
   const defaultY=(H-graphHeight*ns)/2-minY*ns;
   panX=px-wx*ns-defaultX;panY=py-wy*ns-defaultY;
  }
- updateWorld();
+ rrPlaceWorld();rrRedrawSoon(pause);
 }
 /* Local networks (user 2026-11-20). The map draws each Local line in its own colour on its real track - lines sharing track
    run side by side - when the Local filter is on and the map is zoomed in to city level, and on a Local network's page.
@@ -1537,11 +1548,12 @@ map.addEventListener('pointermove',e=>{
   moved=true;map.classList.add('drag');
   try{map.setPointerCapture(e.pointerId)}catch(_){}
  }
- if(moved){e.preventDefault();panX+=dx;panY+=dy;updateWorld()}
+ if(moved){e.preventDefault();panX+=dx;panY+=dy;rrPlaceWorld();rrRedrawSoon(120)}
  lastX=e.clientX;lastY=e.clientY;
 });
 function finishPan(e){
  if(e.pointerId!==activePointer)return;
+ if(moved)rrRedraw();
  dragging=false;activePointer=null;map.classList.remove('drag');
  if(map.hasPointerCapture(e.pointerId))try{map.releasePointerCapture(e.pointerId)}catch(_){}
 }
@@ -1569,16 +1581,16 @@ map.addEventListener('touchmove',e=>{
  const rect=map.getBoundingClientRect();
  // Zoom at the previous midpoint, then follow the new two-finger midpoint.
  zoomAt(next.distance/touchGesture.distance,
-  touchGesture.x-rect.left,touchGesture.y-rect.top);
+  touchGesture.x-rect.left,touchGesture.y-rect.top,120);
  panX+=next.x-touchGesture.x;
  panY+=next.y-touchGesture.y;
- updateWorld();
+ rrPlaceWorld();rrRedrawSoon(120);
  touchGesture=next;
  blockGestureClickUntil=Date.now()+900;
 },{passive:false});
 function endTouchGesture(e){
  if(e.touches.length>=2)touchGesture=gesturePoint(e.touches);
- else if(touchGesture){touchGesture=null;blockGestureClickUntil=Date.now()+900}
+ else if(touchGesture){touchGesture=null;blockGestureClickUntil=Date.now()+900;rrRedraw()}
 }
 map.addEventListener('touchend',endTouchGesture,{passive:true});
 map.addEventListener('touchcancel',endTouchGesture,{passive:true});
