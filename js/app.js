@@ -1615,28 +1615,26 @@ function timeMarkup(s){
 function delayMinutes(status){const m=String(status||'').match(/Expected\s*\+(\d+)\s*min/i);return m?+m[1]:0}
 // Existing calls keep their original delay; newly introduced major calls
 // have interpolated delays. Only inserted stops have a third field (1).
-function stopDelay(t,index){
- const base=delayMinutes(t.status);
- if(!base)return 0;
- const added=[];
- for(let i=0;i<t.route.length;i++)if(t.route[i][2]===1)added.push(i);
- const n=t.route.length-added.length,originalIndex=index-added.filter(i=>i<index).length;
- const serial=Number((t.id.match(/\d+/)||['0'])[0]);
- function originalDelay(i){
-  if(i<=0||n<=1)return base;
-  if(i>=n-1)return 0;
-  const progress=i/(n-1),change=((serial+i*7)%5)-2;
-  return Math.max(0,Math.min(base+2,Math.round(base*(1-.65*progress))+change));
+/* A delayed train's delay stop by stop (user 2026-11-20: "time travel 55-53?" - the delay was cut on a fixed schedule and
+   forced to zero at the terminus, so a revised time could fall before the stop before it). Walked along the route: the
+   train makes up at most a fifth of each section's scheduled running time, so it never reaches a stop earlier than it left
+   the one before; the delay eases off towards the end and wobbles by a minute or two, as in real running. */
+const rrDelayCache=new Map();
+function stopDelays(t){
+ const base=delayMinutes(t.status),key=t.id+'|'+base;
+ if(rrDelayCache.has(key))return rrDelayCache.get(key);
+ const n=t.route.length,out=new Array(n).fill(0);
+ if(base>0){
+  const serial=Number((t.id.match(/\d+/)||['0'])[0]);out[0]=base;
+  for(let i=1;i<n;i++){
+   const run=Math.max(0,timeOrdinal(t.route[i][1])-timeOrdinal(t.route[i-1][1]));
+   const target=Math.max(0,Math.min(base+2,Math.round(base*(1-.65*i/Math.max(1,n-1)))+((serial+i*7)%5)-2));
+   out[i]=Math.max(target,out[i-1]-Math.floor(run*.2),0);
+  }
  }
- if(t.route[index][2]!==1)return originalDelay(originalIndex);
- let prev=index-1,next=index+1;
- while(prev>=0&&t.route[prev][2]===1)prev--;
- while(next<t.route.length&&t.route[next][2]===1)next++;
- if(prev<0||next>=t.route.length)return originalDelay(originalIndex);
- const from=timeOrdinal(t.route[prev][1]),to=timeOrdinal(t.route[next][1]);
- const fraction=(timeOrdinal(t.route[index][1])-from)/Math.max(1,to-from);
- return Math.round(originalDelay(originalIndex-1)*(1-fraction)+originalDelay(originalIndex)*fraction);
+ rrDelayCache.set(key,out);return out;
 }
+function stopDelay(t,index){return stopDelays(t)[index]||0}
 function stopOrdinal(t,index){return timeOrdinal(t.route[index][1])+stopDelay(t,index)}
 function stopStatus(t,index){
  if(!delayMinutes(t.status))return t.status;
