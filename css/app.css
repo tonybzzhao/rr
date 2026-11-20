@@ -32,7 +32,7 @@
  --shadow:#001F5A18;--focus-ring:#0057B815;
  /* Status colours are semantic, separate from train categories. */
  --status-on-time:#1E7E34;--status-expected:#B25000;--status-cancelled:#C4281C;
- --status-on-time-bg:#E6F4EA;--status-expected-bg:#FFF4E5;--status-cancelled-bg:#FDECEA;
+ --status-on-time-bg:#E6F4EA;--status-expected-bg:#FFF4E5;--status-cancelled-bg:#FDECEA;--status-info:#2F5D8A;--status-info-bg:#EAF1F8;
  --station-blue:var(--main-deep);--head:70px;
 }
 *{box-sizing:border-box}
@@ -1398,7 +1398,7 @@ body{font-size:14px}
  --shadow:#00000066;--focus-ring:#8ABDF74A;
  --passed:#4F5B6A;--rail-local:#7C3F42;--rail-local-strong:#E58585;--rail-local-faded:#3A2A2D;--travel-local:#F49A9A;--passed-ink:#7D8A9B;--rail-faded:#26313D;--rail-regio-faded:#233434;--hub-faded:#465160;--rr-tray:#0E1319;--rail:#56728D;--rail-strong:#8FB3D6;--rail-regio:#4B7F7A;--rail-regio-strong:#7FB5AE;--station-blue:#244E86;
  --status-on-time:#91D9A3;--status-expected:#FFCC8C;--status-cancelled:#FF9E95;
- --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;
+ --status-on-time-bg:#193B2C;--status-expected-bg:#43311D;--status-cancelled-bg:#432723;--status-info:#9CC2EA;--status-info-bg:#1E2F42;
 }
 :root[data-theme="dark"] .rr-service-logo{
  color:var(--rr-service-aa-color,var(--rr-service-identity-color));
@@ -2252,7 +2252,8 @@ body{font-size:14px}
 .rr-alert-flag{flex:0 0 20px;width:20px;height:20px;color:var(--rr-alert-color)}
 .rr-alert-icon{flex:0 0 18px;width:18px;height:18px;margin:-1px -2px 0 -3px;color:var(--rr-alert-color)}
 .rr-alert-banner .rr-alert-icon{flex-basis:20px;width:20px;height:20px;margin-top:-1px}
-.rr-alert-delay,.rr-alert-notice{--rr-alert-color:var(--status-expected);--rr-alert-bg:var(--status-expected-bg)}
+.rr-alert-delay{--rr-alert-color:var(--status-expected);--rr-alert-bg:var(--status-expected-bg)}
+.rr-alert-notice{--rr-alert-color:var(--status-info);--rr-alert-bg:var(--status-info-bg)}
 .rr-alert-cancel{--rr-alert-color:var(--status-cancelled);--rr-alert-bg:var(--status-cancelled-bg)}
 .rr-alert-banner{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px;padding:10px 12px;border-left:3px solid var(--rr-alert-color);border-radius:3px;background:var(--rr-alert-bg);color:var(--ink-strong);font-size:13px;line-height:1.4}
 .rr-alert-leg{margin:8px 0 2px;font-size:12px}

@@ -44,6 +44,10 @@
  for(const t of TRAINS){const key=(t.mp??'x')+'|'+t.route.map(x=>x[0]).join('>');if(seen.has(key))continue;seen.add(key);nt++;
   const r=getTrainPath(t),ends=routeStopPathEnds.get(t.id)||[];checkPath(rrTrainLabel(t)+' '+t.route[0][0]+' - '+t.route.at(-1)[0],r,t.route.map(x=>x[0]),ends,true)}
  out.counts['train routes checked']=nt;
+ // alert tiers: red (cancelled) and yellow (delayed) flag a train in the timetable; a blue notice never does
+ {let na=0;for(const t of TRAINS){const a=rrVisibleAlert(t);if(!a)continue;na++;const tier=rrAlertTier(a),flag=rrAlertFlag(t);
+   if(tier==='info'&&flag)bad('notice flagged in the timetable',rrTrainLabel(t));if(tier!=='info'&&!flag)bad('red / yellow alert not flagged in the timetable',rrTrainLabel(t))}
+  out.counts['alerts checked']=na}
  // times never run backwards: scheduled and revised (delayed) times along every train, and every journey's legs and changes
  {let nt2=0;for(const t of TRAINS){nt2++;let ps=-1,pr=-1;for(let i=0;i<t.route.length;i++){const s=timeOrdinal(t.route[i][1]),r=stopOrdinal(t,i);
    if(s<ps){bad('scheduled time earlier than the stop before',rrTrainLabel(t)+' '+t.route[i][0]+' '+t.route[i][1]);break}
