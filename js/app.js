@@ -589,11 +589,11 @@ function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;
  }
  const many=lanes.length>1;
  const rows=all.map((n,i)=>`<div class="route-row${n===from?' is-here':''}${many&&lanes.every(k=>stopsOf[k].has(n))?' all-stop':''}">${lanes.map(k=>{const [a,b]=span[k];return `<span class="route-lane lane-${k}${stopsOf[k].has(n)?' stops':''}${i<a||i>b?' off':''}${i===a?' first':''}${i===b?' last':''}"></span>`}).join('')}<button type="button" class="route-stn" data-station="${n}">${n}</button></div>`).join('');
- // RX and RS (user's choice 2026-11-20): one line, as on most line maps - where RX (and RS) stop: a big ring, the name in bold and
- // the RX badge; where only RS stops: a small dot and a plain name. Same marks as the map (ring = RX stop, small dot = RS only).
+ // RX and RS (user's choice 2026-11-20): one line, as on most line maps - where RX (and RS) stop: a big ring and the name in bold;
+ // where only RS stops: a small dot and a plain name; the key names the services by their badges. Same marks as the map (ring = RX stop, small dot = RS only).
  const pattern=type==='Regio'&&many&&stopsOf.RX&&stopsOf.RS;
- const pRows=pattern?all.map((n,i)=>{const major=stopsOf.RX.has(n);return `<div class="rp-row${n===from?' is-here':''}${i===0?' is-first':''}${i===all.length-1?' is-last':''}${major?' rp-major':''}"><span class="rp-line" aria-hidden="true"></span><button type="button" class="route-stn" data-station="${n}">${n}</button>${major?`<span class="rp-badge">${rrBadge(sample.RX)}</span>`:'<span></span>'}</div>`}).join(''):'';
- const pKey=pattern?`<div class="route-legend rp-key"><span><span class="rp-key-mark rp-key-major" aria-hidden="true"></span><span>RX and RS stop</span></span><span><span class="rp-key-mark" aria-hidden="true"></span><span>RS only</span></span></div>`:'';
+ const pRows=pattern?all.map((n,i)=>{const major=stopsOf.RX.has(n);return `<div class="rp-row${n===from?' is-here':''}${i===0?' is-first':''}${i===all.length-1?' is-last':''}${major?' rp-major':''}"><span class="rp-line" aria-hidden="true"></span><button type="button" class="route-stn" data-station="${n}">${n}</button></div>`}).join(''):'';
+ const pKey=pattern?`<div class="route-legend rp-key"><span><span class="rp-key-mark rp-key-major" aria-hidden="true"></span>${rrBadge(sample.RX)}${rrBadge(sample.RS)}</span><span><span class="rp-key-mark" aria-hidden="true"></span>${rrBadge(sample.RS)}<span>only</span></span></div>`:'';
  // termini: the two ends of the line, each listing its terminus (one per branch when the line branches there)
  const inner=new Set(lanes.flatMap(k=>runs[k].slice(1,-1)));
  const ends=[0,1].map(side=>{const e=[...new Set(lanes.map(k=>side?runs[k][runs[k].length-1]:runs[k][0]))],outer=e.filter(n=>!inner.has(n));return outer.length?outer:e});
@@ -2151,7 +2151,7 @@ const rrFrenchExact=Object.freeze({
  'Two RX4D units in multiple at busy times.':'Deux unités RX4D en unités multiples aux heures chargées.',
  'Departures':'Départs','Arrivals':'Arrivées','Journeys':'Trajets',
  'Available journeys':'Trajets disponibles','Station information':'Informations sur la gare',
- 'Train details':'Détails du train','Network details':'Détails du réseau','RX and RS stop':'Arrêt RX et RS','RS only':'RS uniquement','Lines':'Lignes','lines':'lignes','stations':'gares','interchanges':'correspondances','more interchanges':'autres correspondances','Change for Mainline and Regio':'Correspondances Magistrale et Régional','Service hours':'Horaires de service','First train':'Premier train','Last train':'Dernier train','Journey details':'Détails du trajet',
+ 'Train details':'Détails du train','Network details':'Détails du réseau','only':'uniquement','Lines':'Lignes','lines':'lignes','stations':'gares','interchanges':'correspondances','more interchanges':'autres correspondances','Change for Mainline and Regio':'Correspondances Magistrale et Régional','Service hours':'Horaires de service','First train':'Premier train','Last train':'Dernier train','Journey details':'Détails du trajet',
  'Train information':'Informations sur le train','View route':'Itinéraire',
  'Find trains':'Rechercher','Reset':'Effacer','Edit':'Modifier','Edit search':'Modifier la recherche','From':'Départ','To':'Arrivée',
  'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',

@@ -723,10 +723,10 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .journey-summary-time strong .time-primary,.rr-selected-main strong,.rr-car .rr-car-number{font-size:var(--fs-display)!important}
 @media(max-width:750px){:root{--fs-hero:19px;--fs-display:24px}}
 
-/* Route details, RX and RS (user's choice): one line; RX stops stand out (big ring, bold name, RX badge), RS-only stops are a
+/* Route details, RX and RS (user's choice): one line; RX stops stand out (big ring, bold name), RS-only stops are a
    small dot with a plain name - the same marks as the map. */
 .route-pattern{display:grid}
-.rp-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;column-gap:8px;min-height:30px}
+.rp-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;column-gap:8px;min-height:30px}
 .rp-row.rp-major{min-height:36px}
 .rp-line{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
 .rp-line::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--route)}
