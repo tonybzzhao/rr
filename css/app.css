@@ -96,6 +96,8 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--ui);outline-of
 .mapnode{cursor:pointer}
 .label{font-family:Frutiger,'Helvetica Neue',Arial,sans-serif;fill:var(--ink);font-size:15.625px;letter-spacing:-.01em;font-weight:500;cursor:pointer;pointer-events:all}
 .label.important{font-weight:700}
+/* a name that has to cross lines (a busy hub) keeps a halo in the land colour so it stays legible */
+.label.over-lines{paint-order:stroke fill;stroke:var(--map-land);stroke-width:3.5px;stroke-linejoin:round}
 .station-label{cursor:pointer;pointer-events:all}
 .station-label:focus-visible .label{text-decoration:underline}
 .tooltip{position:absolute;display:none;padding:5px 8px;background:var(--ink);color:var(--surface);pointer-events:none;font-size:12px;white-space:nowrap;z-index:10;transform:translate(-50%,-115%)}

@@ -4,6 +4,7 @@
    - every station has its own map point on a drawn line;
    - every train / line view (getTrainPath): a connected route along drawn edges, every call on it in order, from its first
      call to its last, no out-and-back spike between calls, nothing drawn over a lake or the sea for more than 2 km (a bridge) except a listed Mainline causeway (GRAPH.causeways);
+   - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
    - journeys (findJourneys + getSegmentPath) for a wide sample of station pairs, incl. whole-city choices: each leg on its
      train's route from its boarding point to its alighting point, every call on the way on it, changes at the same place.
    Run in the page:  await (await fetch('tools/site_audit.js')).text().then(eval)  -> {ok, counts, examples}
@@ -53,5 +54,11 @@
     for(let m=1;m<r.length;m++)if(r[m]!==r[m-1]&&!edge.has(r[m-1]+'_'+r[m])){bad('journey leg jumps between unjoined points',lab);break}
     if(i&&j.legs[i-1].to!==l.from)bad('change between different stations',lab)})}}
  out.counts['journeys checked']=nj;
+ // labels: every main station is named on the map when it is in view (centred at three zoom levels)
+ const view0={zoom,panX,panY},norm=t=>t.replace(/\s+/g,'');let nl=0;
+ for(const z of [3,7,12])for(const name of LABELS){const s=S.get(name);if(!s)continue;nl++;zoom=z;const sc=fit*zoom;
+  panX=W/2-s.attach[0]*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.attach[1]*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();drawMap();
+  if(![...document.querySelectorAll('#labelLayer text')].some(t=>norm(t.textContent).startsWith(norm(name))))bad('main station without its name on the map','zoom '+z+': '+name)}
+ zoom=view0.zoom;panX=view0.panX;panY=view0.panY;updateWorld();drawMap();out.counts['main-station labels checked']=nl;
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()

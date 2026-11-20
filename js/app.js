@@ -1312,9 +1312,14 @@ function drawMap(){
   const across=rrLabelAcross(s);
   const dirs=across||[preferredSide,opposing,preferredSide+'N',opposing+'N',preferredSide+'S',opposing+'S','N','S'];
   let chosen=null;
+  // Main stations, the current station and a selected trip's stops always get their name: if no spot clear of the lines
+  // exists (a busy hub), a second pass lets the name cross lines (with a halo), never another name, dot or the controls.
+  const mustName=important||name===currentStation||selectedSet.has(name);
+  for(const overLines of (mustName?[false,true]:[false])){
+  if(chosen)break;
   for(const dir of dirs){
    if(chosen)break;
-   for(const gap of (across?[2,5,9,14]:[7,10,14,19])){
+   for(const gap of (across?[2,5,9,14]:[7,10,14,19]).concat(overLines?[26,34]:[])){
     if(chosen)break;
     for(const lines of splits){
      const width=Math.ceil(Math.max(...lines.map(l=>ctx.measureText(l).width)))+2;
@@ -1332,18 +1337,19 @@ function drawMap(){
      if(x<12||y<12||x+width>W-12||y+height>H-12)continue;
      if(placed.some(p=>rectOverlap(r,p,5)))continue;
      if(overlayRects.some(p=>rectOverlap(r,p,3)))continue;
-     if(visible.some(v=>v.name!==name&&v.sx>=x-9&&v.sx<=x+width+9&&v.sy>=y-9&&v.sy<=y+height+9))continue;
+     if(visible.some(v=>v.name!==name&&(!overLines||LABELS.includes(v.name)||v.name===currentStation)&&v.sx>=x-9&&v.sx<=x+width+9&&v.sy>=y-9&&v.sy<=y+height+9))continue;   // a must-name label may cover minor halts' dots
      const rr={x:x-2,y:y-2,w:width+4,h:height+4};
-     if(segments.some(([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
-     chosen={...r,anchor,lines,lh,fontSize};break;
+     if(!overLines&&segments.some(([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
+     chosen={...r,anchor,lines,lh,fontSize,overLines};break;
     }
    }
+  }
   }
   if(!chosen)continue;
   placed.push(chosen);
   const group=se('g',{class:'station-label',role:'button',tabindex:0,'aria-label':`Show departures at ${name}`});
   const textX=chosen.anchor==='end'?chosen.x+chosen.w:chosen.anchor==='middle'?chosen.x+chosen.w/2:chosen.x;
-  const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,style:`font-size:${fontSize}px`,class:'label'+(important?' important':''),'pointer-events':'all'});
+  const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,style:`font-size:${fontSize}px`,class:'label'+(important?' important':'')+(chosen.overLines?' over-lines':''),'pointer-events':'all'});
   const routeNameColor=selectedLabelColors.get(name);
   if(routeNameColor){
    text.style.fill=routeNameColor;
