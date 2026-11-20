@@ -5,7 +5,8 @@
    - every train / line view (getTrainPath): a connected route along drawn edges, every call on it in order, from its first
      call to its last, no out-and-back spike between calls, nothing drawn over a lake or the sea for more than 2 km (a bridge) except a listed Mainline causeway (GRAPH.causeways);
    - times never run backwards: scheduled and revised times along every train, journey legs and connections;
-   - drawn track: Regio / Local colour (own or shared lane) only where trains of that system run;
+   - drawn track: Regio / Local colour (own or shared lane) only where trains of that system run, and every train's
+     track drawn in its own system's colour (Mainline, Regio, Local - otherwise the line looks broken);
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
    - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
    - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
@@ -54,7 +55,8 @@
  {const key=(a,b)=>a<b?a+'_'+b:b+'_'+a,runs=new Map(),seenP=new Set(),sysOf=t=>t.type==='Regio'?'R':t.type==='Local'?'L':'M';
   for(const t of TRAINS){const k=t.mp+'|'+sysOf(t);if(seenP.has(k))continue;seenP.add(k);const r=getTrainPath(t);for(let i=1;i<r.length;i++){const k2=key(r[i-1],r[i]);if(!runs.has(k2))runs.set(k2,new Set());runs.get(k2).add(sysOf(t))}}
   let ne=0;for(const [a,b,t,sh] of E){ne++;const d=((sh?{1:'MR',2:'RL',3:'MRL',4:'ML'}[sh]:'')+({0:'M',1:'M',2:'R',3:'L'}[t]||'')),u=runs.get(key(a,b))||new Set();
-   for(const s of 'RL')if(d.includes(s)&&!u.has(s)){bad('track drawn for a system with no trains on it',(s==='R'?'Regio':'Local')+' at '+P[a]);break}}
+   for(const s of 'RL')if(d.includes(s)&&!u.has(s)){bad('track drawn for a system with no trains on it',(s==='R'?'Regio':'Local')+' at '+P[a]);break}
+   for(const s of 'MRL')if(u.has(s)&&!d.includes(s)){bad('trains run on track not drawn in their colour (the line looks broken)',({M:'Mainline',R:'Regio',L:'Local'})[s]+' at '+P[a]);break}}
   out.counts['drawn track pieces checked']=ne}
  // journeys
  const names=STATIONS.map(s=>s.name),major=LABELS.filter(n=>S.has(n)),cities=[...RR_CITIES.keys()];
