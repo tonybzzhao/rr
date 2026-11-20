@@ -1053,6 +1053,9 @@ function clampPan(){
    map: the world is re-placed and the drawn marks and names are shifted (and scaled while zooming) with one transform; the
    full redraw runs once the gesture pauses (or once a frame for the wheel and buttons). */
 let rrDrawnAt={x:0,y:0,sc:1},rrRedrawTimer=0,rrRedrawFrame=0;
+// The deepest zoom (user 2026-11-20: "maximum extent of zoom in should show all station label"): a scale, not a factor - 60 px
+// to the km on any screen (halts 1.2 km apart ~70 px apart, on a phone too); there every station in view is named.
+function rrMaxZoom(){return Math.max(28,60/RR_UNITS_PER_KM/(fit||1))}
 function rrPlaceWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);
  const k=sc/rrDrawnAt.sc,t=Math.abs(k-1)<1e-9&&offX===rrDrawnAt.x&&offY===rrDrawnAt.y?'':`translate(${offX} ${offY}) scale(${k}) translate(${-rrDrawnAt.x} ${-rrDrawnAt.y})`;
  layer.setAttribute('transform',t);labels.setAttribute('transform',t);tooltip.style.display='none';$('zoomOut').disabled=zoom<=1.000001}
@@ -1244,7 +1247,7 @@ function drawMap(){
   if(s.regio&&zoom<2.2&&!selectedSet.has(s.name)&&s.name!==currentStation)continue; // Regio halts appear when zoomed in
   const tripRole=rrTrip?(rrTrip.calls.has(s.name)||s.name===currentStation?'call':rrTrip.through.has(s.name)?'through':LABELS.includes(s.name)?'hub':null):null;
   if(rrTrip&&(!tripRole||tripRole==='through'))continue;   // a selected trip hides unrelated stations and those it only passes through                       // a selected trip hides stations it has nothing to do with
-  const {x,y}=screen(s.x,s.y);
+  const [px_,py_]=P[s.point]||[s.x,s.y],{x,y}=screen(px_,py_);   // the exact point the line passes through (s.x, s.y are rounded: markers sat up to 3 px beside their line)
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
   const focus=viewMode==='journeys'?'all':localNet?'local':serviceFilter,pinned=selectedSet.has(s.name)||s.name===currentStation;
   if(!pinned&&focus!=='all'&&!s.sys.includes({mainline:'M',regio:'R',local:'L'}[focus])&&!LABELS.includes(s.name))continue;   // the filter shows its own system's stations
@@ -1350,18 +1353,18 @@ function drawMap(){
   // Tube-map convention: the name sits beside its own dot, across the line rather than along it,
   // so it never drifts towards the neighbouring station.
   const across=rrLabelAcross(s);
-  const dirs=across||[preferredSide,opposing,preferredSide+'N',opposing+'N',preferredSide+'S',opposing+'S','N','S'];
+  const dirsAll=[preferredSide,opposing,preferredSide+'N',opposing+'N',preferredSide+'S',opposing+'S','N','S'],dirs=across||dirsAll;
   let chosen=null;
   // Main stations, the current station and a selected trip's stops always get their name: if no spot clear of the lines
   // exists (a busy hub), a second pass lets the name cross lines (with a halo), never another name, dot or the controls.
   // (a main station at the very edge of the map or under its controls is not forced: its name would land far from it)
   const tucked=s.sx<24||s.sy<24||s.sx>W-24||s.sy>H-24||overlayRects.some(p=>s.sx>=p.x-8&&s.sx<=p.x+p.w+8&&s.sy>=p.y-8&&s.sy<=p.y+p.h+8);
-  const mustName=(important&&!tucked)||name===currentStation||selectedSet.has(name);
+  const mustName=(important&&!tucked)||name===currentStation||selectedSet.has(name)||(zoom>=rrMaxZoom()-1e-6&&!tucked);
   for(const overLines of (mustName?[false,true]:[false])){
   if(chosen)break;
-  for(const dir of dirs){
+  for(const dir of (overLines&&across?[...across,...dirsAll.filter(d_=>!across.includes(d_))]:dirs)){   // the second pass may also go along the line
    if(chosen)break;
-   for(const gap of (across?[2,5,9,14]:[7,10,14,19]).concat(overLines?[26,34]:[])){
+   for(const gap of (across?[2,5,9,14]:[7,10,14,19]).concat(overLines?[26,34,44]:[])){
     if(chosen)break;
     for(const lines of splits){
      const width=Math.ceil(Math.max(...lines.map(l=>ctx.measureText(l).width)))+2;
@@ -1412,7 +1415,7 @@ function drawMap(){
  }
 }
 function zoomAt(factor,px=W/2,py=H/2,pause=0){
- const old=zoom,next=Math.max(1,Math.min(28,old*factor)); // deep zoom for dense Regio areas
+ const old=zoom,next=Math.max(1,Math.min(rrMaxZoom(),old*factor)); // deep zoom for dense Regio areas
  if(Math.abs(old-next)<0.000001)return;
  // Preserve the point beneath the cursor, but keep the fitted map centred on zoom-out.
  const previous=fit*old,ns=fit*next;
@@ -1458,17 +1461,41 @@ function drawLocalColours(){
  app.classList.toggle('local-colours',!!(net||all));app.classList.toggle('local-system',!!net);
  const sc=fit*zoom,key=(net||(all?'*':''))+'|'+sc;if(g.dataset.key===key)return;g.dataset.key=key;g.replaceChildren();
  if(!net&&!all)return;
- const gap=RR_LOCAL_GAP/sc,byCol=new Map(),f=v=>v.toFixed(2);   // 3.4 px between parallel lines at any zoom
+ // each line one continuous stroke (user 2026-11-20: "local colored line breaking"): a piece's lane offset used to be drawn as
+ // its own short stroke, so pieces pulled apart at every bend. Now each colour's pieces are chained and the offset lines meet
+ // at a mitre point (or halfway, where the lane changes or the bend is too sharp).
+ const gap=RR_LOCAL_GAP/sc,byCol=new Map(),f=v=>v.toFixed(2);
+ const lanes=new Map();   // colour -> Map(edge key -> offset along the canonical normal)
  for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;
-  for(const [k,cols] of m){const [a,b]=k.split('_').map(Number),[x1,y1]=P[a],[x2,y2]=P[b],L=Math.hypot(x2-x1,y2-y1)||1,nx=-(y2-y1)/L,ny=(x2-x1)/L;
-   cols.forEach((c,i)=>{const o=(i-(cols.length-1)/2)*gap;byCol.set(c,(byCol.get(c)||'')+`M${f(x1+nx*o)} ${f(y1+ny*o)}L${f(x2+nx*o)} ${f(y2+ny*o)}`)})}}
+  for(const [k,cols] of m)cols.forEach((c,i)=>{if(!lanes.has(c))lanes.set(c,new Map());lanes.get(c).set(k,(i-(cols.length-1)/2)*gap)})}
+ for(const [c,em] of lanes){
+  const adj=new Map();for(const k of em.keys()){const [a,b]=k.split('_').map(Number);for(const [u,v] of [[a,b],[b,a]]){if(!adj.has(u))adj.set(u,[]);adj.get(u).push(v)}}
+  const used=new Set(),chains=[],key=(a,b)=>a<b?a+'_'+b:b+'_'+a;
+  const walk=(s0,s1)=>{const ch=[s0,s1];used.add(key(s0,s1));let p=s0,q=s1;
+   while((adj.get(q)||[]).length===2){const nx=adj.get(q).find(v=>v!==p);if(used.has(key(q,nx)))break;used.add(key(q,nx));ch.push(nx);p=q;q=nx}return ch};
+  for(const [u,vs] of adj)if(vs.length!==2)for(const v of vs)if(!used.has(key(u,v)))chains.push(walk(u,v));
+  for(const [u,vs] of adj)for(const v of vs)if(!used.has(key(u,v)))chains.push(walk(u,v));   // closed loops
+  let d='';
+  for(const ch of chains){
+   const seg=[];for(let i=0;i+1<ch.length;i++){const a=ch[i],b=ch[i+1],[x1,y1]=P[a],[x2,y2]=P[b],L=Math.hypot(x2-x1,y2-y1)||1;
+    const lo=Math.min(a,b),hi=Math.max(a,b),[cx1,cy1]=P[lo],[cx2,cy2]=P[hi],Lc=Math.hypot(cx2-cx1,cy2-cy1)||1,o=em.get(key(a,b))||0;
+    seg.push({p:[x1,y1],q:[x2,y2],d:[(x2-x1)/L,(y2-y1)/L],off:[-(cy2-cy1)/Lc*o,(cx2-cx1)/Lc*o]})}
+   if(!seg.length)continue;
+   const pts=[[seg[0].p[0]+seg[0].off[0],seg[0].p[1]+seg[0].off[1]]];
+   for(let i=1;i<seg.length;i++){const A=seg[i-1],B=seg[i],v=B.p,a0=[v[0]+A.off[0],v[1]+A.off[1]],b0=[v[0]+B.off[0],v[1]+B.off[1]];
+    const cr=A.d[0]*B.d[1]-A.d[1]*B.d[0];let m=[(a0[0]+b0[0])/2,(a0[1]+b0[1])/2];
+    if(Math.abs(cr)>0.02){const t=((b0[0]-a0[0])*B.d[1]-(b0[1]-a0[1])*B.d[0])/cr,q=[a0[0]+A.d[0]*t,a0[1]+A.d[1]*t];if(Math.hypot(q[0]-v[0],q[1]-v[1])<=4*gap+1e-9)m=q}
+    pts.push(m)}
+   const z=seg.at(-1);pts.push([z.q[0]+z.off[0],z.q[1]+z.off[1]]);
+   d+='M'+pts.map(p=>f(p[0])+' '+f(p[1])).join('L')}
+  byCol.set(c,d)}
  for(const [c,d] of byCol)g.append(se('path',{d,class:'local-colour',stroke:c}));
 }
 // Choosing a station brings it into view, close enough to see its neighbours (about 50 km across the map's shorter side);
 // a map already zoomed in further stays at its zoom.
 function rrFocusStation(name){const s=S.get(name);if(!s||!W||!H)return;
  zoom=Math.max(1,Math.min(28,Math.max(zoom,Math.min(W,H)/(50*RR_UNITS_PER_KM)/fit)));const sc=fit*zoom;
- panX=W/2-s.x*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.y*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()}
+ const [px_,py_]=P[s.point]||[s.x,s.y];panX=W/2-px_*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-py_*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()}
 // A line's ends as on RER line maps: the ends of one side stacked, their branches forking into the line, the line, then the
 // other side's branches forking out to its ends. One end a side is a plain line between two names.
 function rrLineEnds(a,z,color,links=false){const nm=n=>links?rrStnLink(n):n,side=(e,k)=>`<ul class="le-side le-${k}">${e.map(n=>`<li>${nm(n)}</li>`).join('')}</ul>`;
