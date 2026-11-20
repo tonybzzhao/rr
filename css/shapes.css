@@ -207,7 +207,7 @@ body,.app{background:var(--rr-canvas)}
 .details-body .back-to-train{display:inline-flex!important;align-items:center;gap:8px!important;height:36px;box-sizing:border-box;margin:0 0 var(--rr-gap)!important;padding:0 14px 0 12px!important;border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--surface)!important;box-shadow:var(--rr-card-shadow);color:var(--ink-strong)!important;font-size:13px!important;font-weight:500!important;line-height:1!important}
 .details-body .back-to-train:hover{background:var(--hover-blue)!important;color:var(--ui)!important}
 .details-body .back-to-train span[aria-hidden]{font-size:16px!important;line-height:1}
-.details-body .back-to-train .service{margin-left:2px;font-size:11px;font-weight:500;line-height:normal}
+.details-body .back-to-train .service{margin-left:2px;font-size:11px;font-weight:500;line-height:normal;align-self:center!important}   /* the square badge (A, S1) too: centred in the button, not pinned to its top */
 
 /* Arrows use the RR arrow pictograms instead of the → / ← characters. They
    take the text colour and scale with the text around them. */
