@@ -55,6 +55,7 @@
     if(i&&j.legs[i-1].to!==l.from)bad('change between different stations',lab)})}}
  out.counts['journeys checked']=nj;
  // labels: every main station is named on the map when it is in view (centred at three zoom levels)
+ clear();setCurrentStation(null);   // names are checked on the plain map: a selected route or station puts its own names first
  const view0={zoom,panX,panY},norm=t=>t.replace(/\s+/g,'');let nl=0;
  for(const z of [3,7,12])for(const name of LABELS){const s=S.get(name);if(!s)continue;nl++;zoom=z;const sc=fit*zoom;
   panX=W/2-s.attach[0]*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.attach[1]*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();drawMap();
