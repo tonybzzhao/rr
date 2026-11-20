@@ -642,7 +642,6 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .station-svc-local>.rr-system-link.station-svc-row{display:grid;grid-template-columns:minmax(0,1fr) 14px;width:100%;box-sizing:border-box;min-height:44px}
 .station-svc-local>.station-svc-row .rr-arrow-icon{width:14px;height:14px;fill:currentColor;color:var(--ink-soft);justify-self:end}
 /* Local network page */
-.system-name{font-size:15px;font-weight:700;color:var(--ink-strong)}
 .system-line,.system-stn{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;align-items:center;column-gap:10px;min-height:48px;padding:8px 2px;border-top:1px solid var(--stroke-soft)}
 .system-line:first-child,.system-stn:first-child{border-top:0}
 .system-line{grid-template-columns:auto minmax(0,1fr) 14px}
@@ -676,3 +675,11 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .line-ends.le-lg{margin-top:10px}
 .line-ends.le-lg .le-side li{font-size:15px;font-weight:700;padding-top:4px;padding-bottom:4px}
 .line-ends.le-lg .station-link{font:inherit;color:inherit;text-align:inherit}
+/* Route and network details: the line badge and the network name lead the page, at the train details' badge size. */
+.route-hero .route-badges{gap:8px;margin-bottom:12px}
+.route-hero .route-badges .service{font-size:21px;line-height:1.15;padding:8px 12px}
+.route-hero .route-op,.system-hero .system-name{font-size:20px;line-height:1.25;font-weight:700;color:var(--ink-strong);margin:0}
+.route-hero .route-op .rr-network,.system-hero .system-name .rr-network{font-weight:700;color:var(--ink-strong)}
+.route-hero .route-op .rr-service-logo,.system-hero .system-name .rr-service-logo{height:.62em;width:1.34em;flex:0 0 1.34em}
+.route-hero .route-op .rr-system-link{font-size:inherit}
+@media(max-width:750px){.route-hero .route-badges .service{font-size:18px;padding:7px 10px}.route-hero .route-op,.system-hero .system-name{font-size:18px}}
