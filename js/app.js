@@ -593,7 +593,7 @@ function fillRouteInfo(type,net,line,from=currentStation){
  const ends=[0,1].map(side=>{const e=[...new Set(lanes.map(k=>side?runs[k][runs[k].length-1]:runs[k][0]))],outer=e.filter(n=>!inner.has(n));return outer.length?outer:e});
  const legend=type==='Regio'&&many?`<div class="route-legend">${lanes.map(k=>`<span>${rrBadge(sample[k])} ${k==='RS'?'all stations':'main stations only'}</span>`).join('')}<span class="route-legend-map"><span class="map-key-rx" aria-hidden="true"></span>RX stop<span class="map-key-rs" aria-hidden="true"></span>RS only</span></div>`
   :'';
- detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${(type==='Regio'?lanes:[lanes[0]]).map(k=>rrBadge(sample[k])).join('')}</div><div class="route-op">${rrSystemLink(type,net)}</div>${`<div class="route-termini" style="--route:${rrTrainCss(sample[lanes[0]])}" aria-label="Runs between ${ends[0].join(' or ')} and ${ends[1].join(' or ')}">${ends.map(e=>`<div class="route-end"><span class="route-end-dot" aria-hidden="true"></span><span class="route-end-name">${e.map(rrStnLink).join(' · ')}</span></div>`).join('')}</div>`}</div>${deps}<section class="rr-card" style="--route:${rrTrainCss(sample[lanes[0]])}"><h3 class="rr-card-title">Route</h3>${legend}<div class="route-diagram" style="--route:${rrTrainCss(sample[lanes[0]])};--lanes:${lanes.length}">${rows}</div></section>`;
+ detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${(type==='Regio'?lanes:[lanes[0]]).map(k=>rrBadge(sample[k])).join('')}</div><div class="route-op">${rrSystemLink(type,net)}</div>${rrLineEnds(ends[0],ends[1],rrTrainCss(sample[lanes[0]]),true)}</div>${deps}<section class="rr-card" style="--route:${rrTrainCss(sample[lanes[0]])}"><h3 class="rr-card-title">Route</h3>${legend}<div class="route-diagram" style="--route:${rrTrainCss(sample[lanes[0]])};--lanes:${lanes.length}">${rows}</div></section>`;
  detail.querySelectorAll('.route-dep').forEach(b=>b.addEventListener('click',()=>{const row=upcoming(from).find(t=>t.id===b.dataset.train);if(row){setCurrentStation(from);chooseTrain(row)}}));
  detail.querySelectorAll('.route-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
  // the map shows the whole line: every branch, in the line colour; RS-only stops get a small dot, RX stops a ring
@@ -1418,6 +1418,10 @@ function drawLocalColours(){
 function rrFocusStation(name){const s=S.get(name);if(!s||!W||!H)return;
  zoom=Math.max(1,Math.min(28,Math.max(zoom,Math.min(W,H)/(50*RR_UNITS_PER_KM)/fit)));const sc=fit*zoom;
  panX=W/2-s.x*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.y*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()}
+// A line's ends as on RER line maps: the ends of one side stacked, their branches forking into the line, the line, then the
+// other side's branches forking out to its ends. One end a side is a plain line between two names.
+function rrLineEnds(a,z,color,links=false){const nm=n=>links?rrStnLink(n):n,side=(e,k)=>`<ul class="le-side le-${k}">${e.map(n=>`<li>${nm(n)}</li>`).join('')}</ul>`;
+ return `<div class="line-ends${links?' le-lg':''}" style="--le:${color}" role="group" aria-label="Runs between ${a.join(' or ')} and ${z.join(' or ')}">${side(a,'a')}<span class="le-trunk" aria-hidden="true"></span>${side(z,'z')}</div>`}
 function rrSystemLink(type,net){return type==='Local'&&net?`<button type="button" class="rr-system-link" data-system="${net}" title="Network details">${rrServiceLabel(type,net)}</button>`:rrServiceLabel(type,net)}
 /* Local network page (passenger facing, no network statistics): each line with its ends (the letter only, as on the trains),
    the stations to change for Mainline and Regio trains, and when trains run. */
@@ -1433,7 +1437,7 @@ function fillLocalSystem(net,from=currentStation){
   runs.sort((x,y)=>y.length-x.length);for(let i=1;i<runs.length;i++){const ix=runs[i].map(n=>runs[0].indexOf(n)).filter(j=>j>=0);if(ix.length>1&&ix[0]>ix.at(-1))runs[i]=[...runs[i]].reverse()}
   const inner=new Set(runs.flatMap(r=>r.slice(1,-1))),side=f=>{const e=[...new Set(runs.map(f))],o=e.filter(n=>!inner.has(n));return o.length?o:e};
   const a=side(r=>r[0]),z=side(r=>r.at(-1));
-  return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span><span class="system-line-ends">${a.join(' / ')} – ${z.join(' / ')}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}).join('');
+  return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span>${rrLineEnds(a,z,rrTrainCss(ts[0]))}<svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}).join('');
  const inter=[...stations].filter(n=>/[MR]/.test(S.get(n)?.sys||'')).sort((a,b)=>(LABELS.includes(b)-LABELS.includes(a))||(lettersAt.get(b).size-lettersAt.get(a).size)||a.localeCompare(b));
  const sample=k=>letters.get(k)[0];
  const interRows=inter.map(n=>`<button type="button" class="system-stn" data-station="${n}"><span class="system-stn-name">${n}</span><span class="system-stn-lines">${[...lettersAt.get(n)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>rrBadge(sample(k))).join('')}</span></button>`).join('');
