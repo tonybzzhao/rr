@@ -1211,6 +1211,7 @@ function drawMap(){
  const selectedLabelColors=new Map();
  const interchangeMarkers=journeyInterchangeMarkers(selectedJourney);
  if(!window.RR_DOT_ORDER){const rank=s=>LABELS.includes(s.name)?0:s.sys.length>1?1:!s.regio?2:3;window.RR_DOT_ORDER=[...STATIONS].sort((a,b)=>rank(a)-rank(b))}
+ const localMarks=app.classList.contains('local-colours')?rrLocalStationMarks():null,localNet=rrLocalSystemShown();
  const rrDotGrid=new Map(),RR_DOT_GAP=10;
  const rrDotFree=(x,y)=>{const gx=Math.floor(x/RR_DOT_GAP),gy=Math.floor(y/RR_DOT_GAP);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const [px,py] of rrDotGrid.get((gx+i)+','+(gy+j))||[])if(Math.hypot(px-x,py-y)<RR_DOT_GAP)return false;return true};
  const rrDotTake=(x,y)=>{const k=Math.floor(x/RR_DOT_GAP)+','+Math.floor(y/RR_DOT_GAP);if(!rrDotGrid.has(k))rrDotGrid.set(k,[]);rrDotGrid.get(k).push([x,y])};
@@ -1220,12 +1221,13 @@ function drawMap(){
   if(rrTrip&&(!tripRole||tripRole==='through'))continue;   // a selected trip hides unrelated stations and those it only passes through                       // a selected trip hides stations it has nothing to do with
   const {x,y}=screen(s.x,s.y);
   if(x< -18||y< -18||x>W+18||y>H+18)continue;
-  const focus=viewMode==='journeys'?'all':serviceFilter,pinned=selectedSet.has(s.name)||s.name===currentStation;
+  const focus=viewMode==='journeys'?'all':localNet?'local':serviceFilter,pinned=selectedSet.has(s.name)||s.name===currentStation;
   if(!pinned&&focus!=='all'&&!s.sys.includes({mainline:'M',regio:'R',local:'L'}[focus])&&!LABELS.includes(s.name))continue;   // the filter shows its own system's stations
   const keep=pinned||LABELS.includes(s.name)||(s.sys.length>1&&zoom>=6);   // geographic map: interchanges in a dense city give way too until zoomed in (they still come first)
   if(!keep&&!rrDotFree(x,y))continue;                // too close to a dot already drawn at this zoom
   rrDotTake(x,y);
-  visible.push({...s,sx:x,sy:y});
+  const lm=localMarks?.get(s.point),mark=lm&&(!localNet||lm.net===localNet)?lm:null;
+  visible.push({...s,sx:x,sy:y,hw:mark?(mark.n-1)*RR_LOCAL_GAP/2:0});
   const selected=selectedSet.has(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
   const radius=selected?5.8:(important?4.7:(s.regio?2.2:3.2)),g=se('g',{'data-station':s.name});
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
@@ -1255,6 +1257,11 @@ function drawMap(){
    g.append(se('circle',{cx:x,cy:y,r:2.3,fill:RR_UI_CSS_COLOR('--surface'),stroke:rrVisibleServiceAccent(activeColors[0]),'stroke-width':1.2,'pointer-events':'none'}));   // RS only: a small white dot in the line
   }else if(activeColors.length){
    g.append(se('circle',{cx:x,cy:y,r:radius-1.2,fill:RR_UI_CSS_COLOR('--surface'),stroke:rrVisibleServiceAccent(activeColors[0]),'stroke-width':2.4,'pointer-events':'none'}));
+  }else if(mark&&mark.n<=1&&mark.cols.size===1&&s.sys==='L'){
+   g.append(se('circle',{cx:x,cy:y,r:important?4.6:3.4,fill:RR_UI_CSS_COLOR('--surface'),stroke:rrVisibleServiceAccent([...mark.cols][0]),'stroke-width':important?2.2:1.8,'pointer-events':'none'}));
+  }else if(mark){
+   const t=important?9:7.5,len=(mark.n-1)*RR_LOCAL_GAP+t;   // across every line of the bundle
+   g.append(se('rect',{x:-t/2,y:-len/2,width:t,height:len,rx:t/2,transform:`translate(${x} ${y}) rotate(${mark.ang*180/Math.PI})`,fill:RR_UI_CSS_COLOR('--surface'),stroke:RR_UI_CSS_COLOR('--ink'),'stroke-width':important?2:1.5,'pointer-events':'none',class:'local-mark'}));
   }else{
    const ring=s.sys.length>1?RR_UI_CSS_COLOR('--muted-slate'):s.sys==='R'?RR_UI_CSS_COLOR('--rail-regio'):s.sys==='L'?RR_UI_CSS_COLOR('--rail-local'):RR_UI_CSS_COLOR('--rail');
    const r=important?5:s.sys.length>1?3.9:s.regio?2.7:3.4;
@@ -1297,6 +1304,11 @@ function drawMap(){
   if(Math.max(x1,x2)<-20||Math.min(x1,x2)>W+20||Math.max(y1,y2)<-20||Math.min(y1,y2)>H+20)continue;
   segments.push([x1,y1,x2,y2]);
  }
+ if(localMarks&&!rrTrip)for(const [n,m] of rrLocalNetworkEdges()){if(localNet&&n!==localNet)continue;   // the outer lines of each coloured bundle
+  for(const [k,cols] of m){if(cols.length<2)continue;const [a,b]=k.split('_').map(Number),x1=P[a][0]*sc+offX,y1=P[a][1]*sc+offY,x2=P[b][0]*sc+offX,y2=P[b][1]*sc+offY;
+   if(Math.max(x1,x2)<-20||Math.min(x1,x2)>W+20||Math.max(y1,y2)<-20||Math.min(y1,y2)>H+20)continue;
+   const L=Math.hypot(x2-x1,y2-y1)||1,o=(cols.length-1)/2*RR_LOCAL_GAP+1.5,nx=-(y2-y1)/L*o,ny=(x2-x1)/L*o;
+   segments.push([x1+nx,y1+ny,x2+nx,y2+ny],[x1-nx,y1-ny,x2-nx,y2-ny])}}
  for(const name of priorities){
   const s=byVisible.get(name);if(!s)continue;
   const tripKey=!!rrTrip&&(rrTrip.key.has(name)||rrTrip.changes.has(name)),tripHub=!!rrTrip&&!rrTrip.calls.has(name)&&name!==currentStation;
@@ -1329,18 +1341,19 @@ function drawMap(){
      const height=lines.length*lh+1;
      let x,y,anchor;
      const isLeft=dir.startsWith('W'),isRight=dir.startsWith('E');
-     if(isRight){x=s.sx+gap+6;y=s.sy-height/2;anchor='start'}
-     else if(isLeft){x=s.sx-gap-6-width;y=s.sy-height/2;anchor='end'}
-     else if(dir==='N'){x=s.sx-width/2;y=s.sy-gap-5-height;anchor='middle'}
-     else {x=s.sx-width/2;y=s.sy+gap+5;anchor='middle'}
-     if(dir.endsWith('N')&&(isLeft||isRight))y=s.sy-gap-height+1;
-     if(dir.endsWith('S')&&(isLeft||isRight))y=s.sy+gap-1;
+     const hw=s.hw||0;   // half the coloured bundle the station sits on
+     if(isRight){x=s.sx+gap+6+hw;y=s.sy-height/2;anchor='start'}
+     else if(isLeft){x=s.sx-gap-6-hw-width;y=s.sy-height/2;anchor='end'}
+     else if(dir==='N'){x=s.sx-width/2;y=s.sy-gap-5-hw-height;anchor='middle'}
+     else {x=s.sx-width/2;y=s.sy+gap+5+hw;anchor='middle'}
+     if(dir.endsWith('N')&&(isLeft||isRight))y=s.sy-gap-hw-height+1;
+     if(dir.endsWith('S')&&(isLeft||isRight))y=s.sy+gap+hw-1;
      const r={x,y,w:width,h:height};
      // Collisions are tested at the current pixel zoom; no rectangles or label backplates are painted.
      if(x<12||y<12||x+width>W-12||y+height>H-12)continue;
      if(placed.some(p=>rectOverlap(r,p,5)))continue;
      if(overlayRects.some(p=>rectOverlap(r,p,3)))continue;
-     if(visible.some(v=>v.name!==name&&(!overLines||LABELS.includes(v.name)||v.name===currentStation)&&v.sx>=x-9&&v.sx<=x+width+9&&v.sy>=y-9&&v.sy<=y+height+9))continue;   // a must-name label may cover minor halts' dots
+     if(visible.some(v=>v.name!==name&&(!overLines||LABELS.includes(v.name)||v.name===currentStation)&&v.sx>=x-9-v.hw&&v.sx<=x+width+9+v.hw&&v.sy>=y-9-v.hw&&v.sy<=y+height+9+v.hw))continue;   // a must-name label may cover minor halts' dots
      const rr={x:x-2,y:y-2,w:width+4,h:height+4};
      if(!overLines&&segments.some(([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
      chosen={...r,anchor,lines,lh,fontSize,overLines};break;
@@ -1399,6 +1412,17 @@ function rrLocalNetworkEdges(){   // network -> Map('a_b' (a<b) -> line colours 
   if(!rrLocalEdges.has(t.network))rrLocalEdges.set(t.network,new Map());const m=rrLocalEdges.get(t.network),r=getTrainPath(t);
   for(let i=1;i<r.length;i++){const a=Math.min(r[i-1],r[i]),b=Math.max(r[i-1],r[i]);if(a===b)continue;const k=a+'_'+b;if(!m.has(k))m.set(k,[]);if(!m.get(k).includes(col))m.get(k).push(col)}}
  return rrLocalEdges}
+// Station marks on the coloured Local map, as on RER maps: a station on one line is a ring in that line's colour; where lines
+// run side by side (or meet Mainline / Regio) the station is a white capsule across all of them.
+let rrLocalStations=null;
+function rrLocalStationMarks(){   // station point -> {net, cols (lines stopping), n (widest bundle through it), ang (its direction)}
+ if(rrLocalStations)return rrLocalStations;rrLocalStations=new Map();const stop=new Map();
+ for(const t of TRAINS)if(t.type==='Local'){const c=rrMapColor(t);for(const [n] of t.route){const p=S.get(n)?.point;if(p==null)continue;if(!stop.has(p))stop.set(p,{net:t.network,cols:new Set()});stop.get(p).cols.add(c)}}
+ for(const [,m] of rrLocalNetworkEdges())for(const [k,cols] of m){const [a,b]=k.split('_').map(Number);
+  for(const p of [a,b]){const st=stop.get(p);if(!st)continue;const cur=rrLocalStations.get(p)||{net:st.net,cols:st.cols,n:0,ang:0};
+   if(cols.length>cur.n){cur.n=cols.length;cur.ang=Math.atan2(P[b][1]-P[a][1],P[b][0]-P[a][0])}rrLocalStations.set(p,cur)}}
+ return rrLocalStations}
+const RR_LOCAL_GAP=3.4;   // px between parallel Local lines
 function rrLocalSystemShown(){return app.classList.contains('detail-open')&&detail.querySelector('.system-hero')?.dataset.system||null}
 function rrLocalSystemPoints(){const net=rrLocalSystemShown(),m=net&&rrLocalNetworkEdges().get(net);return m?[...new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)))]:[]}
 function drawLocalColours(){
@@ -1407,7 +1431,7 @@ function drawLocalColours(){
  app.classList.toggle('local-colours',!!(net||all));app.classList.toggle('local-system',!!net);
  const sc=fit*zoom,key=(net||(all?'*':''))+'|'+sc;if(g.dataset.key===key)return;g.dataset.key=key;g.replaceChildren();
  if(!net&&!all)return;
- const gap=3.4/sc,byCol=new Map(),f=v=>v.toFixed(2);   // 3.4 px between parallel lines at any zoom
+ const gap=RR_LOCAL_GAP/sc,byCol=new Map(),f=v=>v.toFixed(2);   // 3.4 px between parallel lines at any zoom
  for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;
   for(const [k,cols] of m){const [a,b]=k.split('_').map(Number),[x1,y1]=P[a],[x2,y2]=P[b],L=Math.hypot(x2-x1,y2-y1)||1,nx=-(y2-y1)/L,ny=(x2-x1)/L;
    cols.forEach((c,i)=>{const o=(i-(cols.length-1)/2)*gap;byCol.set(c,(byCol.get(c)||'')+`M${f(x1+nx*o)} ${f(y1+ny*o)}L${f(x2+nx*o)} ${f(y2+ny*o)}`)})}}
@@ -2119,7 +2143,7 @@ const rrFrenchExact=Object.freeze({
  'Two RX4D units in multiple at busy times.':'Deux unités RX4D en unités multiples aux heures chargées.',
  'Departures':'Départs','Arrivals':'Arrivées','Journeys':'Trajets',
  'Available journeys':'Trajets disponibles','Station information':'Informations sur la gare',
- 'Train details':'Détails du train','Network details':'Détails du réseau','Lines':'Lignes','lines':'lignes','stations':'gares','interchanges':'correspondances','more interchanges':'autres correspondances','Change for Mainline and Regio':'Correspondances Magistrale et Regio','Service hours':'Horaires de service','First train':'Premier train','Last train':'Dernier train','Journey details':'Détails du trajet',
+ 'Train details':'Détails du train','Network details':'Détails du réseau','Lines':'Lignes','lines':'lignes','stations':'gares','interchanges':'correspondances','more interchanges':'autres correspondances','Change for Mainline and Regio':'Correspondances Magistrale et Régional','Service hours':'Horaires de service','First train':'Premier train','Last train':'Dernier train','Journey details':'Détails du trajet',
  'Train information':'Informations sur le train','View route':'Itinéraire',
  'Find trains':'Rechercher','Reset':'Effacer','Edit':'Modifier','Edit search':'Modifier la recherche','From':'Départ','To':'Arrivée',
  'Direct only':'Trajets directs uniquement','High-speed only':'Grande vitesse uniquement',

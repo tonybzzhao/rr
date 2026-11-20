@@ -644,7 +644,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 /* Local network page */
 .system-line,.system-stn{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;align-items:center;column-gap:10px;min-height:48px;padding:8px 2px;border-top:1px solid var(--stroke-soft)}
 .system-line:first-child,.system-stn:first-child{border-top:0}
-.system-line{grid-template-columns:auto minmax(0,1fr) 14px}
+.system-line{grid-template-columns:auto minmax(0,1fr) 14px;column-gap:8px}
 .system-line .rr-arrow-icon{width:14px;height:14px;fill:currentColor;color:var(--ink-soft)}
 .system-stn{grid-template-columns:minmax(0,1fr) auto}
 .system-stn-name{font-size:13px;font-weight:600;color:var(--ink-strong)}
@@ -652,12 +652,12 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .system-line:hover,.system-stn:hover{background:var(--hover)}
 .system-line:focus-visible,.system-stn:focus-visible{outline:2px solid var(--ui);outline-offset:-2px}
 /* A line's ends, RER style: each side's ends stacked, their branches fork into the line (rrLineEnds). */
-.line-ends{display:grid;grid-template-columns:minmax(min-content,1fr) 18px minmax(min-content,1fr);align-items:center;min-width:0}
+.line-ends{display:grid;grid-template-columns:minmax(min-content,1fr) 14px minmax(min-content,1fr);align-items:center;min-width:0}
 .le-side{list-style:none;margin:0;padding:0;min-width:0}
 .le-side li{position:relative;padding:3px 0;font-size:13px;font-weight:600;line-height:1.25;color:var(--ink-strong)}
-.le-a li{text-align:right;padding-right:15px}
-.le-z li{text-align:left;padding-left:15px}
-.le-side li::before,.le-side li::after{content:"";position:absolute;width:10px;box-sizing:border-box;border:0 solid var(--le)}
+.le-a li{text-align:right;padding-right:13px}
+.le-z li{text-align:left;padding-left:13px}
+.le-side li::before,.le-side li::after{content:"";position:absolute;width:9px;box-sizing:border-box;border:0 solid var(--le)}
 .le-a li::before,.le-a li::after{right:0}
 .le-z li::before,.le-z li::after{left:0}
 .le-side li:only-child::before{top:50%;height:3px;margin-top:-1.5px;border-top-width:3px}

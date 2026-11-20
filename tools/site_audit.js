@@ -5,6 +5,7 @@
    - every train / line view (getTrainPath): a connected route along drawn edges, every call on it in order, from its first
      call to its last, no out-and-back spike between calls, nothing drawn over a lake or the sea for more than 2 km (a bridge) except a listed Mainline causeway (GRAPH.causeways);
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
+   - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
    - journeys (findJourneys + getSegmentPath) for a wide sample of station pairs, incl. whole-city choices: each leg on its
      train's route from its boarding point to its alighting point, every call on the way on it, changes at the same place.
    Run in the page:  await (await fetch('tools/site_audit.js')).text().then(eval)  -> {ok, counts, examples}
@@ -61,5 +62,27 @@
   panX=W/2-s.attach[0]*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.attach[1]*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();drawMap();
   if(![...document.querySelectorAll('#labelLayer text')].some(t=>norm(t.textContent).startsWith(norm(name))))bad('main station without its name on the map','zoom '+z+': '+name)}
  zoom=view0.zoom;panX=view0.panX;panY=view0.panY;updateWorld();drawMap();out.counts['main-station labels checked']=nl;
+ // Local networks in colour (each network's page, fitted and zoomed in): every Local station is on its coloured line;
+ // every name sits by its own station mark, clear of other names and of other stations' marks
+ const frame=async()=>{resize();focusRoute()};   // what the page does on its next frame (no animation frames in a hidden tab)
+ const box=(e,o)=>{const b=e.getBoundingClientRect();return{x:b.left-o.left,y:b.top-o.top,w:b.width,h:b.height}};
+ const hit=(a,b,m=0)=>a.x<b.x+b.w-m&&b.x<a.x+a.w-m&&a.y<b.y+b.h-m&&b.y<a.y+a.h-m;
+ const checkNames=lab=>{const o=map.getBoundingClientRect(),marks=new Map();
+  for(const g of layer.querySelectorAll('g[data-station]')){const parts=[...g.children].filter(e=>!e.classList.contains('mapnode'));if(parts.length)marks.set(g.dataset.station,parts.map(e=>box(e,o)))}
+  const names=[...labels.querySelectorAll('.station-label')].map(g=>({name:g.getAttribute('aria-label').replace(/^Show departures at /,''),b:box(g.querySelector('text'),o),over:!!g.querySelector('.over-lines')}));
+  for(const n of names){const own=marks.get(n.name);if(!own){bad('name without its station mark',lab+': '+n.name);continue}
+   const c=own[0],cx=c.x+c.w/2,cy=c.y+c.h/2,dx=Math.max(n.b.x-cx,0,cx-(n.b.x+n.b.w)),dy=Math.max(n.b.y-cy,0,cy-(n.b.y+n.b.h));
+   if(Math.hypot(dx,dy)>48)bad('name away from its station',lab+': '+n.name);
+   if(!n.over)for(const [k,bs] of marks)if(k!==n.name&&bs.some(b=>hit(n.b,b,1))){bad('name covers another station',lab+': '+n.name+' over '+k);break}
+   for(const q of names)if(q!==n&&hit(n.b,q.b,1)){bad('names overlap',lab+': '+n.name+' / '+q.name);break}}
+  return names.length};
+ let nn=0;
+ for(const [net,m] of rrLocalNetworkEdges()){const pts=new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)));
+  for(const t of TRAINS)if(t.type==='Local'&&t.network===net)for(const [n] of t.route)if(!pts.has(S.get(n)?.point)){bad('Local station off its coloured line',net+': '+n);break}
+  fillLocalSystem(net);await frame();nn+=checkNames(net);
+  const hub=S.get([...LABELS].find(n=>pts.has(S.get(n)?.point))||'');
+  if(hub){zoom=28;const sc=fit*zoom;panX=W/2-hub.x*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-hub.y*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();nn+=checkNames(net+' centre zoomed in')}}
+ clear();app.classList.remove('detail-open');setCurrentStation(null);zoom=view0.zoom;panX=view0.panX;panY=view0.panY;updateWorld();
+ out.counts['Local network names checked']=nn;
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
