@@ -767,10 +767,11 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .depart-time .scheduled-time,.depart-time .scheduled-time .time-primary{font-size:var(--fs-primary)!important}
 .journey-summary-time .scheduled-time,.journey-summary-time .scheduled-time .time-primary{font-size:var(--fs-hero)!important}
 .jt-plat .scheduled-time{font-size:var(--fs-caption)!important}
-/* Departures / arrivals: × back to choosing a station, like the details panel's close button */
+/* Departures / arrivals: back to choosing a station, with the Journeys planner's reset icon */
 #stationPanel{position:relative}
 .station-reset{position:absolute;top:-4px;right:-4px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
- border:0;border-radius:var(--rr-radius-control,8px);background:none;color:var(--ink-soft);font-size:24px;line-height:1;cursor:pointer}
+ border:0;border-radius:var(--rr-radius-control,8px);background:none;color:var(--ink-soft);cursor:pointer;padding:0}
+.station-reset .rr-action-icon{width:20px;height:20px;fill:currentColor}
 .station-reset:hover{background:var(--hover)}
 .station-reset:focus-visible{outline:2px solid var(--ui);outline-offset:1px}
 .app.no-station .station-reset{display:none}
