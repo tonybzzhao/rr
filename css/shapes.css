@@ -828,3 +828,11 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
  font-size:var(--fs-caption);font-weight:var(--fw-regular);color:var(--muted-slate);white-space:nowrap}
 .ro-way-top{top:27px}.ro-way-bottom{bottom:27px;flex-direction:column-reverse}
 .ro-way .rr-action-icon{width:18px;height:18px;fill:currentColor;color:var(--route)}
+/* Crowding (Local): three figures, the filled ones say how busy the train is */
+.rr-crowd{display:inline-flex;align-items:center;gap:0;vertical-align:middle;color:var(--ink-strong)}
+.rr-crowd-fig{width:14px;height:16px;flex:none;fill:currentColor;color:var(--stroke)}
+.rr-crowd-fig.on{color:var(--ink-strong)}
+.rr-crowd-3 .rr-crowd-fig.on{color:var(--status-expected)}
+.rowstatus .rr-crowd{margin-left:6px}
+.rr-crowd-text{margin-left:6px;font-size:var(--fs-body);font-weight:var(--fw-regular);color:var(--ink-strong)}
+.infoval .rr-crowd-fig{width:16px;height:18px}

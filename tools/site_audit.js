@@ -44,6 +44,10 @@
  for(const t of TRAINS){const key=(t.mp??'x')+'|'+t.route.map(x=>x[0]).join('>');if(seen.has(key))continue;seen.add(key);nt++;
   const r=getTrainPath(t),ends=routeStopPathEnds.get(t.id)||[];checkPath(rrTrainLabel(t)+' '+t.route[0][0]+' - '+t.route.at(-1)[0],r,t.route.map(x=>x[0]),ends,true)}
  out.counts['train routes checked']=nt;
+ // crowding: every Local train has a level at each stop (1-3); other trains none
+ {let nc=0;for(const t of TRAINS){for(let i=0;i<t.route.length;i+=Math.max(1,Math.floor(t.route.length/3))){nc++;const c=rrCrowd(t,i);
+   if(t.type==='Local'?!(c>=1&&c<=3):c!==0){bad('crowding level wrong',rrTrainLabel(t)+' '+t.route[i][0]+' '+c);break}}}
+  out.counts['crowding levels checked']=nc}
  // alert tiers: red (cancelled) and yellow (delayed) flag a train in the timetable; a blue notice never does
  {let na=0;for(const t of TRAINS){const a=rrVisibleAlert(t);if(!a)continue;na++;const tier=rrAlertTier(a),flag=rrAlertFlag(t);
    if(tier==='info'&&flag)bad('notice flagged in the timetable',rrTrainLabel(t));if(tier!=='info'&&!flag)bad('red / yellow alert not flagged in the timetable',rrTrainLabel(t))}
