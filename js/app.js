@@ -744,7 +744,7 @@ function rrAlertFlag(t){
 }
 function rrAlertMarkup(t,cls='rr-alert-banner'){
  const a=rrVisibleAlert(t);if(!a)return '';
- return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
+ return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${a.works?rrAlertIconId(a):'rr-ui-message'}"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
 }
 rrAssignDailyAlerts();
 function rrIcon(name,cls='rr-picto'){
@@ -1526,7 +1526,7 @@ function focusRoute(ids=selectedPath.length?selectedPath:rrLocalSystemPoints()){
 function rrSetPhoneView(showMap,scroll=true){
  app.classList.toggle('phone-map',showMap);
  const btn=$('rrPhoneToggle');btn.setAttribute('aria-pressed',String(showMap));
- btn.querySelector('use').setAttribute('href',showMap?'#rr-ui-train-information':'#rr-ui-route');
+ btn.querySelector('use').setAttribute('href',showMap?'#rr-ui-train-information':'#rr-ui-map');
  btn.querySelector('.rr-phone-toggle-text').textContent=showMap?'Timetable':'Map';
  if(scroll)window.scrollTo(0,0);
  if(showMap)requestAnimationFrame(()=>{resize();drawMap()});
@@ -1948,7 +1948,7 @@ function fillJourneyDetails(j){
   if(!last){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
-   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div></li>`;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-change"></use></svg>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
