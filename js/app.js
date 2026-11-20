@@ -590,10 +590,10 @@ function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;
  const many=lanes.length>1;
  const rows=all.map((n,i)=>`<div class="route-row${n===from?' is-here':''}${many&&lanes.every(k=>stopsOf[k].has(n))?' all-stop':''}">${lanes.map(k=>{const [a,b]=span[k];return `<span class="route-lane lane-${k}${stopsOf[k].has(n)?' stops':''}${i<a||i>b?' off':''}${i===a?' first':''}${i===b?' last':''}"></span>`}).join('')}<button type="button" class="route-stn" data-station="${n}">${n}</button></div>`).join('');
  // RX and RS (user's choice 2026-11-20): one line, as on most line maps - where RX (and RS) stop: a big ring and the name in bold;
- // where only RS stops: a small dot and a plain name; the key names the services by their badges. Same marks as the map (ring = RX stop, small dot = RS only).
+ // where only RS stops: a small dot and a plain name; the key names the stopping patterns by badge, without the route number. Same marks as the map (ring = RX stop, small dot = RS only).
  const pattern=type==='Regio'&&many&&stopsOf.RX&&stopsOf.RS;
  const pRows=pattern?all.map((n,i)=>{const major=stopsOf.RX.has(n);return `<div class="rp-row${n===from?' is-here':''}${i===0?' is-first':''}${i===all.length-1?' is-last':''}${major?' rp-major':''}"><span class="rp-line" aria-hidden="true"></span><button type="button" class="route-stn" data-station="${n}">${n}</button></div>`}).join(''):'';
- const pKey=pattern?`<div class="route-legend rp-key"><span><span class="rp-key-mark rp-key-major" aria-hidden="true"></span>${rrBadge(sample.RX)}${rrBadge(sample.RS)}</span><span><span class="rp-key-mark" aria-hidden="true"></span>${rrBadge(sample.RS)}<span>only</span></span></div>`:'';
+ const pKey=pattern?`<div class="route-legend rp-key"><span><span class="rp-key-mark rp-key-major" aria-hidden="true"></span>${rrBadge({...sample.RX,label:'RX'})}${rrBadge({...sample.RS,label:'RS'})}</span><span><span class="rp-key-mark" aria-hidden="true"></span>${rrBadge({...sample.RS,label:'RS'})}<span>only</span></span></div>`:'';
  // termini: the two ends of the line, each listing its terminus (one per branch when the line branches there)
  const inner=new Set(lanes.flatMap(k=>runs[k].slice(1,-1)));
  const ends=[0,1].map(side=>{const e=[...new Set(lanes.map(k=>side?runs[k][runs[k].length-1]:runs[k][0]))],outer=e.filter(n=>!inner.has(n));return outer.length?outer:e});
