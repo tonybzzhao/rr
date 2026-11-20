@@ -1419,8 +1419,8 @@ function rrFocusStation(name){const s=S.get(name);if(!s||!W||!H)return;
  zoom=Math.max(1,Math.min(28,Math.max(zoom,Math.min(W,H)/(50*RR_UNITS_PER_KM)/fit)));const sc=fit*zoom;
  panX=W/2-s.x*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.y*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()}
 function rrSystemLink(type,net){return type==='Local'&&net?`<button type="button" class="rr-system-link" data-system="${net}" title="Network details">${rrServiceLabel(type,net)}</button>`:rrServiceLabel(type,net)}
-/* Local network page: what the network is (lines, stations, where it meets Mainline and Regio trains), each line with
-   its ends (the letter only, as on the trains), the stations to change at, and when trains run. */
+/* Local network page (passenger facing, no network statistics): each line with its ends (the letter only, as on the trains),
+   the stations to change for Mainline and Regio trains, and when trains run. */
 function fillLocalSystem(net,from=currentStation){
  const trains=TRAINS.filter(t=>t.type==='Local'&&t.network===net);if(!trains.length)return;
  const letters=new Map();for(const t of trains){const k=rrLocalLetter(t);if(!letters.has(k))letters.set(k,[]);letters.get(k).push(t)}
@@ -1432,16 +1432,16 @@ function fillLocalSystem(net,from=currentStation){
   // ends as on the route page: every branch faces the longest one's way; a branch ending part-way along another is not an end
   runs.sort((x,y)=>y.length-x.length);for(let i=1;i<runs.length;i++){const ix=runs[i].map(n=>runs[0].indexOf(n)).filter(j=>j>=0);if(ix.length>1&&ix[0]>ix.at(-1))runs[i]=[...runs[i]].reverse()}
   const inner=new Set(runs.flatMap(r=>r.slice(1,-1))),side=f=>{const e=[...new Set(runs.map(f))],o=e.filter(n=>!inner.has(n));return o.length?o:e};
-  const a=side(r=>r[0]),z=side(r=>r.at(-1)),n=new Set(runs.flat()).size;
-  return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span><span class="system-line-ends">${a.join(' / ')} – ${z.join(' / ')}</span><span class="system-line-n"><span>${n}</span> <span>stations</span></span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}).join('');
+  const a=side(r=>r[0]),z=side(r=>r.at(-1));
+  return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span><span class="system-line-ends">${a.join(' / ')} – ${z.join(' / ')}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}).join('');
  const inter=[...stations].filter(n=>/[MR]/.test(S.get(n)?.sys||'')).sort((a,b)=>(LABELS.includes(b)-LABELS.includes(a))||(lettersAt.get(b).size-lettersAt.get(a).size)||a.localeCompare(b));
  const sample=k=>letters.get(k)[0];
- const interRows=inter.slice(0,10).map(n=>`<button type="button" class="system-stn" data-station="${n}"><span class="system-stn-name">${n}</span><span class="system-stn-lines">${[...lettersAt.get(n)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>rrBadge(sample(k))).join('')}</span></button>`).join('');
+ const interRows=inter.map(n=>`<button type="button" class="system-stn" data-station="${n}"><span class="system-stn-name">${n}</span><span class="system-stn-lines">${[...lettersAt.get(n)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>rrBadge(sample(k))).join('')}</span></button>`).join('');
  const firsts=trains.map(t=>t.route[0][1]).sort((a,b)=>timeOrdinal(a)-timeOrdinal(b));
  rrDetailsHeading('Network details','rr-ui-route');$('focusRoute').hidden=false;
- detail.innerHTML=`<div class="train-hero system-hero" data-system="${net}"><div class="system-name">${rrServiceLabel('Local',net)}</div><div class="system-stats"><div><strong>${order.length}</strong><span>lines</span></div><div><strong>${stations.size}</strong><span>stations</span></div><div><strong>${inter.length}</strong><span>interchanges</span></div></div></div>
+ detail.innerHTML=`<div class="train-hero system-hero" data-system="${net}"><div class="system-name">${rrServiceLabel('Local',net)}</div></div>
  <section class="rr-card"><h3 class="rr-card-title">Lines</h3><div class="system-lines">${lines}</div></section>
- ${inter.length?`<section class="rr-card"><h3 class="rr-card-title">Change for Mainline and Regio</h3><div class="system-stns">${interRows}</div>${inter.length>10?`<div class="station-svc-foot"><span>${inter.length-10}</span> <span>more interchanges</span></div>`:''}</section>`:''}
+ ${inter.length?`<section class="rr-card"><h3 class="rr-card-title">Change for Mainline and Regio</h3><div class="system-stns">${interRows}</div></section>`:''}
  <section class="rr-card"><h3 class="rr-card-title">Service hours</h3><dl class="info-grid"><div class="fact-row"><dt class="keylabel">First train</dt><dd class="infoval">${firsts[0]}</dd></div><div class="fact-row"><dt class="keylabel">Last train</dt><dd class="infoval">${firsts.at(-1)}</dd></div></dl></section>`;
  detail.querySelectorAll('.system-line').forEach(b=>b.addEventListener('click',()=>fillRouteInfo('Local',net,b.dataset.line,from)));
  detail.querySelectorAll('.system-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
