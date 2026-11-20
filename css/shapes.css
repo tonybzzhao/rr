@@ -723,21 +723,20 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .journey-summary-time strong .time-primary,.rr-selected-main strong,.rr-car .rr-car-number{font-size:var(--fs-display)!important}
 @media(max-width:750px){:root{--fs-hero:19px;--fs-display:24px}}
 
-/* Route details, RX and RS: one line with the stations, then a stopping-pattern column per service (Japanese line-map style):
-   a dot where the service stops (solid RX, ring RS - as their badges), a thin line where it runs through. */
+/* Route details, RX and RS (user's choice): one line; RX stops stand out (big ring, bold name, RX badge), RS-only stops are a
+   small dot with a plain name - the same marks as the map. */
 .route-pattern{display:grid}
-.rp-row{display:grid;grid-template-columns:22px minmax(0,1fr) repeat(var(--lanes),52px);align-items:center;min-height:32px}
-.rp-head{min-height:0;padding-bottom:4px}
-.rp-head .rp-col{display:flex;justify-content:center}
-.rp-line,.rp-row:not(.rp-head) .rp-col{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
+.rp-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;column-gap:8px;min-height:30px}
+.rp-row.rp-major{min-height:36px}
+.rp-line{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
 .rp-line::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--route)}
-.rp-row:not(.rp-head) .rp-col::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--stroke)}
-.rp-row.is-first .rp-line::before,.rp-col.is-first::before{top:50%!important}
-.rp-row.is-last .rp-line::before,.rp-col.is-last::before{bottom:50%!important}
+.rp-row.is-first .rp-line::before{top:50%}.rp-row.is-last .rp-line::before{bottom:50%}
 .rp-line::after{content:"";position:relative;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--route);background:var(--rr-canvas)}
-.rp-row.rp-major .rp-line::after{width:13px;height:13px;border-width:3px}
+.rp-row.rp-major .rp-line::after{width:15px;height:15px;border-width:3px}
 .rp-row.is-here .rp-line::after{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
-.rp-row .route-stn{padding:4px 0 4px 8px}
+.rp-row .route-stn{padding:4px 0}
 .rp-row.rp-major .route-stn,.rp-row.is-here .route-stn{font-weight:var(--fw-bold)!important}
-.rp-stop{position:relative;width:12px;height:12px;border-radius:50%;box-sizing:border-box;border:3px solid var(--route);background:var(--rr-canvas)}
-.rp-RX .rp-stop{background:var(--route)}
+.rp-key{display:flex;gap:6px 16px;margin:-4px 0 10px}
+.rp-key>span{display:inline-flex;align-items:center;gap:6px}
+.rp-key-mark{display:inline-block;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--route,var(--ink-soft));background:var(--rr-canvas)}
+.rp-key-mark.rp-key-major{width:13px;height:13px;border-width:3px}
