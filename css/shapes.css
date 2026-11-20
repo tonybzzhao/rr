@@ -367,12 +367,13 @@ body,.app{background:var(--rr-canvas)}
    search button (the Find trains glyph), to edit the search. */
 .jp-collapsed #journeyPanel,.jp-collapsed .side-controls{display:none!important}
 .journey-head-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.jp-edit{display:none;flex:0 0 auto;width:36px;height:36px;margin:-8px -8px -8px 0;padding:0;border:0;border-radius:50%;align-items:center;justify-content:center;
-  background:transparent;color:var(--muted-slate);cursor:pointer;transition:background-color .15s,color .15s}
-.jp-edit .rr-action-icon{width:20px;height:20px}
+.jp-edit{display:none;flex:0 0 auto;height:36px;margin:-6px 0;padding:0 14px 0 10px;gap:6px;border:0;border-radius:var(--rr-radius-control);align-items:center;justify-content:center;
+  background:var(--rr-canvas);color:var(--ink-strong);font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background-color .15s}
+/* the sidebar's secondary button (Reset, Swap, Now): canvas-grey fill, no border, 10px radius, icon + label */
+.jp-edit .rr-action-icon{width:20px;height:20px;color:var(--ink-strong)}
 .jp-collapsed .jp-edit{display:inline-flex}
 .jp-collapsed .journey-results-head{cursor:pointer;transition:box-shadow .15s}
-.jp-collapsed .journey-results-head:hover .jp-edit,.jp-edit:hover{background:var(--rr-canvas);color:var(--ink-strong)}
+.jp-collapsed .journey-results-head:hover .jp-edit,.jp-edit:hover{background:var(--hair)}
 .jp-edit:focus-visible{outline:2px solid var(--ui,currentColor);outline-offset:2px}
 .journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:16px}
 .journey-results-head .journey-pair .rr-arrow{display:none}
