@@ -1330,7 +1330,7 @@ body{font-size:14px}
 .journey-leg-heading .rr-service-identity,
 .journey-leg-heading .rr-service-identity > span,
 .journey-leg-heading .status-tag,
-.journey-row-meta .service {font-weight:500!important}
+/* (journey-row badge weight now comes from the badge tiers) */
 
 /* v51: slightly relax character spacing only in the right details panel.
    Keep the mobile and desktop time hierarchy, tabular numerals, and

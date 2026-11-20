@@ -5,6 +5,7 @@
    - every train / line view (getTrainPath): a connected route along drawn edges, every call on it in order, from its first
      call to its last, no out-and-back spike between calls, nothing drawn over a lake or the sea for more than 2 km (a bridge) except a listed Mainline causeway (GRAPH.causeways);
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
+   - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
    - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
    - journeys (findJourneys + getSegmentPath) for a wide sample of station pairs, incl. whole-city choices: each leg on its
      train's route from its boarding point to its alighting point, every call on the way on it, changes at the same place.
@@ -57,6 +58,7 @@
  out.counts['journeys checked']=nj;
  // labels: every main station is named on the map when it is in view (centred at three zoom levels)
  clear();setCurrentStation(null);   // names are checked on the plain map: a selected route or station puts its own names first
+ const phone=matchMedia('(max-width:750px)').matches;if(phone){rrSetPhoneView(true,false);resize()}   // phones: the map is its own screen
  const view0={zoom,panX,panY},norm=t=>t.replace(/\s+/g,'');let nl=0;
  for(const z of [3,7,12])for(const name of LABELS){const s=S.get(name);if(!s)continue;nl++;zoom=z;const sc=fit*zoom;
   panX=W/2-s.attach[0]*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.attach[1]*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();drawMap();
@@ -71,18 +73,37 @@
   for(const g of layer.querySelectorAll('g[data-station]')){const parts=[...g.children].filter(e=>!e.classList.contains('mapnode'));if(parts.length)marks.set(g.dataset.station,parts.map(e=>box(e,o)))}
   const names=[...labels.querySelectorAll('.station-label')].map(g=>({name:g.getAttribute('aria-label').replace(/^Show departures at /,''),b:box(g.querySelector('text'),o),over:!!g.querySelector('.over-lines')}));
   for(const n of names){const own=marks.get(n.name);if(!own){bad('name without its station mark',lab+': '+n.name);continue}
-   const c=own[0],cx=c.x+c.w/2,cy=c.y+c.h/2,dx=Math.max(n.b.x-cx,0,cx-(n.b.x+n.b.w)),dy=Math.max(n.b.y-cy,0,cy-(n.b.y+n.b.h));
-   if(Math.hypot(dx,dy)>48)bad('name away from its station',lab+': '+n.name);
+   const c=own[0],dx=Math.max(n.b.x-(c.x+c.w),0,c.x-(n.b.x+n.b.w)),dy=Math.max(n.b.y-(c.y+c.h),0,c.y-(n.b.y+n.b.h));   // gap between the name and its mark
+   if(Math.hypot(dx,dy)>44)bad('name away from its station',lab+': '+n.name);
    if(!n.over)for(const [k,bs] of marks)if(k!==n.name&&bs.some(b=>hit(n.b,b,1))){bad('name covers another station',lab+': '+n.name+' over '+k);break}
    for(const q of names)if(q!==n&&hit(n.b,q.b,1)){bad('names overlap',lab+': '+n.name+' / '+q.name);break}}
   return names.length};
  let nn=0;
  for(const [net,m] of rrLocalNetworkEdges()){const pts=new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)));
   for(const t of TRAINS)if(t.type==='Local'&&t.network===net)for(const [n] of t.route)if(!pts.has(S.get(n)?.point)){bad('Local station off its coloured line',net+': '+n);break}
-  fillLocalSystem(net);await frame();nn+=checkNames(net);
+  fillLocalSystem(net);if(phone){app.classList.remove('detail-open');rrSetPhoneView(true,false)}await frame();nn+=checkNames(net);   // phones: View route shows the map
   const hub=S.get([...LABELS].find(n=>pts.has(S.get(n)?.point))||'');
   if(hub){zoom=28;const sc=fit*zoom;panX=W/2-hub.x*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-hub.y*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();nn+=checkNames(net+' centre zoomed in')}}
  clear();app.classList.remove('detail-open');setCurrentStation(null);zoom=view0.zoom;panX=view0.panX;panY=view0.panY;updateWorld();
+ if(phone)rrSetPhoneView(false,false);
  out.counts['Local network names checked']=nn;
+ // one presentation site-wide: badges in two tiers (S lists, L details heads), text on the type tiers, weights 500 / 700
+ const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+ const badgeOK=new Set([[tok('--badge-s-fs'),tok('--badge-s-h')],[tok('--badge-l-fs'),tok('--badge-l-h')]].map(([f,h])=>parseFloat(f)+'/'+parseFloat(h)));
+ const sizes=new Set(['--fs-caption','--fs-small','--fs-body','--fs-primary','--fs-hero','--fs-display'].map(n=>parseFloat(tok(n))));
+ let nb=0,ntx=0;const seenOff=new Set(),off=(k,m)=>{if(!seenOff.has(m)){seenOff.add(m);bad(k,m)}};
+ const look=view=>{for(const root of [document.querySelector('.side'),detail,document.querySelector('.details-head')])if(root)for(const e of root.querySelectorAll('*')){if(!e.offsetParent)continue;const cs=getComputedStyle(e);
+   if(e.matches('.service,.train-number')){nb++;const k=parseFloat(cs.fontSize)+'/'+Math.round(e.getBoundingClientRect().height);if(!badgeOK.has(k)||cs.fontWeight!=='700')off('badge off the tiers',view+': '+e.textContent.trim()+' '+k+' '+cs.fontWeight);continue}
+   if(e.closest('.service,.train-number,.close-detail,.day-offset,.scheduled-time,.rr-station-fac-chevron')||![...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()))continue;ntx++;
+   if(!sizes.has(parseFloat(cs.fontSize))||!['500','700'].includes(cs.fontWeight))off('text off the type tiers',view+': "'+e.textContent.trim().slice(0,24)+'" '+cs.fontSize+'/'+cs.fontWeight+' ('+e.className+')')}};
+ const st=LABELS.find(n=>upcoming(n).some(t=>t.type==='Regio')&&upcoming(n).some(t=>t.type==='Local'))||LABELS[0];
+ setCurrentStation(st);look('timetable');
+ for(const ty of ['Max','InterCity','Regio','Local']){const t=upcoming(st).find(x=>x.type===ty);if(t){chooseTrain(t);look('train '+ty)}}
+ const rg=upcoming(st).find(x=>x.type==='Regio');if(rg){fillRouteInfo('Regio',rg.network,rg.line,st);look('route')}
+ fillStationInfo(st);detail.querySelectorAll('details').forEach(d=>d.open=true);look('station');
+ const ln=TRAINS.find(t=>t.type==='Local');fillLocalSystem(ln.network);look('network');
+ const other=LABELS.find(n=>n!==st);try{rrSelectValue($('from'),st);rrSelectValue($('to'),other);setViewMode('journeys');searchJourneys();look('journeys');if(journeyResults[0]){chooseJourney(journeyResults[0]);look('journey')}}catch(e){bad('journey view error',e.message)}
+ viewMode='departures';clear();app.classList.remove('detail-open');setCurrentStation(null);
+ out.counts['badges checked']=nb;out.counts['text elements checked']=ntx;
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()

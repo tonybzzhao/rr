@@ -193,6 +193,7 @@ const detail=$('detailsBody'), container=$('mapContainer'), tooltip=$('tooltip')
 const rrStnLink=n=>`<button type="button" class="station-link" data-station="${n}">${n}</button>`;
 detail.addEventListener('click',e=>{const b=e.target.closest('.station-link');if(!b)return;const n=b.dataset.station,back=selectedTrain?{train:selectedTrain,station:currentStation,boardMode:viewMode}:undefined;setCurrentStation(n);fillStationInfo(n,back)});
 const S=new Map(STATIONS.map(s=>[s.name,s]));
+let rrLocalSystem=null;   // the Local network whose page was opened; stays on the map (phones show the map without the panel) until something else is chosen
 let currentStation=null, selectedTrain=null, selectedRouteLine=null, rrRouteMinor=new Set(), selectedPath=[], selectedNames=[], routeColor=C.Max, manualTrace=false;   // selectedRouteLine: route details shows a whole line
 let zoom=1, panX=0, panY=0, fit=1, offX=0, offY=0, W=0, H=0;
 const minX=Math.min(...P.map(p=>p[0])),maxX=Math.max(...P.map(p=>p[0]));
@@ -393,7 +394,7 @@ function drawBoard(){
   board.append(more);
  }
 }
-function setCurrentStation(name){
+function setCurrentStation(name){rrLocalSystem=null;
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
  updateBoardTabs();
  const moved=!!name&&name!==currentStation;
@@ -557,7 +558,7 @@ function rrStationServices(name){
 }
 /* Route details: one Regio or Local line on one network. Next departures from the station you came from (3 each way),
    and a line diagram of the whole route with one lane per stopping pattern (RS stops everywhere, RX only at its stops). */
-function fillRouteInfo(type,net,line,from=currentStation){
+function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;
  // Lanes: RX and RS for a Regio line; every branch of a Local letter line (A1, A2…); otherwise the line itself.
  // (Havenbolme S-lines are separate lines, not branches.)
  const branchOf=l=>String(l).replace(/\d+/g,''),branched=type==='Local'&&net!=='Havenbolme';
@@ -606,7 +607,7 @@ function fillRouteInfo(type,net,line,from=currentStation){
  drawBoard();drawRoute();drawMap();
  detail.scrollTop=0;app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()});rrSyncHash();
 }
-function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){
+function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){rrLocalSystem=null;
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
@@ -943,8 +944,8 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-informatio
  detail.querySelector('.stop-fold-btn')?.addEventListener('click',e=>{const b=e.currentTarget,open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',open);b.firstElementChild.textContent=open?'Hide earlier stops':b.dataset.count+' earlier stops';open?rrFoldOpen.add(t.id):rrFoldOpen.delete(t.id);b.closest('.stop-list').classList.toggle('show-passed',open)});
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
-function chooseTrain(t,openDrawer=true){selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=rrLineColor(t)||C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
-function clear(){selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=null;selectedPath=[];selectedNames=currentStation?[currentStation]:[];manualTrace=false;routeWorld.replaceChildren();drawBoard();$('focusRoute').hidden=true;detail.innerHTML=`<div class="empty">Select ${viewMode==='arrivals'?'an arrival':'a departure'}.</div>`;app.classList.remove('detail-open');requestAnimationFrame(resize);drawMap()}
+function chooseTrain(t,openDrawer=true){rrLocalSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=rrLineColor(t)||C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
+function clear(){rrLocalSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=null;selectedPath=[];selectedNames=currentStation?[currentStation]:[];manualTrace=false;routeWorld.replaceChildren();drawBoard();$('focusRoute').hidden=true;detail.innerHTML=`<div class="empty">Select ${viewMode==='arrivals'?'an arrival':'a departure'}.</div>`;app.classList.remove('detail-open');requestAnimationFrame(resize);drawMap()}
 // Shared schematic edges get smooth, adjacent half-width colour bands using
 // a single perpendicular gradient stroke; transfer-ring halves match these bands.
 const RR_ROUTE_WIDTH=5.5;
@@ -1329,7 +1330,9 @@ function drawMap(){
   let chosen=null;
   // Main stations, the current station and a selected trip's stops always get their name: if no spot clear of the lines
   // exists (a busy hub), a second pass lets the name cross lines (with a halo), never another name, dot or the controls.
-  const mustName=important||name===currentStation||selectedSet.has(name);
+  // (a main station at the very edge of the map or under its controls is not forced: its name would land far from it)
+  const tucked=s.sx<24||s.sy<24||s.sx>W-24||s.sy>H-24||overlayRects.some(p=>s.sx>=p.x-8&&s.sx<=p.x+p.w+8&&s.sy>=p.y-8&&s.sy<=p.y+p.h+8);
+  const mustName=(important&&!tucked)||name===currentStation||selectedSet.has(name);
   for(const overLines of (mustName?[false,true]:[false])){
   if(chosen)break;
   for(const dir of dirs){
@@ -1423,7 +1426,7 @@ function rrLocalStationMarks(){   // station point -> {net, cols (lines stopping
    if(cols.length>cur.n){cur.n=cols.length;cur.ang=Math.atan2(P[b][1]-P[a][1],P[b][0]-P[a][0])}rrLocalStations.set(p,cur)}}
  return rrLocalStations}
 const RR_LOCAL_GAP=3.4;   // px between parallel Local lines
-function rrLocalSystemShown(){return app.classList.contains('detail-open')&&detail.querySelector('.system-hero')?.dataset.system||null}
+function rrLocalSystemShown(){return rrLocalSystem}
 function rrLocalSystemPoints(){const net=rrLocalSystemShown(),m=net&&rrLocalNetworkEdges().get(net);return m?[...new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)))]:[]}
 function drawLocalColours(){
  const g=$('localColours');if(!g)return;
@@ -1466,7 +1469,7 @@ function fillLocalSystem(net,from=currentStation){
  const sample=k=>letters.get(k)[0];
  const interRows=inter.map(n=>`<button type="button" class="system-stn" data-station="${n}"><span class="system-stn-name">${n}</span><span class="system-stn-lines">${[...lettersAt.get(n)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>rrBadge(sample(k))).join('')}</span></button>`).join('');
  const firsts=trains.map(t=>t.route[0][1]).sort((a,b)=>timeOrdinal(a)-timeOrdinal(b));
- rrDetailsHeading('Network details','rr-ui-route');$('focusRoute').hidden=false;
+ rrDetailsHeading('Network details','rr-ui-route');$('focusRoute').hidden=false;rrLocalSystem=net;
  detail.innerHTML=`<div class="train-hero system-hero" data-system="${net}"><div class="system-name">${rrServiceLabel('Local',net)}</div></div>
  <section class="rr-card"><h3 class="rr-card-title">Lines</h3><div class="system-lines">${lines}</div></section>
  ${inter.length?`<section class="rr-card"><h3 class="rr-card-title">Change for Mainline and Regio</h3><div class="system-stns">${interRows}</div></section>`:''}
@@ -1868,7 +1871,7 @@ function getSegmentPath(t,a,b){
  const real=getTrainPath(t),ends=routeStopPathEnds.get(t.id)||[];
  return ends[start]>=0&&ends[end]>ends[start]?real.slice(ends[start],ends[end]+1):[];
 }
-function chooseJourney(j){
+function chooseJourney(j){rrLocalSystem=null;
  selectedJourney=j;selectedTrain=null;manualTrace=false;
  selectedLegPaths=j.legs.map(l=>({path:getSegmentPath(l.train,l.from,l.to),color:rrMapColor(l.train)}));
  selectedPath=selectedLegPaths.flatMap((p,i)=>i?p.path.slice(1):p.path);
@@ -2009,7 +2012,7 @@ document.addEventListener('keydown',e=>{
  const t=e.target;if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)))return;
  e.preventDefault();rrSetFolded(!app.classList.contains('folded'));
 });
-$('closeDetail').onclick=()=>{if(selectedRouteLine)clear();app.classList.remove('detail-open');requestAnimationFrame(resize);rrSyncHash()};   // a line shown from route details goes with the panel
+$('closeDetail').onclick=()=>{if(selectedRouteLine||rrLocalSystem)clear();app.classList.remove('detail-open');requestAnimationFrame(resize);rrSyncHash()};   // a line shown from route details goes with the panel
 const ro=new ResizeObserver(()=>resize());ro.observe(container);
 
 /* v46: relocate the functional From/To planner under mobile timetable. */
