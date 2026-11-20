@@ -124,5 +124,15 @@
  const other=LABELS.find(n=>n!==st);try{rrSelectValue($('from'),st);rrSelectValue($('to'),other);setViewMode('journeys');searchJourneys();look('journeys');if(journeyResults[0]){chooseJourney(journeyResults[0]);look('journey')}}catch(e){bad('journey view error',e.message)}
  viewMode='departures';clear();app.classList.remove('detail-open');setCurrentStation(null);
  out.counts['badges checked']=nb;out.counts['text elements checked']=ntx;
+ // every marker on its line's exact point; at the deepest zoom every station in view is named (user 2026-11-20)
+ {clear();app.classList.remove('detail-open');setCurrentStation(null);if(phone)rrSetPhoneView(true,false);resize();const v0={zoom,panX,panY};
+  let nmk=0,nz=0;const centres=[...LABELS].map(n=>P[S.get(n)?.point]).filter(Boolean);
+  for(const [cx,cy] of centres){resize();zoom=rrMaxZoom();const sc=fit*zoom;panX=W/2-cx*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-cy*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();
+   const named=new Set([...labels.querySelectorAll('.station-label')].map(g=>g.getAttribute('aria-label').replace(/^Show departures at /,'')));
+   for(const g of layer.querySelectorAll('g[data-station]')){const c=g.querySelector('.mapnode'),x=+c.getAttribute('cx'),y=+c.getAttribute('cy'),st=S.get(g.dataset.station);
+    const [px,py]=P[st.point];nmk++;if(Math.hypot(x-(px*sc+offX),y-(py*sc+offY))>0.5)off('station marker off its line','"'+g.dataset.station+'"');
+    const mb=container.getBoundingClientRect(),ovs=[...container.querySelectorAll('.map-legend,.zoom-control')].map(e=>{const b=e.getBoundingClientRect();return{x:b.left-mb.left,y:b.top-mb.top,w:b.width,h:b.height}}).filter(r=>r.w>0&&r.h>0);
+    if(x<40||y<40||x>W-40||y>H-40||ovs.some(p=>x>=p.x-8&&x<=p.x+p.w+8&&y>=p.y-8&&y<=p.y+p.h+8))continue;nz++;   /* as the map: not at the edge or under its legend / controls */ if(!named.has(g.dataset.station))off('station without its name at the deepest zoom','"'+g.dataset.station+'"')}}
+  zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(phone)rrSetPhoneView(false,false);out.counts['station markers checked']=nmk;out.counts['deepest-zoom names checked']=nz}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
