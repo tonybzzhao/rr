@@ -794,3 +794,19 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rr-when-time input[type="time"]{flex:0 0 auto!important;width:auto!important;field-sizing:content;min-width:0;max-width:5.2em;padding:0!important;text-align:left!important}
 .rr-when-time input[type="time"]::-webkit-calendar-picker-indicator{display:none}
 .trainrow .dest>span{min-width:0}
+/* Ring line route details: the stations as a loop (a return track closes it), clockwise down, anticlockwise up */
+.ring-facts{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:var(--fs-body);font-weight:var(--fw-regular);color:var(--ink-strong)}
+.ring-dir{display:flex;align-items:center;gap:6px}
+.rl-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin:-4px 0 10px}
+.rl-key>span{display:inline-flex;align-items:center;gap:6px}
+.ring-loop{position:relative;display:grid;padding-left:16px}
+.ring-loop::before{content:"";position:absolute;left:4px;top:14.5px;bottom:14.5px;width:21.5px;box-sizing:border-box;border:3px solid var(--route);border-right:0;border-radius:14px 0 0 14px}
+.rl-row{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;column-gap:8px;height:32px}
+.rl-line{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
+.rl-line::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--route)}
+.rl-row.is-first .rl-line::before{top:50%}.rl-row.is-last .rl-line::before{bottom:50%}
+.rl-line::after{content:"";position:relative;width:8px;height:8px;border-radius:50%;box-sizing:border-box;border:2px solid var(--route);background:var(--rr-canvas)}
+.rl-row.rl-major .rl-line::after{width:13px;height:13px;border-width:3px}
+.rl-row.is-here .rl-line::after{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
+.rl-row .route-stn{padding:4px 0}
+.rl-row.rl-major .route-stn,.rl-row.is-here .route-stn{font-weight:var(--fw-bold)!important}
