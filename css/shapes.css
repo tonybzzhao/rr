@@ -363,6 +363,17 @@ body,.app{background:var(--rr-canvas)}
 /* Journey results: a summary card (route as a mini line, then count and search time) */
 .journey-results-head{margin:0 0 var(--rr-gap)!important;padding:var(--rr-card-pad)!important;border-radius:var(--rr-radius-card);background:var(--surface);box-shadow:var(--rr-card-shadow)}
 .journey-results-head .eyebrow{margin-bottom:10px}
+/* After a search the form folds away: results take the column. The summary card is the way back: tap it, or its round
+   search button (the Find trains glyph), to edit the search. */
+.jp-collapsed #journeyPanel,.jp-collapsed .side-controls{display:none!important}
+.journey-head-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.jp-edit{display:none;flex:0 0 auto;width:36px;height:36px;margin:-8px -8px -8px 0;padding:0;border:0;border-radius:50%;align-items:center;justify-content:center;
+  background:transparent;color:var(--muted-slate);cursor:pointer;transition:background-color .15s,color .15s}
+.jp-edit .rr-action-icon{width:20px;height:20px}
+.jp-collapsed .jp-edit{display:inline-flex}
+.jp-collapsed .journey-results-head{cursor:pointer;transition:box-shadow .15s}
+.jp-collapsed .journey-results-head:hover .jp-edit,.jp-edit:hover{background:var(--rr-canvas);color:var(--ink-strong)}
+.jp-edit:focus-visible{outline:2px solid var(--ui,currentColor);outline-offset:2px}
 .journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:16px}
 .journey-results-head .journey-pair .rr-arrow{display:none}
 .journey-results-head .journey-pair strong{grid-column:2;font-weight:700;color:var(--ink-strong);line-height:1.25}
