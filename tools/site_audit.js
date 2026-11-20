@@ -4,6 +4,7 @@
    - every station has its own map point on a drawn line;
    - every train / line view (getTrainPath): a connected route along drawn edges, every call on it in order, from its first
      call to its last, no out-and-back spike between calls, nothing drawn over a lake or the sea for more than 2 km (a bridge) except a listed Mainline causeway (GRAPH.causeways);
+   - times never run backwards: scheduled and revised times along every train, journey legs and connections;
    - drawn track: Regio / Local colour (own or shared lane) only where trains of that system run;
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
    - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
@@ -42,6 +43,12 @@
  for(const t of TRAINS){const key=(t.mp??'x')+'|'+t.route.map(x=>x[0]).join('>');if(seen.has(key))continue;seen.add(key);nt++;
   const r=getTrainPath(t),ends=routeStopPathEnds.get(t.id)||[];checkPath(rrTrainLabel(t)+' '+t.route[0][0]+' - '+t.route.at(-1)[0],r,t.route.map(x=>x[0]),ends,true)}
  out.counts['train routes checked']=nt;
+ // times never run backwards: scheduled and revised (delayed) times along every train, and every journey's legs and changes
+ {let nt2=0;for(const t of TRAINS){nt2++;let ps=-1,pr=-1;for(let i=0;i<t.route.length;i++){const s=timeOrdinal(t.route[i][1]),r=stopOrdinal(t,i);
+   if(s<ps){bad('scheduled time earlier than the stop before',rrTrainLabel(t)+' '+t.route[i][0]+' '+t.route[i][1]);break}
+   if(r<pr){bad('revised time earlier than the stop before',rrTrainLabel(t)+' '+t.route[i][0]+' '+t.route[i][1]+' +'+stopDelay(t,i));break}
+   ps=s;pr=r}}
+  out.counts['train timetables checked']=nt2}
  // drawn track: a line is drawn in a system's colour (Regio, Local - its own colour or a shared lane) only where trains of that
  // system run (2026-11-20: Local lanes were drawn on a stretch only Regio trains use)
  {const key=(a,b)=>a<b?a+'_'+b:b+'_'+a,runs=new Map(),seenP=new Set(),sysOf=t=>t.type==='Regio'?'R':t.type==='Local'?'L':'M';
@@ -62,7 +69,9 @@
     const calls=l.train.route.slice(l.fromIdx,l.toIdx+1).map(x=>x[0]);let k=0;
     for(const c of calls){const q=r.indexOf(S.get(c)?.point,k);if(q<0){bad('journey call not on the drawn leg',lab+': '+c);break}k=q}
     for(let m=1;m<r.length;m++)if(r[m]!==r[m-1]&&!edge.has(r[m-1]+'_'+r[m])){bad('journey leg jumps between unjoined points',lab);break}
-    if(i&&j.legs[i-1].to!==l.from)bad('change between different stations',lab)})}}
+    if(i&&j.legs[i-1].to!==l.from)bad('change between different stations',lab);
+    if(l.arr<l.dep)bad('journey leg arrives before it departs',lab);
+    if(i&&l.dep<j.legs[i-1].arr)bad('connection leaves before the train before it arrives',lab)})}}
  out.counts['journeys checked']=nj;
  // labels: every main station is named on the map when it is in view (centred at three zoom levels)
  clear();setCurrentStation(null);   // names are checked on the plain map: a selected route or station puts its own names first

@@ -749,6 +749,10 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 /* A changed value (revised time, new platform) looks the same in every view: the new value in dark ink on the light-blue
    box (user 2026-11-20: the calling-at list still used the old navy, route departures an orange text without the box). */
 .time-delayed .retime-box,.stop-list.has-disruptions .stop-time .retime-box,.route-dep .time-delayed .retime-box{
- color:var(--ink-strong)!important;background:var(--hover-blue)!important;border:0!important;border-radius:4px!important}
+ color:var(--ink-strong)!important;background:var(--surface)!important;border:0!important;border-radius:4px!important;
+ box-shadow:inset 0 0 0 1.5px var(--stroke)!important}
+/* (was the old blue scheme's hover tint #EDF3FA: the same tone as the grey cards, so the box could not be seen - user
+   2026-11-20 "is this base color legacy? shape not legible". White with an outline reads on white rows, grey cards and the
+   selected row alike.) */
 .route-dep .time-delayed .retime-box{display:inline-flex!important;padding:2px 6px!important;font-size:inherit!important;margin-left:-6px}
 .route-dep .time-delayed{flex-direction:row!important}
