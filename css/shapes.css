@@ -775,3 +775,9 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .station-reset:hover{background:var(--hover)}
 .station-reset:focus-visible{outline:2px solid var(--ui);outline-offset:1px}
 .app.no-station .station-reset{display:none}
+/* SF Symbol icons from RR Info/UI (2026-11-20): xmark (close), chevron.right, map (phone toggle), change (journey changes),
+   exclamationmark.bubble (disruption messages) */
+#closeDetail .rr-action-icon{width:20px;height:20px;fill:currentColor}
+svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;color:var(--ink-soft)}
+.jt-transfer-box strong{display:inline-flex;align-items:center;gap:6px}
+.jt-change-icon{width:16px;height:16px;flex:none;fill:currentColor}
