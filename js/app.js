@@ -1211,6 +1211,14 @@ function rrTripFocus(){
  const through=new Set(STATIONS.filter(s=>onPath.has(s.point)&&!calls.has(s.name)).map(s=>s.name));
  return {calls,key,changes,through};
 }
+// A station chosen on the map (its dot or its name) is shown in the timetable panel: on a phone the map and the timetable are
+// separate screens, so the phone switches to the timetable (user 2026-11-20: "when i click station on map why no station
+// selection on left panel?").
+function rrPickStationOnMap(name){
+ if(app.classList.contains('folded'))rrSetFolded(false);
+ setCurrentStation(name);
+ if(app.classList.contains('phone-map')&&matchMedia('(max-width:750px)').matches)rrSetPhoneView(false);
+}
 function drawMap(){
  if(!W||!H)return;
  rrDrawnAt={x:offX,y:offY,sc:fit*zoom};layer.removeAttribute('transform');labels.removeAttribute('transform');
@@ -1285,8 +1293,8 @@ function drawMap(){
    g.append(se('circle',{cx:x,cy:y,r,fill:RR_UI_CSS_COLOR('--surface'),stroke:ring,'stroke-width':important?2.2:s.regio?1.4:1.7,'pointer-events':'none'}));
   }
   const hit=se('circle',{cx:x,cy:y,r:12,fill:'transparent',class:'mapnode',role:'button','aria-label':s.name,tabindex:0});
-  hit.addEventListener('click',e=>{e.stopPropagation();if(app.classList.contains('folded'))rrSetFolded(false);setCurrentStation(s.name)});
-  hit.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(s.name)}});
+  hit.addEventListener('click',e=>{e.stopPropagation();rrPickStationOnMap(s.name)});
+  hit.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();rrPickStationOnMap(s.name)}});
   hit.addEventListener('mouseenter',()=>{tooltip.textContent=s.name;tooltip.style.display='block';tooltip.style.left=x+'px';tooltip.style.top=(y-13)+'px'});
   hit.addEventListener('mouseleave',()=>tooltip.style.display='none');
   hit.addEventListener('focus',()=>{tooltip.textContent=s.name;tooltip.style.display='block';tooltip.style.left=x+'px';tooltip.style.top=(y-13)+'px'});
@@ -1398,8 +1406,8 @@ function drawMap(){
   if(selectedTrain&&passedStationNames.has(name)&&name!==currentStation)text.setAttribute('data-trip','passed');
   chosen.lines.forEach((line,i)=>{const span=se('tspan',{x:textX,dy:i?chosen.lh:0});span.textContent=line;text.append(span)});
   group.append(text);
-  group.addEventListener('click',e=>{e.stopPropagation();setCurrentStation(name)});
-  group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setCurrentStation(name)}});
+  group.addEventListener('click',e=>{e.stopPropagation();rrPickStationOnMap(name)});
+  group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();rrPickStationOnMap(name)}});
   labels.append(group);
  }
 }
