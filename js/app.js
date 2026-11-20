@@ -648,10 +648,16 @@ function rrRingRoute(type,net,line,from=currentStation){
  if(order.includes(from)){const up=upcoming(from).filter(t=>t.ring&&t.network===net),g=new Map();
   for(const t of up){if(!g.has(t.ring))g.set(t.ring,[]);if(g.get(t.ring).length<3)g.get(t.ring).push(t)}
   deps=`<section class="rr-card"><h3 class="rr-card-title">Next departures from ${from}</h3>${['cw','ccw'].filter(w=>g.has(w)).map(w=>`<div class="route-dir"><div class="rr-card-sub ring-dir">${rrRingIcon({ring:w})}<span>${w==='cw'?'Clockwise':'Anticlockwise'}</span></div>${g.get(w).map(t=>`<button type="button" class="route-dep" data-train="${t.id}"><span class="route-dep-time">${stopTimeMarkup(t,t.hereIndex)}</span>${rrBadge(t)}<span class="route-dep-main"><span class="route-dep-dest">via ${(rrVia(t,false).join(' · '))||t.dest}</span><span class="route-dep-status">${statusTag(rrBoardStatus(t,false))}</span></span><span class="route-dep-plat" title="Platform">${rrBoardPlatform(t,from)}</span></button>`).join('')}</div>`).join('')||'<div class="rr-card-sub">No more departures today.</div>'}</section>`}
+ // the ring as a long oval (user 2026-11-20): stations evenly down both sides - clockwise down the right side from the station
+ // you came from, then up the left - inside at the top and the bottom the same clockwise / anticlockwise icons the timetable
+ // rows use, so a passenger matches the board's direction to the ring
  const major=n=>LABELS.includes(n)||/[MR]/.test(S.get(n)?.sys||'');
- const rows=order.map((n,i)=>`<div class="rl-row${n===from?' is-here':''}${major(n)?' rl-major':''}${i===0?' is-first':''}${i===order.length-1?' is-last':''}"><span class="rl-line" aria-hidden="true"></span><button type="button" class="route-stn" data-station="${n}">${n}</button></div>`).join('');
- const key=`<div class="route-legend rl-key"><span>${rrRingIcon({ring:'cw'})}<span>Clockwise: down the list</span></span><span>${rrRingIcon({ring:'ccw'})}<span>Anticlockwise: up the list</span></span></div>`;
- detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${badges}</div><div class="route-op">${rrSystemLink(type,net)}</div><div class="ring-facts"><span>Full circle</span> <span>${lap} min</span></div></div>${deps}<section class="rr-card" style="--route:${rrTrainCss(cw)}"><h3 class="rr-card-title">Route</h3>${key}<div class="ring-loop" style="--route:${rrTrainCss(cw)}">${rows}</div></section>`;
+ const h=Math.ceil(order.length/2),right=order.slice(0,h),left=order.slice(h).reverse();
+ const cell=(n,side)=>n?`<button type="button" class="route-stn ro-${side}${major(n)?' ro-major':''}${n===from?' is-here':''}" data-station="${n}">${n}</button>`:'<span></span>';
+ const mark=(n,side)=>n?`<span class="ro-mark ro-mark-${side}${major(n)?' ro-major':''}${n===from?' is-here':''}" aria-hidden="true"></span>`:'';
+ const rows=right.map((n,i)=>`<div class="ro-row">${cell(left[i],'l')}<span class="ro-mid">${mark(left[i],'l')}${mark(n,'r')}</span>${cell(n,'r')}</div>`).join('');
+ const way=(cw)=>`<span class="ro-way ro-way-${cw?'top':'bottom'}" aria-hidden="true"><svg class="rr-action-icon" viewBox="0 0 32 32" focusable="false"><use href="#rr-ui-${cw?'clockwise':'anticlockwise'}"></use></svg><span>${cw?'Clockwise':'Anticlockwise'}</span></span>`;
+ detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${badges}</div><div class="route-op">${rrSystemLink(type,net)}</div><div class="ring-facts"><span>Full circle</span> <span>${lap} min</span></div></div>${deps}<section class="rr-card" style="--route:${rrTrainCss(cw)}"><h3 class="rr-card-title">Route</h3><div class="ring-oval" style="--route:${rrTrainCss(cw)}" role="group" aria-label="Ring line: clockwise down the right side, anticlockwise up it">${way(true)}${rows}${way(false)}</div></section>`;
  detail.querySelectorAll('.route-dep').forEach(b=>b.addEventListener('click',()=>{const row=upcoming(from).find(t=>t.id===b.dataset.train);if(row){setCurrentStation(from);chooseTrain(row)}}));
  detail.querySelectorAll('.route-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
  selectedJourney=null;selectedLegPaths=[];selectedTrain=null;manualTrace=false;routeColor=rrMapColor(cw);
@@ -780,18 +786,20 @@ function rrVisibleAlert(t){
  if(a.kind==='delay'&&!delayMinutes(t.status))return null;
  return a;
 }
-// Engineering work and track maintenance alerts show the construction icon;
-// every other alert shows the warning icon.
+// Three alert tiers (user 2026-11-20): red - the train is cancelled; yellow - delayed (the warning triangle); blue - a notice
+// that does not stop anyone travelling (café closed, Wi-Fi, busy train; the message icon). Engineering works show the
+// construction icon in their tier's colour. Only red and yellow flag a train in the timetable.
 const RR_WORKS_ICON='rr-picto-construction';
-function rrAlertIconId(a){return a.works&&document.getElementById(RR_WORKS_ICON)?RR_WORKS_ICON:'rr-settings-warning'}
-// On boards only a warning icon flags the train; the message is in its details.
+function rrAlertTier(a){return a.kind==='cancel'?'red':a.kind==='delay'?'yellow':'info'}
+function rrAlertIconId(a){return a.works&&document.getElementById(RR_WORKS_ICON)?RR_WORKS_ICON:rrAlertTier(a)==='info'?'rr-ui-message':'rr-settings-warning'}
+// On boards only an icon flags the train (red and yellow only); the message is in its details.
 function rrAlertFlag(t){
- const a=rrVisibleAlert(t);if(!a)return '';
+ const a=rrVisibleAlert(t);if(!a||rrAlertTier(a)==='info')return '';
  return `<svg class="rr-alert-flag rr-alert-${a.kind}" viewBox="0 0 32 32" role="img" aria-label="${a.works?'Engineering works':'Service alert'}" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg>`;
 }
 function rrAlertMarkup(t,cls='rr-alert-banner'){
  const a=rrVisibleAlert(t);if(!a)return '';
- return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${a.works?rrAlertIconId(a):'rr-ui-message'}"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
+ return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
 }
 rrAssignDailyAlerts();
 function rrIcon(name,cls='rr-picto'){
