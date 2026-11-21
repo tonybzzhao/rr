@@ -108,6 +108,14 @@
    for(const s of 'RL')if(d.includes(s)&&!u.has(s)){bad('track drawn for a system with no trains on it',(s==='R'?'Regio':'Local')+' at '+P[a]);break}
    for(const s of 'MRL')if(u.has(s)&&!d.includes(s)){bad('trains run on track not drawn in their colour (the line looks broken)',({M:'Mainline',R:'Regio',L:'Local'})[s]+' at '+P[a]);break}}
   out.counts['drawn track pieces checked']=ne}
+ // a Mainline line never looks broken: no run of track without the Mainline lane, through plain points (no junction), with Mainline
+ // track at both ends (2026-11-20, user: "last two broken lines" - a Regional / Local twin standing for the main line lost its lane)
+ {const hasM=e=>e[2]===0||e[2]===1||[1,3,4].includes(e[3]),dg=new Map(),inc=new Map();E.forEach((e,i)=>{for(const v of [e[0],e[1]]){dg.set(v,(dg.get(v)||0)+1);if(!inc.has(v))inc.set(v,[]);inc.get(v).push(i)}});
+  const seenE=new Set();let nr=0;
+  E.forEach((e,i)=>{if(hasM(e)||seenE.has(i))return;seenE.add(i);nr++;let both=0;
+   for(const start of [e[0],e[1]]){let v=start,prev=i;while(dg.get(v)===2){const nx=inc.get(v).find(j=>j!==prev);if(hasM(E[nx])){both++;break}if(seenE.has(nx))break;seenE.add(nx);prev=nx;v=E[nx][0]===v?E[nx][1]:E[nx][0]}}
+   if(both===2)bad('Mainline line broken by a piece without its Mainline lane','at '+P[e[0]])});
+  out.counts['non-Mainline runs checked']=nr}
  // journeys
  const names=STATIONS.map(s=>s.name),major=LABELS.filter(n=>S.has(n)),cities=[...RR_CITIES.keys()];
  let seed=20261120;const rnd=()=>(seed=(seed*1103515245+12345)%2147483648)/2147483648,pick=a=>a[Math.floor(rnd()*a.length)];
