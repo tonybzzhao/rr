@@ -888,3 +888,9 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 #stationPanel[hidden]{display:none!important}
 /* keyboard focus on the tabs: a ring inside the tab in its own text colour, not a second border outside it */
 .board-tab:focus-visible{outline:2px solid currentColor!important;outline-offset:-5px!important}
+/* Departures / Arrivals looks and behaves like Depart after / Arrive by (user 2026-11-20), same size and shape as before: on the flat
+   track the other tab is plain muted text that darkens on hover, the chosen one solid */
+.board-controls .station-tabs .board-tab:not(.active){background:transparent!important;color:var(--muted-slate)!important;font-weight:var(--fw-regular)!important}
+.board-controls .station-tabs .board-tab:not(.active):hover{background:transparent!important;color:var(--ink-strong)!important}
+.board-controls .station-tabs .board-tab.active{background:var(--ui)!important;color:var(--ui-on)!important;font-weight:var(--fw-bold)!important}
+.board-controls .station-tabs .board-tab{transition:none!important}   /* switch at once like Depart after / Arrive by: no fade with the text already switched */

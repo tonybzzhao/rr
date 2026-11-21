@@ -1258,25 +1258,12 @@ function journeyInterchangeMarkers(journey){
 }
 // Draw two open, 180-degree strokes so the white centre has no dividing line.
 // Both strokes sit within the existing station-dot outer diameter.
+// A journey's change station: one ring in the neutral ink, like the map's interchange dots (user 2026-11-20: not the two lines'
+// colours); the lines arriving and leaving carry the colours.
 function appendInterchangeDot(group,x,y,r,marker){
- const colors=marker.colors.map(rrVisibleServiceAccent),edge=2,innerRadius=r-edge/2;
- group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:RR_UI_CSS_COLOR('--surface'),'pointer-events':'none'}));
- if(colors.length<2){
-  group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:'none',
-   stroke:colors[0]||RR_UI_CSS_COLOR('--ui'),'stroke-width':edge,'pointer-events':'none'}));
-  return;
- }
- const a=marker.startAngle;
- const x1=x+innerRadius*Math.cos(a),y1=y+innerRadius*Math.sin(a);
- const x2=x+innerRadius*Math.cos(a+Math.PI),y2=y+innerRadius*Math.sin(a+Math.PI);
- group.append(se('path',{d:`M ${x1} ${y1} A ${innerRadius} ${innerRadius} 0 0 1 ${x2} ${y2}`,
-  fill:'none',stroke:colors[0],'stroke-width':edge,'stroke-linecap':'butt',
-  'data-ring-half':'incoming','pointer-events':'none'}));
- group.append(se('path',{d:`M ${x2} ${y2} A ${innerRadius} ${innerRadius} 0 0 1 ${x1} ${y1}`,
-  fill:'none',stroke:colors[1],'stroke-width':edge,'stroke-linecap':'butt',
-  'data-ring-half':'outgoing','pointer-events':'none'}));
+ const edge=2.4,innerRadius=r-edge/2;
+ group.append(se('circle',{cx:x,cy:y,r:innerRadius,fill:RR_UI_CSS_COLOR('--surface'),stroke:RR_UI_CSS_COLOR('--ink'),'stroke-width':edge,'pointer-events':'none','class':'rr-change-ring'}));
 }
-// The translucent current-station halo uses the same angular split as the dot.
 function appendStationDisc(group,x,y,r,colors,opacity=1,startAngle=Math.PI/2){
  colors=colors.map(rrVisibleServiceAccent);
  const attrs={'pointer-events':'none'};
@@ -1382,7 +1369,7 @@ function drawMap(){
   if(current){
    const markerColors=activeColors.length?activeColors:[RR_UI_CSS_COLOR('--ui')];
    if(transferMarker){
-    appendStationDisc(g,x,y,radius*5/3,transferMarker.colors,0.29,transferMarker.startAngle);
+    appendStationDisc(g,x,y,radius*5/3,[RR_UI_CSS_COLOR('--ink')],0.18);   // the halo of the station you are at: neutral at a change too
     appendInterchangeDot(g,x,y,radius,transferMarker);
    }else{
     appendStationDisc(g,x,y,radius*5/3,[markerColors[0]],0.29);
@@ -2134,8 +2121,9 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
 }
 let rrStationMode='departures';   // Stations reopens departures or arrivals, as last chosen
 $('stationsTab').addEventListener('click',()=>setViewMode(rrStationMode));
-$('departuresTab').addEventListener('click',()=>{rrStationMode='departures';setViewMode('departures')});
-$('arrivalsTab').addEventListener('click',()=>{rrStationMode='arrivals';setViewMode('arrivals')});
+// as Depart after / Arrive by: choosing the tab already chosen does nothing (no redraw, the timetable keeps its place)
+$('departuresTab').addEventListener('click',()=>{if(viewMode==='departures')return;rrStationMode='departures';setViewMode('departures')});
+$('arrivalsTab').addEventListener('click',()=>{if(viewMode==='arrivals')return;rrStationMode='arrivals';setViewMode('arrivals')});
 $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
 // Filter existing results immediately; new stations still require Find trains.
 $('directOnly').addEventListener('change',refreshJourneyFilters);
