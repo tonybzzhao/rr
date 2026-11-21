@@ -434,7 +434,14 @@ function drawBoard(){
   more.addEventListener('click',()=>{const y=board.scrollTop;rrBoardShown+=RR_BOARD_PAGE;drawBoard();board.scrollTop=y});
   board.append(more);
  }
+ rrFitStatus(board);
 }
+// A status that does not fit on its line shortens: "Expected +24 min" -> "Expt +24 min" (display only; the data keeps "Expected")
+function rrFitStatus(root){root.querySelectorAll('.rowstatus').forEach(rs=>{const tag=rs.querySelector('.status-tag');if(!tag)return;
+ const long=tag.dataset.long||tag.textContent;if(!/^Expected /.test(long))return;tag.dataset.long=long;if(tag.textContent!==long)tag.textContent=long;
+ const wraps=()=>{const b=tag.getBoundingClientRect().bottom;return tag.getClientRects().length>1||[...rs.children].some(c=>c!==tag&&c.getBoundingClientRect().top>=b-2)};
+ if(wraps())tag.textContent=long.replace(/^Expected /,'Expt ')})}
+new ResizeObserver(()=>rrFitStatus(board)).observe(board);
 function setCurrentStation(name){rrLocalSystem=null;
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
  updateBoardTabs();
@@ -597,6 +604,20 @@ function rrStationServices(name){
   const e=m.get(k),l=rrTrainLabel(t);if((t.type==='Regio'||t.type==='Local')&&!e.badges.has(l))e.badges.set(l,t)}
  return [...m.values()].sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type));
 }
+// Station services grouped by kind of transport, as the timetable filter (user 2026-11-20: "categorize services ... in the future
+// i add local transport like underground": a new kind is one more entry here). Every network with lines opens as a drop-down
+// of its line badges; a Local network's drop-down also leads to its network page.
+const RR_SERVICE_GROUPS=[['Mainline',['Max','VIA','InterCity','Nightline']],['Regio',['Regio']],['Local',['Local']]];
+function rrServiceRow(s){
+ const name=`<span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span>`;
+ if(!s.badges.size)return `<div class="station-svc"><div class="station-svc-row">${name}</div></div>`;
+ const lines=[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('');
+ const net=s.type==='Local'&&s.network?`<button type="button" class="station-svc-net rr-system-link" data-system="${s.network}"><span>Network details</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`:'';
+ return `<details class="station-svc"><summary>${name}<span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${lines}</div>${net}</details>`}
+function rrServicesCard(svc){
+ const groups=RR_SERVICE_GROUPS.map(([g,types])=>[g,svc.filter(x=>types.includes(x.type))]);
+ for(const x of svc)if(!RR_SERVICE_GROUPS.some(([,types])=>types.includes(x.type))){let g=groups.find(([k])=>k===x.type);if(!g)groups.push(g=[x.type,[]]);g[1].push(x)}   // a kind not listed yet still shows, under its own name
+ return `<section class="rr-card"><h3 class="rr-card-title">Services</h3>${groups.filter(([,l])=>l.length).map(([g,l])=>`<h4 class="rr-card-sub station-svc-group">${g}</h4><div class="station-services">${l.map(rrServiceRow).join('')}</div>`).join('')}</section>`}
 /* Route details: one Regio or Local line on one network. Next departures from the station you came from (3 each way),
    and a line diagram of the whole route with one lane per stopping pattern (RS stops everywhere, RX only at its stops). */
 function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;
@@ -691,7 +712,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
  detail.innerHTML=`${backButton}<div class="train-hero station-hero" data-station="${name}"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
- <section class="rr-card"><h3 class="rr-card-title">Services</h3><div class="station-services">${svc.map(s=>s.type==='Local'?`<div class="station-svc station-svc-local"><button type="button" class="station-svc-row rr-system-link" data-system="${s.network}" title="Network details"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>${s.badges.size?`<div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('')}</div>`:''}</div>`:!s.badges.size?`<div class="station-svc"><div class="station-svc-row"><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span></div></div>`:`<details class="station-svc"><summary><span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span><span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('')}</div></details>`).join('')}</div>${plats.size?`<div class="station-svc-foot">${plats.size} platforms</div>`:''}</section>
+ ${rrServicesCard(svc)}
  <section class="rr-card"><h3 class="rr-card-title">Facilities</h3>${help.length?`<h4 class="rr-card-sub">Help and services</h4><div class="station-picto-grid">${help.map(f=>rrFacilityTile(f,hours[f])).join('')}</div>`:''}<h4 class="rr-card-sub" data-rr-fr="Standard">Standard</h4><div class="station-picto-grid">${STATION_CORE.map(f=>rrFacilityTile(f,null,fault?.facility===f?fault:null)).join('')}</div>
  ${additional.length?`<h4 class="rr-card-sub" data-rr-fr="Supplémentaires">Additional</h4><div class="station-picto-grid">${additional.map(f=>rrFacilityTile(f,hours[f],fault?.facility===f?fault:null)).join('')}</div>`:''}</section>`;
  rrWireFacilityHours(detail,f=>hours[f],f=>fault?.facility===f?fault:null);
@@ -2388,7 +2409,7 @@ function rrFrenchText(source){
  s=s.replace(/([^·:()]+?) \(any station\)/g,(m,c)=>{const k=c.trim()+' (any station)';return (c.match(/^\s*/)[0])+(RR_CITIES.has(k)?rrCityFr(k):c.trim()+' (toutes gares)')});
  if(RR_ALERT_FR.has(s))return leading+RR_ALERT_FR.get(s)+trailing;
  s=s
-  .replace(/\bExpected \+(\d+) min\b/g,(_,n)=>'Retard +'+n+' min')
+  .replace(/\b(?:Expected|Expt) \+(\d+) min\b/g,(_,n)=>'Retard +'+n+' min')
   .replace(/\b(\d+) journeys\b/g,(_,n)=>n+' trajets')
   .replace(/\b1 journey\b/g,'1 trajet')
   .replace(/\b(\d+) changes\b/g,(_,n)=>n+' correspondances')

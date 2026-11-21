@@ -642,8 +642,6 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .rr-system-link{all:unset;cursor:pointer;display:inline-flex;align-items:center;border-radius:4px}
 .rr-system-link:hover .rr-service-identity>span,.rr-system-link:focus-visible .rr-service-identity>span{text-decoration:underline;text-underline-offset:3px}
 .rr-system-link:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
-.station-svc-local>.rr-system-link.station-svc-row{display:grid;grid-template-columns:minmax(0,1fr) 14px;width:100%;box-sizing:border-box;min-height:44px}
-.station-svc-local>.station-svc-row .rr-arrow-icon{width:14px;height:14px;fill:currentColor;color:var(--ink-soft);justify-self:end}
 /* Local network page */
 .system-line,.system-stn{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;align-items:center;column-gap:10px;min-height:48px;padding:8px 2px;border-top:1px solid var(--stroke-soft)}
 .system-line:first-child,.system-stn:first-child{border-top:0}
@@ -833,3 +831,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .service-dest.ring-dest{display:flex;align-items:center;gap:8px}
 .jt-towards .rr-ring-icon{width:16px;height:16px;vertical-align:-3px;margin-right:4px}
 .service-dest.ring-dest .rr-ring-icon{width:24px;height:24px}
+/* Station services by kind (Mainline / Regio / Local); a Local network's drop-down ends with its network page */
+.station-svc-group{margin-top:14px}.station-svc-group:first-of-type{margin-top:4px}
+.station-svc-net{display:flex;align-items:center;gap:6px;margin:-4px 0 14px;padding:0;border:0;background:none;font:inherit;font-size:var(--fs-small);font-weight:500;color:var(--ink-soft);cursor:pointer}
+.station-svc-net .rr-arrow-icon{width:12px;height:12px;fill:currentColor}
+.station-svc-net:hover{color:var(--ink-strong)}
