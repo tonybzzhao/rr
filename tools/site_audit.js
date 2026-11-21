@@ -135,6 +135,17 @@
     const c=w.querySelector('.rr-car[data-rr-coach="0"]');c.click();if(c.getAttribute('aria-pressed')!=='true'||!w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking a coach does not select it',rrTrainLabel(t));
     c.click();if(w.querySelector('.rr-car[aria-pressed="true"]')||w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking the selected coach does not deselect it',rrTrainLabel(t))}}
   out.counts['train formation checked']=1}
+ // a selected train's names: its other stops (not ends, current station, changes or major stations) are named only where their dot has
+ // room (no other highlighted stop within 22 px) and right beside it; zoomed out, names never scatter (user 2026-11-20)
+ {const st0=currentStation,v0={zoom,panX,panY};let nl=0;const dot=n=>{const c=document.querySelector(`#stationLayer g[data-station="${CSS.escape(n)}"] circle`);return c&&[+c.getAttribute('cx'),+c.getAttribute('cy')]};
+  for(const t of TRAINS.filter(x=>(x.type==='Regio'||x.type==='Local')&&x.route.length>=18).filter((_,i)=>i%40===0).slice(0,5)){const st=t.route[Math.floor(t.route.length/3)][0];setCurrentStation(st);chooseTrain(upcoming(st).find(x=>x.id===t.id)||t);
+   const sel=new Set(selectedNames),key=new Set([t.route[0][0],t.route.at(-1)[0],st,...LABELS]);
+   for(const f of [1,0.4]){if(f!==1)zoomAt(f);rrRedraw();
+    for(const g of document.querySelectorAll('#labelLayer .station-label')){const n=g.getAttribute('aria-label').replace('Show departures at ','');if(!sel.has(n)||key.has(n))continue;nl++;
+     const p=dot(n);if(!p)continue;const crowd=[...sel].some(o=>{if(o===n)return false;const q=dot(o);return q&&Math.hypot(q[0]-p[0],q[1]-p[1])<22});
+     if(crowd&&zoom<rrMaxZoom()-1e-6)bad('stop named where highlighted dots crowd',rrTrainLabel(t)+': '+n);
+     const b=g.getBBox();const dx=Math.max(b.x-p[0],0,p[0]-(b.x+b.width)),dy=Math.max(b.y-p[1],0,p[1]-(b.y+b.height));if(Math.hypot(dx,dy)>24)bad('stop name far from its dot',rrTrainLabel(t)+': '+n+' '+Math.round(Math.hypot(dx,dy))+' px')}}}
+  zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(st0)setCurrentStation(st0);out.counts['trip stop names checked']=nl}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);

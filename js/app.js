@@ -1441,6 +1441,8 @@ function drawMap(){
    if(Math.max(x1,x2)<-20||Math.min(x1,x2)>W+20||Math.max(y1,y2)<-20||Math.min(y1,y2)>H+20)continue;
    const L=Math.hypot(x2-x1,y2-y1)||1,o=(cols.length-1)/2*RR_LOCAL_GAP+1.5,nx=-(y2-y1)/L*o,ny=(x2-x1)/L*o;
    segments.push([x1+nx,y1+ny,x2+nx,y2+ny],[x1-nx,y1-ny,x2-nx,y2-ny])}}
+ const RR_TRIP_ROOM=22,tripDots=rrTrip?selectedNames.map(n=>byVisible.get(n)).filter(Boolean):[];
+ const rrTripCrowded=s=>tripDots.some(o=>o!==s&&Math.hypot(o.sx-s.sx,o.sy-s.sy)<RR_TRIP_ROOM);
  for(const name of priorities){
   const s=byVisible.get(name);if(!s)continue;
   const tripKey=!!rrTrip&&(rrTrip.key.has(name)||rrTrip.changes.has(name)),tripHub=!!rrTrip&&!rrTrip.calls.has(name)&&name!==currentStation;
@@ -1463,7 +1465,12 @@ function drawMap(){
   // exists (a busy hub), a second pass lets the name cross lines (with a halo), never another name, dot or the controls.
   // (a main station at the very edge of the map or under its controls is not forced: its name would land far from it)
   const tucked=s.sx<24||s.sy<24||s.sx>W-24||s.sy>H-24||overlayRects.some(p=>s.sx>=p.x-8&&s.sx<=p.x+p.w+8&&s.sy>=p.y-8&&s.sy<=p.y+p.h+8);
-  const mustName=(important&&!tucked)||name===currentStation||selectedSet.has(name)||(zoom>=rrMaxZoom()-1e-6&&!tucked);
+  // A selected train / journey: its key stops (ends, the station you are at, changes) and major stations are always named; its other
+  // stops only where their dot has room (another highlighted stop >= RR_TRIP_ROOM px away) and never forced across the lines, so a
+  // zoomed-out map does not scatter names far from their dots (user 2026-11-20); zooming in names them one by one.
+  const deepest=zoom>=rrMaxZoom()-1e-6,tripMajor=!!rrTrip&&(tripKey||LABELS.includes(name));
+  if(rrTrip&&selectedSet.has(name)&&!tripMajor&&name!==currentStation&&!deepest&&rrTripCrowded(s))continue;
+  const mustName=(important&&!tucked)||name===currentStation||(selectedSet.has(name)&&(!rrTrip||tripMajor))||(deepest&&!tucked);
   for(const overLines of (mustName?[false,true]:[false])){
   if(chosen)break;
   for(const dir of (overLines&&across?[...across,...dirsAll.filter(d_=>!across.includes(d_))]:dirs)){   // the second pass may also go along the line
