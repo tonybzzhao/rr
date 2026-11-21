@@ -3,7 +3,7 @@ python3 tools/make_glyph_font.py   ->  fonts/RRGlyphs.woff
 Used through @font-face with unicode-range U+2708 at the head of every font stack, so the plane is ordinary text after an
 airport's name: it flows, wraps and scales with the name and is never clipped (user 2026-11-20: the earlier inline-SVG icon
 showed cropped). Metrics follow Frutiger Next (UPM 1000, ascent 905, descent 240, cap height 667): the plane is 800 units
-tall, from -50 to 750, well inside the line box; its left side bearing is the space before it."""
+tall, from -50 to 750, well inside the line box; the site puts one no-break space before it (narrow side bearings)."""
 import re, os
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
@@ -15,7 +15,7 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 svg = open(os.path.join(HERE, 'assets/glyphs/airport.svg')).read()
 d = re.findall(r'<path d="([^"]+)"[^>]*fill="#000000"', svg)[0]
 bp = BoundsPen(None); parse_path(d, bp); x0, y0, x1, y1 = bp.bounds          # SVG units, y down
-H, BOTTOM, LSB, RSB = 800, -50, 130, 70
+H, BOTTOM, LSB, RSB = 800, -50, 30, 30
 s = H / (y1 - y0); W = round((x1 - x0) * s)
 pen = TTGlyphPen(None)
 # SVG (y down) -> font units (y up): x' = (x - x0) s + LSB, y' = (y1 - y) s + BOTTOM
