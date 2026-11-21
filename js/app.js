@@ -2128,8 +2128,9 @@ $('clear').onclick=()=>{
 };
 // Swap the draft station values without changing the displayed results.
 $('swapStations').addEventListener('click',()=>{
+ // the selects only hold the chosen station, so set each through rrSelectValue (adds the option first)
  const from=$('from'),to=$('to'),previousFrom=from.value;
- from.value=to.value;to.value=previousFrom;
+ rrSelectValue(from,to.value);rrSelectValue(to,previousFrom);
  pickerViews.get('from')?.sync();
  pickerViews.get('to')?.sync();
 });
