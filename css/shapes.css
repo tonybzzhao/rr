@@ -778,7 +778,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 #closeDetail .rr-action-icon{width:20px;height:20px;fill:currentColor}
 svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;color:var(--ink-soft)}
 .jt-transfer-box strong{display:inline-flex;align-items:center;gap:6px}
-.jt-change-icon{width:16px;height:16px;flex:none;fill:currentColor}
+.jt-change-icon{width:20px;height:20px;flex:none;fill:currentColor}   /* the interchange pictogram, a little larger than the text (user 2026-11-20) */
 /* Ring line O: a round badge; "via" under the destination in timetable rows (user 2026-11-20) */
 .trainrow .row-via{display:block;font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate);line-height:1.3;margin-top:1px}
 /* New icons (2026-11-20): ring direction, journey date and time */
@@ -879,3 +879,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .board-controls .service-filter{gap:6px!important;height:auto!important}
 .board-controls .service-chip{height:30px!important;border-radius:15px!important;font-size:var(--fs-small)!important}
 .board-controls .service-chip[data-filter="all"].active{background:transparent!important;color:var(--ink-strong)!important;box-shadow:inset 0 0 0 1.5px var(--ink-strong)!important}
+/* station header: the name and the reset button share one row, centred on each other (user 2026-11-20: the button sat high) */
+#stationPanel{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:8px}
+#stationPanel>*{grid-column:1/-1}
+#stationPanel>#stationHeading{grid-column:1;grid-row:1;margin-bottom:0!important}
+#stationPanel>.station-reset{grid-column:2;grid-row:1;position:static!important}
