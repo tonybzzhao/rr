@@ -884,3 +884,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 #stationPanel>*{grid-column:1/-1}
 #stationPanel>#stationHeading{grid-column:1;grid-row:1;margin-bottom:0!important}
 #stationPanel>.station-reset{grid-column:2;grid-row:1;position:static!important}
+/* the station block's grid must not override its hidden state (Journeys open: user 2026-11-20 saw the station name over From / To) */
+#stationPanel[hidden]{display:none!important}
+/* keyboard focus on the tabs: a ring inside the tab in its own text colour, not a second border outside it */
+.board-tab:focus-visible{outline:2px solid currentColor!important;outline-offset:-5px!important}
