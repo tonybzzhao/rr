@@ -782,9 +782,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .jt-transfer-box strong{display:inline-flex;align-items:center;gap:6px}
 .jt-change-icon{width:16px;height:16px;flex:none;fill:currentColor}
 /* Ring line O: a round badge; "via" under the destination in timetable rows (user 2026-11-20) */
-.service.service.service-ring{border-radius:50%!important}
 .trainrow .row-via{display:block;font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate);line-height:1.3;margin-top:1px}
-.train-number.train-number.service-ring{border-radius:50%!important}
 /* New icons (2026-11-20): ring direction, journey date and time */
 .trainrow .dest{display:inline-flex;align-items:center;gap:5px}
 .rr-ring-icon{width:18px;height:18px;flex:none;fill:currentColor}
@@ -810,11 +808,10 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rl-row.is-here .rl-line::after{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
 .rl-row .route-stn{padding:4px 0}
 .rl-row.rl-major .route-stn,.rl-row.is-here .route-stn{font-weight:var(--fw-bold)!important}
-/* Ring route: a long oval in the middle, stations evenly down both sides (clockwise down the right, up the left); the
-   timetable's clockwise / anticlockwise icons inside at the top and the bottom */
-.ring-oval{position:relative;display:grid;padding:46px 0}
-.ring-oval::before{content:"";position:absolute;left:calc(50% - 38px);width:76px;top:20px;bottom:20px;box-sizing:border-box;border:3px solid var(--route);border-radius:38px}
-.ro-row{display:grid;grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr);align-items:center;min-height:32px}
+/* Ring route: a narrow long oval in the middle, stations evenly down both sides (clockwise down the right, up the left) */
+.ring-oval{position:relative;display:grid;padding:16px 0}
+.ring-oval::before{content:"";position:absolute;left:calc(50% - 22px);width:44px;top:10px;bottom:10px;box-sizing:border-box;border:3px solid var(--route);border-radius:22px}
+.ro-row{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr);align-items:center;min-height:32px}
 .ro-row .route-stn{padding:4px 0;line-height:1.2;overflow-wrap:break-word;min-width:0}
 .ro-row .route-stn.ro-l{text-align:right;padding-right:10px}
 .ro-row .route-stn.ro-r{text-align:left;padding-left:10px}
@@ -824,15 +821,11 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .ro-mark.ro-major{width:13px;height:13px;border-width:3px}
 .ro-mark.is-here{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
 .ro-mark-l{left:1.5px}.ro-mark-r{left:calc(100% - 1.5px)}
-.ro-way{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;
- font-size:var(--fs-caption);font-weight:var(--fw-regular);color:var(--muted-slate);white-space:nowrap}
-.ro-way-top{top:27px}.ro-way-bottom{bottom:27px;flex-direction:column-reverse}
-.ro-way .rr-action-icon{width:18px;height:18px;fill:currentColor;color:var(--route)}
 /* Crowding (Local): three figures, the filled ones say how busy the train is */
-.rr-crowd{display:inline-flex;align-items:center;gap:0;vertical-align:middle;color:var(--ink-strong)}
-.rr-crowd-fig{width:14px;height:16px;flex:none;fill:currentColor;color:var(--stroke)}
+.rr-crowd{display:inline-flex;align-items:center;gap:1px;vertical-align:middle;color:var(--ink-strong)}
+.rr-crowd-fig{width:7px;height:14px;flex:none;fill:currentColor;color:var(--stroke)}
 .rr-crowd-fig.on{color:var(--ink-strong)}
 .rr-crowd-3 .rr-crowd-fig.on{color:var(--status-expected)}
 .rowstatus .rr-crowd{margin-left:6px}
 .rr-crowd-text{margin-left:6px;font-size:var(--fs-body);font-weight:var(--fw-regular);color:var(--ink-strong)}
-.infoval .rr-crowd-fig{width:16px;height:18px}
+.infoval .rr-crowd-fig{width:8px;height:16px}
