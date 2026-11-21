@@ -1168,8 +1168,9 @@ function lineRect(x1,y1,x2,y2,r){
 // Airport glyph: the RR airport pictogram is a font character (U+2708 in fonts/RRGlyphs.woff), one no-break space after the name
 // (user 2026-11-20) so it never wraps onto a line of its own. Map labels add it before they are measured; elsewhere an observer adds it.
 // Stations that serve an airport: every name with Airport / Aeroport, and the stations the old Mainline map marks with the airport
-// symbol (RR Mainline Map, 7 Nov 2026: Chiangkou, now Jiangkou; Findel; Newport; Cartier; Cosgrove).
-const RR_AIR='\u00a0\u2708',RR_AIRPORT_LINKS=new Set(['Jiangkou','Findel','Newport','Cartier','Cosgrove']);
+// symbol (RR Mainline Map, 7 Nov 2026: Chiangkou, now Jiangkou; Findel; Cartier; Cosgrove). Its Newport mark is Newport Airport now
+// (its own station since 2026-11-19): Newport itself has no plane (user 2026-11-20).
+const RR_AIR='\u00a0\u2708',RR_AIRPORT_LINKS=new Set(['Jiangkou','Findel','Cartier','Cosgrove']);
 function rrIsAirport(n){return /\bAirport\b|^A\u00e9roport\b/.test(n)||RR_AIRPORT_LINKS.has(n)}
 function splitName(name){
  const parts=name.split(' ');
@@ -2052,7 +2053,7 @@ function rrPlatformAt(t,station){return t.platforms?.[station]||t.plat||''}
 function rrPlatformMarkup(p,old=''){if(!p)return '<span class="jt-plat"></span>';
  // a changed platform reads like a changed time: the old value struck through, then the new one
  const v=old?`<span class="time-delayed rr-plat-delayed" aria-hidden="true"><span class="scheduled-time">${old}</span> <span class="retime-box">${p}</span></span>`:p;
- return `<span class="jt-plat" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}><span class="pl-long" aria-hidden="true">Platform ${v}</span><span class="pl-short" aria-hidden="true">Pl. ${v}</span></span>`}
+ return `<span class="jt-plat" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}><span class="pl-long" aria-hidden="true">Platform ${v}</span><span class="pl-short" aria-hidden="true">Pl ${v}</span></span>`}
 function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
  return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
@@ -2429,7 +2430,7 @@ function rrFrenchText(source){
   .replace(/^Next departures from (.+)$/,'Prochains départs de $1').replace(/^Towards (.+)$/,'Direction $1')
   .replace(/^Coach (\d+)$/,'Voiture $1')
   .replace(/^Platform (\S+)$/,'Voie $1')
-  .replace(/^Pl\. (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard
+  .replace(/^Pl (\S+)$/,'Voie $1')   // French keeps the full word: 'Voie 1' is already short; 'V.' is not standard
   .replace(/^Journey route$/,'Itinéraire du trajet')
   .replace(/^(\d+) coaches$/,'$1 voitures')
   .replace(/^Platform changed from (\S+)$/,'Voie modifiée (initialement $1)')

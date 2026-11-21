@@ -342,7 +342,7 @@ body,.app{background:var(--rr-canvas)}
 
 /* Running train: passed stops grey out; the next stop is called out. Journey rows: name and platform never touch. */
 .label[data-trip="passed"]{fill:var(--label-faded)!important;opacity:1}
-/* Journey stops: name and platform on one line; "Pl. 1" when the panel is narrow. */
+/* Journey stops: name and platform on one line; "Pl 1" when the panel is narrow (British style: no full stop, user 2026-11-20). */
 .jt-row{column-gap:8px!important}
 .jt-node .jt-station{min-width:0;overflow-wrap:normal;word-break:normal}
 .jt-plat{white-space:nowrap;justify-self:end;text-align:right}
