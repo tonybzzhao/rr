@@ -606,14 +606,15 @@ function rrStationServices(name){
 }
 // Station services grouped by kind of transport, as the timetable filter (user 2026-11-20: "categorize services ... in the future
 // i add local transport like underground": a new kind is one more entry here). Every network with lines opens as a drop-down
-// of its line badges; a Local network's drop-down also leads to its network page.
+// of its line badges; a Local network's name opens its network page (the rest of the row opens the drop-down; user 2026-11-20:
+// a separate Network details link was redundant).
 const RR_SERVICE_GROUPS=[['Mainline',['Max','VIA','InterCity','Nightline']],['Regio',['Regio']],['Local',['Local']]];
 function rrServiceRow(s){
  const name=`<span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span>`;
  if(!s.badges.size)return `<div class="station-svc"><div class="station-svc-row">${name}</div></div>`;
  const lines=[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('');
- const net=s.type==='Local'&&s.network?`<button type="button" class="station-svc-net rr-system-link" data-system="${s.network}"><span>Network details</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`:'';
- return `<details class="station-svc"><summary>${name}<span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${lines}</div>${net}</details>`}
+ const head=s.type==='Local'&&s.network?`<button type="button" class="station-svc-name station-svc-link rr-system-link" data-system="${s.network}" title="Network details">${rrServiceLabel(s.type,s.network)}</button>`:name;
+ return `<details class="station-svc"><summary>${head}<span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${lines}</div></details>`}
 function rrServicesCard(svc){
  const groups=RR_SERVICE_GROUPS.map(([g,types])=>[g,svc.filter(x=>types.includes(x.type))]);
  for(const x of svc)if(!RR_SERVICE_GROUPS.some(([,types])=>types.includes(x.type))){let g=groups.find(([k])=>k===x.type);if(!g)groups.push(g=[x.type,[]]);g[1].push(x)}   // a kind not listed yet still shows, under its own name
