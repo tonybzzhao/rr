@@ -79,7 +79,8 @@
    const hs=[...card.querySelectorAll('.station-svc-group')].map(h=>h.textContent),idx=hs.map(h=>order.indexOf(h)).filter(i=>i>=0);
    if(idx.some((v,i)=>i&&v<idx[i-1]))bad('station services out of group order',name+': '+hs.join(' / '));
    for(const r of card.querySelectorAll('.station-svc')){ns++;if(!r.parentElement.previousElementSibling?.classList.contains('station-svc-group'))bad('station service outside a group',name);
-    if(r.querySelector('.route-link')&&r.tagName!=='DETAILS')bad('station service with lines is not a drop-down',name+': '+r.querySelector('.station-svc-name')?.textContent)}}
+    if(r.querySelector('.route-link')&&r.tagName!=='DETAILS')bad('station service with lines is not a drop-down',name+': '+r.querySelector('.station-svc-name')?.textContent)
+    if(/RR Local/.test(r.textContent)&&!r.querySelector('summary .rr-system-link'))bad('Local network name does not open its network page',name)}}
   if(st0)setCurrentStation(st0);out.counts['station services checked']=ns}
  // a delay status never breaks over two lines in a timetable row ("Expected" shortens to "Expt" when space runs out)
  {let nt=0;for(const tag of document.querySelectorAll('#board .rowstatus .status-tag')){nt++;if(tag.getClientRects().length>1)bad('status breaks over two lines',tag.textContent)}out.counts['row statuses checked']=nt}
