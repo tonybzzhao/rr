@@ -157,6 +157,17 @@
    for(const p of [0,1]){const seq=ts.filter(t=>+t.id.split(' ')[1]%2===p).sort((a,b)=>+a.id.split(' ')[1]-+b.id.split(' ')[1]);for(let i=1;i<seq.length;i++)if(timeOrdinal(seq[i].route[0][1])<timeOrdinal(seq[i-1].route[0][1])){bad('line numbers do not count up through the day',k);break}}}
   for(const a of blocks)for(const b of blocks)if(a!==b&&a[0]===b[0]&&a[1]<=b[2]&&b[1]<=a[2])bad('two lines share a number block',a[3]+' / '+b[3]);
   out.counts['Mainline train numbers checked']=nn}
+ // left panel (user 2026-11-20): Stations / Journeys on top; with a station chosen its name, Station information, Departures / Arrivals and
+ // the filters show and the search box does not; with none, the search box (with its search icon) shows - also after a journey search
+ {const st0=currentStation,vis=s=>{const e=document.querySelector(s);return !!e&&e.getClientRects().length>0&&e.getBoundingClientRect().height>0};
+  const js=findJourneys(LABELS[0],LABELS[1],false);setViewMode('journeys');if(js[0])chooseJourney(js[0]);setViewMode('departures');setCurrentStation(LABELS[0]);
+  for(const s of ['#stationsTab','#journeysTab','#stationHeading','#stationInfoLeft','#departuresTab','#arrivalsTab','.service-filter'])if(!vis(s))bad('left panel part missing with a station chosen',s);
+  if(vis('#stationPanel .search-picker-main'))bad('station search box shown with a station chosen','');
+  {const y=s=>document.querySelector(s).getBoundingClientRect().top,ord=['#stationsTab','#stationHeading','#stationInfoLeft','#departuresTab','.service-filter','#board'];
+   for(let i=1;i<ord.length;i++)if(y(ord[i])<y(ord[i-1])-1)bad('left panel parts out of order',ord[i-1]+' then '+ord[i])}
+  setCurrentStation(null);if(!vis('#stationPanel .search-picker-main')||!vis('.picker-search-icon'))bad('station search box (with its icon) missing with no station chosen','');
+  for(const s of ['#stationHeading','#departuresTab','.service-filter'])if(vis(s))bad('station part shown with no station chosen',s);
+  setCurrentStation(st0||LABELS[0]);out.counts['left panel states checked']=2}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);

@@ -365,7 +365,7 @@ body,.app{background:var(--rr-canvas)}
 .journey-results-head .eyebrow{margin-bottom:10px}
 /* After a search the form folds away: results take the column. The summary card is the way back: tap it, or its round
    search button (the Find trains glyph), to edit the search. */
-.jp-collapsed #journeyPanel,.jp-collapsed .side-controls{display:none!important}
+.app.journey-mode .jp-collapsed #journeyPanel,.app.journey-mode .jp-collapsed .side-controls{display:none!important}   /* only while Journeys is open: back on Stations the station block shows */
 .journey-head-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .jp-edit{display:none;flex:0 0 auto;height:36px;margin:-6px 0;padding:0 14px 0 10px;gap:6px;border:0;border-radius:var(--rr-radius-control);align-items:center;justify-content:center;
   background:var(--rr-canvas);color:var(--ink-strong);font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background-color .15s}
@@ -840,3 +840,28 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .time-cancelled .time-primary,.time-cancelled .day-offset{text-decoration:line-through;text-decoration-thickness:1px}
 /* Train formation: nothing selected at first, so the coach summary is empty and takes no room */
 .rr-selected-summary:empty{min-height:0;padding:0}
+/* Left panel (user 2026-11-20): Stations / Journeys on top, with icons. Under Stations: the search box (search icon at its left) until a
+   station is chosen; then its name, a larger Station information card, Departures / Arrivals, the filters. Back to the search with the
+   reset button. */
+.board-tabs.main-tabs,.board-tabs.station-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.main-tabs .board-tab{gap:8px}
+.rr-tab-icon{width:20px;height:20px;flex:none;fill:currentColor}
+.station-tabs{margin:12px 0 0!important}
+#stationBoardTitle{display:none}
+.app:not(.no-station) #stationPanel .search-picker-main{display:none}
+.app.no-station #stationHeading,.app.no-station .station-tabs{display:none!important}
+.search-picker-main .picker-control{position:relative}
+.picker-search-icon{position:absolute;left:12px;top:50%;width:18px;height:18px;margin-top:-9px;fill:var(--muted-slate);pointer-events:none;z-index:1}
+.search-picker-main .picker-input{padding-left:38px!important}
+#stationInfoLeft{margin-top:12px!important;padding:12px 14px!important;border-radius:10px;background:var(--surface);gap:10px}
+#stationInfoLeft .rr-station-fac-text{font-size:var(--fs-primary)!important;font-weight:var(--fw-bold)!important;color:var(--ink-strong)}
+#stationInfoLeft .rr-action-icon{width:22px;height:22px;flex-basis:22px}
+/* filters like the status tags: a light tint with the colour as text; the chosen one solid */
+.service-chip:not(.active){border:0!important;background:color-mix(in srgb,var(--chip-fill) 13%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 78%,var(--ink-strong))!important}
+.service-chip:not(.active):hover{background:color-mix(in srgb,var(--chip-fill) 22%,var(--surface))!important}
+.service-chip.active{border:0!important}
+/* dark theme: the chip colours are deep, so the tinted text mixes in more of the light ink to stay legible (AA, 4.5:1) */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .service-chip:not(.active){background:color-mix(in srgb,var(--chip-fill) 24%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 40%,var(--ink-strong))!important}}
+:root[data-theme="dark"] .service-chip:not(.active){background:color-mix(in srgb,var(--chip-fill) 24%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 40%,var(--ink-strong))!important}
+/* phone: the filters follow the station block (same order group, after it in the page), not the top tabs */
+@media(max-width:750px){.side-content>.service-filter{order:2}}
