@@ -179,6 +179,7 @@
   setCurrentStation(null);if(!vis('#stationPanel .search-picker-main')||!vis('.picker-search-icon'))bad('station search box (with its icon) missing with no station chosen','');
   for(const s of ['#departuresTab','.service-filter'])if(vis(s))bad('station part shown with no station chosen',s);
   if(!vis('#stationHeading')||$('stationHeading').textContent.trim()!=='Choose a station')bad('home without its "Choose a station" heading (user 2026-11-21)','#stationHeading');
+  {const g=document.querySelector('#stationPanel .search-picker-main').getBoundingClientRect().top-$('stationHeading').getBoundingClientRect().bottom;if(g<10||g>16)bad('home heading not spaced from the search box (10-16 px)',Math.round(g)+' px')}
   setViewMode('journeys');if(vis('#stationHeading')||vis('#stationInfoLeft')||vis('.board-controls'))bad('station block shown while Journeys is open','');if(!vis('#journeyPanel')&&!vis('.journey-results-head'))bad('journey planner missing while Journeys is open','');setViewMode('departures');
   setCurrentStation(st0||LABELS[0]);out.counts['left panel states checked']=3}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
