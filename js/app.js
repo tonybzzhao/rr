@@ -196,7 +196,7 @@ function rrInk(t){const h=rrLineColor(t);return h&&h[0]==='#'&&rrHexY(h)>RR_LIGH
    the centre in the morning, out in the evening) and a little day-to-day variation. A train with the "very busy" notice is
    very busy. */
 function rrCrowd(t,i=t.hereIndex??0){
- if(t.type!=='Local'||!t.route[i])return 0;
+ if(t.type!=='Local'||!t.route[i]||statusTone(t.status)==='cancelled')return 0;   // a cancelled train has no crowding (user 2026-11-20)
  if(t.dailyAlert&&/very busy/.test(t.dailyAlert.en))return 3;
  const h=(timeOrdinal(t.route[i][1])%1440)/60,n=t.route.length-1;
  const peak=(h>=7&&h<9.5)||(h>=16.5&&h<19)?1:(h>=6&&h<10)||(h>=15.5&&h<20)?.5:(h>=22||h<6)?-.6:0;
@@ -425,7 +425,7 @@ function drawBoard(){
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
   row.style.setProperty('--service-color',rrTrainCss(t));
   row.style.setProperty('--rr-white-text-fill',rrTrainFill(t));if(rrInk(t))row.style.setProperty('--on-accent','#24282C');
-  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</span><span><span class="dest">${rrRingIcon(t)}<span>${rrDestText(t,isArrival)}</span></span>${(t.ring||ways.get(rrDestText(t,isArrival)).size>1)&&viaOf.get(t.id).length?`<span class="row-via">via ${viaOf.get(t.id).join(' · ')}</span>`:''}<span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrAlertFlag(t)}${rrCrowdMarkup(t,t.hereIndex)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
+  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</span><span><span class="dest">${rrRingIcon(t)}<span>${rrDestText(t,isArrival)}</span></span>${(t.ring||ways.get(rrDestText(t,isArrival)).size>1)&&viaOf.get(t.id).length?`<span class="row-via">via ${viaOf.get(t.id).join(' · ')}</span>`:''}<span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrCrowdMarkup(t,t.hereIndex)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
   row.addEventListener('click',()=>selectedTrain?.id===t.id?clear():chooseTrain(t));   // a second click deselects: map back to default
   board.append(row);
  }
@@ -1038,7 +1038,7 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-informatio
  // Many passed stops fold between the origin and the stop before this one (same toggle as a journey leg's stops).
  const fold=here>=5?here-2:0;
  const stops=t.route.map(([name,time],i)=>`${fold&&i===1?`<div class="stop travelled stop-fold"><div class="stop-marker"></div><div class="stop-time"></div><button type="button" class="jt-calls-toggle stop-fold-btn" aria-expanded="${rrFoldOpen.has(t.id)}" data-count="${fold}"><span>${rrFoldOpen.has(t.id)?'Hide earlier stops':fold+' earlier stops'}</span><span class="jt-chevron" aria-hidden="true"></span></button></div>`:''}<div class="stop${i===here?' current':''}${i<here?' travelled':''}${fold&&i>=1&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div>${t.ring?`<div class="destination-label">Ring line</div><div class="service-dest ring-dest">${rrRingIcon(t)}<span>${rrDestText(t)}</span></div>`:`<div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}</div>`}</div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${t.type==='Local'?`<div class="fact-row"><dt class="keylabel">Crowding</dt><dd class="infoval">${rrCrowdMarkup(t,here,true)}</dd></div>`:''}${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrSystemLink(t.type,t.network)}</dd></div>${t.ring?'':`<div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div>`}</dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div>${t.ring?`<div class="destination-label">Ring line</div><div class="service-dest ring-dest">${rrRingIcon(t)}<span>${rrDestText(t)}</span></div>`:`<div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}</div>`}</div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${rrCrowd(t,here)?`<div class="fact-row"><dt class="keylabel">Crowding</dt><dd class="infoval">${rrCrowdMarkup(t,here,true)}</dd></div>`:''}${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrSystemLink(t.type,t.network)}</dd></div>${t.ring?'':`<div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div>`}</dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelector('.train-route-link')?.addEventListener('click',()=>fillRouteInfo(t.type,t.network,t.line,currentStation));
  detail.querySelector('.stop-fold-btn')?.addEventListener('click',e=>{const b=e.currentTarget,open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',open);b.firstElementChild.textContent=open?'Hide earlier stops':b.dataset.count+' earlier stops';open?rrFoldOpen.add(t.id):rrFoldOpen.delete(t.id);b.closest('.stop-list').classList.toggle('show-passed',open)});
@@ -1759,9 +1759,13 @@ $('zoomIn').onclick=()=>zoomAt(1.25);$('zoomOut').onclick=()=>zoomAt(.8);$('zoom
 let viewMode='departures',journeyResults=[],selectedJourney=null,journeyShown=12,selectedLegPaths=[],appliedJourneyQuery=null,journeyEditing=false;
 const JOURNEY_MAX_RESULTS=260;
 function fmtDuration(n){const h=Math.floor(n/60),m=n%60;return h?(m?`${h}h ${String(m).padStart(2,'0')}m`:`${h}h`):`${m} min`}
-function timeMarkup(s){
+// Day marks (+1) count the visitor's days from a reference day: the stop being looked at (timetable, route and train details) or
+// the journey's first departure. Counted from the Radeland timetable day instead, a visitor behind Radeland saw 23:47 -1 for a
+// train that leaves tonight in their own time (user 2026-11-20: "what is -1?"); the timetable's day dividers already give the day.
+function rrDayIdx(s){return Math.floor(rrShowMinutes(timeOrdinal(s))/1440)}
+function timeMarkup(s,base=0){
  if(!/^\d{1,2}:\d{2}(\s*\+\d+)?$/.test(String(s)))return String(s);
- const total=rrShowMinutes(timeOrdinal(s)),day=Math.floor(total/1440),hm=rrMinutesToInput(total);   // shown in the visitor's time zone
+ const total=rrShowMinutes(timeOrdinal(s)),day=Math.floor(total/1440)-base,hm=rrMinutesToInput(total);   // shown in the visitor's time zone
  // Keep time and the day-offset together as one non-wrapping unit.
  return `<span class="time-value"><span class="time-primary">${hm}</span>${day?` <span class="day-offset">${day>0?'+':'−'}${Math.abs(day)}</span>`:''}</span>`;
 }
@@ -1798,14 +1802,17 @@ function shiftTimeString(s,mins){
  const total=timeOrdinal(s)+(+mins||0),day=Math.floor(total/1440),h=String(Math.floor(total/60)%24).padStart(2,'0'),m=String(total%60).padStart(2,'0');
  return `${h}:${m}${day?` +${day}`:''}`;
 }
-function delayedTimeMarkup(s,status){
+function delayedTimeMarkup(s,status,base=0){
+ if(statusTone(status)==='cancelled')return `<span class="time-cancelled" aria-label="Cancelled, was due ${s}"><span aria-hidden="true">${timeMarkup(s,base)}</span></span>`;   // crossed out (user 2026-11-20)
  const delay=delayMinutes(status);
- if(delay<=0)return timeMarkup(s);
- return `<span class="time-delayed" aria-label="Scheduled ${s}; revised ${shiftTimeString(s,delay)}"><span class="scheduled-time" aria-hidden="true">${timeMarkup(s)}</span> <span class="retime-box" aria-hidden="true">${timeMarkup(shiftTimeString(s,delay))}</span></span>`;
+ if(delay<=0)return timeMarkup(s,base);
+ return `<span class="time-delayed" aria-label="Scheduled ${s}; revised ${shiftTimeString(s,delay)}"><span class="scheduled-time" aria-hidden="true">${timeMarkup(s,base)}</span> <span class="retime-box" aria-hidden="true">${timeMarkup(shiftTimeString(s,delay),base)}</span></span>`;
 }
 function clockText(v){const day=Math.floor(v/1440);return timeMarkup(String(Math.floor(v/60)%24).padStart(2,'0')+':'+String(v%60).padStart(2,'0')+(day?' +'+day:''))}
 function clockTextDelayed(original,status){return delayedTimeMarkup(original,status)}
-function stopTimeMarkup(t,index){return delayedTimeMarkup(t.route[index][1],stopStatus(t,index))}
+function stopTimeMarkup(t,index,base=rrDayIdx(t.route[Math.min(t.hereIndex??0,t.route.length-1)][1])){return delayedTimeMarkup(t.route[index][1],stopStatus(t,index),base)}
+function rrJourneyBase(j){return rrDayIdx(j.legs[0].train.route[j.legs[0].fromIdx][1])}
+let rrJourneyDay=0;   // the day a shown journey's times count from
 function journeyLeg(t,a,b){
  const ia=t.route.findIndex(p=>p[0]===a),ib=t.route.findIndex((p,i)=>i>ia&&p[0]===b);   // after boarding: a ring train passes its first station again at the end
  if(ia<0||ib<=ia)return null;
@@ -1990,7 +1997,7 @@ function renderJourneyResults(){
   const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
   el.style.setProperty('--journey-color',rrTrainCss(j.legs[0].train));
   const badges=j.legs.map(l=>`${rrBadge(l.train)}`).join('');
-  const depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx);
+  const jb=rrJourneyBase(j),depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx,jb),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx,jb);
   el.innerHTML=`<div class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></div><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
   el.addEventListener('click',()=>selectedJourney?.key===j.key?clear():chooseJourney(j));board.append(el);
  }
@@ -2057,7 +2064,7 @@ function rrPlatformMarkup(p,old=''){if(!p)return '<span class="jt-plat"></span>'
  return `<span class="jt-plat" aria-label="Platform ${p}${old?`, changed from ${old}`:''}"${old?` title="Platform changed from ${old}"`:''}><span class="pl-long" aria-hidden="true">Platform ${v}</span><span class="pl-short" aria-hidden="true">Pl ${v}</span></span>`}
 function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
- return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
+ return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index,rrJourneyDay)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
 }
 function rrJourneyCoachSummary(t,fromStation,toStation){
  if(t.type==='Local')return '';
@@ -2065,7 +2072,7 @@ function rrJourneyCoachSummary(t,fromStation,toStation){
  const n=form.cars.length;
  return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Train formation</span><span class="jt-coach-section">${n} coaches</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
 }
-function fillJourneyDetails(j){
+function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
  rrDetailsHeading('Journey details','rr-ui-info');$('focusRoute').hidden=false;
  const from=j.legs[0].from,to=j.legs[j.legs.length-1].to;
  let rows='';
@@ -2086,7 +2093,7 @@ function fillJourneyDetails(j){
   if(calls.length){
    rows+=`<li class="jt-calls" id="${callsId}" hidden><ol class="jt-calls-list">${calls.map(([name],i)=>{
     const k=leg.fromIdx+1+i;
-    return `<li class="jt-row jt-call"><div class="jt-time">${stopTimeMarkup(t,k)}</div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"><span class="jt-tick"></span></div><button type="button" class="jt-station stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(t.platforms?.[name]||'',rrPlatformChangedFrom(t,name))}</li>`;
+    return `<li class="jt-row jt-call"><div class="jt-time">${stopTimeMarkup(t,k,rrJourneyDay)}</div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"><span class="jt-tick"></span></div><button type="button" class="jt-station stop-station" data-leg="${index}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(t.platforms?.[name]||'',rrPlatformChangedFrom(t,name))}</li>`;
    }).join('')}</ol></li>`;
   }
   rows+=rrJourneyNode(t,leg.toIdx,leg.to,'alight','solid',last?'none':'dot',index);
@@ -2098,7 +2105,7 @@ function fillJourneyDetails(j){
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
- detail.innerHTML=`<div class="journey-hero"><div class="journey-summary-time"><div><strong>${stopTimeMarkup(depFirst.train,depFirst.fromIdx)}</strong><small>Departs</small><span class="station">${from}</span></div><span class="arrow" aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></span><div class="journey-arrival"><strong>${stopTimeMarkup(arrLast.train,arrLast.toIdx)}</strong><small>Arrives</small><span class="station">${to}</span></div></div><div class="journey-summary-sub">${fmtDuration(j.arr-j.dep)} · ${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</div></div><ol class="jt-timeline" aria-label="Journey route">${rows}</ol>`;
+ detail.innerHTML=`<div class="journey-hero"><div class="journey-summary-time"><div><strong>${stopTimeMarkup(depFirst.train,depFirst.fromIdx,rrJourneyDay)}</strong><small>Departs</small><span class="station">${from}</span></div><span class="arrow" aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></span><div class="journey-arrival"><strong>${stopTimeMarkup(arrLast.train,arrLast.toIdx,rrJourneyDay)}</strong><small>Arrives</small><span class="station">${to}</span></div></div><div class="journey-summary-sub">${fmtDuration(j.arr-j.dep)} · ${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</div></div><ol class="jt-timeline" aria-label="Journey route">${rows}</ol>`;
  detail.querySelectorAll('.jt-calls-toggle').forEach(btn=>btn.addEventListener('click',()=>{
   const open=btn.getAttribute('aria-expanded')!=='true';
   btn.setAttribute('aria-expanded',String(open));
