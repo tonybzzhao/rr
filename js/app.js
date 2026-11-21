@@ -580,11 +580,11 @@ function pictoItem(name){
  const label=pictoLabel(name);
  return `<div class="facility" title="${label}"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#rr-picto-${kind}"></use></svg><span>${label}</span></div>`;
 }
-const STATION_CORE=['Information','Help point','Ticket machines','Accessible','Accessible Toilet','Toilet','Lift','Escalator','Seating'];
+const STATION_CORE=['Information','Help point','Defibrillator (AED)','Ticket machines','Accessible','Accessible Toilet','Toilet','Lift','Escalator','Seating'];
 const STATION_AMENITIES={
- national:['Interchange','Defibrillator (AED)','Café','Dining','Pharmacy','Business centre','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
- major:['Interchange','Defibrillator (AED)','Café','Dining','Pharmacy','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
- regional:['Interchange','Defibrillator (AED)','Café','Wi-Fi','Luggage','Drop-off','Baby Changing','Water fountain','Vending machines'],
+ national:['Interchange','Café','Dining','Pharmacy','Business centre','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
+ major:['Interchange','Café','Dining','Pharmacy','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
+ regional:['Interchange','Café','Wi-Fi','Luggage','Drop-off','Baby Changing','Water fountain','Vending machines'],
  local:['Café','Wi-Fi']
 };
 function stationFacilities(name){
