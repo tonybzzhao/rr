@@ -67,7 +67,8 @@
    if(rrDestText(t,false)!==want||rrDestText(t,true)!==want)bad('ring train shows no direction',rrTrainLabel(t)+' '+t.id);
    const k=rrTrainLabel(t)+t.ring;if(done.has(k))continue;done.add(k);setCurrentStation(t.route[1][0]);chooseTrain(t);
    const lab=detail.querySelector('.destination-label')?.textContent,d=detail.querySelector('.service-dest')?.textContent.trim();
-   if(lab!=='Ring line'||d!==want)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)}
+   if(lab!=='Ring line'||d!==want)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)
+   if([...detail.querySelectorAll('.keylabel')].some(e=>e.textContent==='Origin'))bad('ring train details show an origin',rrTrainLabel(t))}
   if(st0)setCurrentStation(st0);out.counts['ring trains checked']=nr}
  // times never run backwards: scheduled and revised (delayed) times along every train, and every journey's legs and changes
  {let nt2=0;for(const t of TRAINS){nt2++;let ps=-1,pr=-1;for(let i=0;i<t.route.length;i++){const s=timeOrdinal(t.route[i][1]),r=stopOrdinal(t,i);
