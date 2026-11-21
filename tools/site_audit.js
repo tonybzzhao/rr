@@ -52,6 +52,12 @@
  {let na=0;for(const t of TRAINS){const a=rrVisibleAlert(t);if(!a)continue;na++;const tier=rrAlertTier(a),flag=rrAlertFlag(t);
    if(tier==='info'&&flag)bad('notice flagged in the timetable',rrTrainLabel(t));if(tier!=='info'&&!flag)bad('red / yellow alert not flagged in the timetable',rrTrainLabel(t))}
   out.counts['alerts checked']=na}
+ // airports: every airport in a city with a Local system has Local trains (user 2026-11-20: "airports are all served by
+ // local lines (if that city has one)"); a city has one when a Local station lies within 30 km
+ {const loc=new Set();for(const t of TRAINS)if(t.type==='Local')for(const [s] of t.route)loc.add(s);const km=(a,b)=>Math.hypot(P[S.get(a).point][0]-P[S.get(b).point][0],P[S.get(a).point][1]-P[S.get(b).point][1])/RR_UNITS_PER_KM;let na=0;
+  for(const a of S.keys()){if(!/airport|a[ée]roport/i.test(a))continue;na++;if(loc.has(a))continue;
+   const near=[...loc].find(s=>km(a,s)<30);if(near)bad('airport in a Local city without Local trains',a+' (Local at '+near+')')}
+  out.counts['airports checked']=na}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
