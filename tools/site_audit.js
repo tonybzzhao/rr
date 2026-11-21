@@ -52,6 +52,10 @@
  {let na=0;for(const t of TRAINS){const a=rrVisibleAlert(t);if(!a)continue;na++;const tier=rrAlertTier(a),flag=rrAlertFlag(t);
    if(tier==='info'&&flag)bad('notice flagged in the timetable',rrTrainLabel(t));if(tier!=='info'&&!flag)bad('red / yellow alert not flagged in the timetable',rrTrainLabel(t))}
   out.counts['alerts checked']=na}
+ // journey form: the swap button exchanges From and To (each select only holds its chosen station)
+ {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
+  if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
+  rrSelectValue(f,f0);rrSelectValue(t,t0);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();out.counts['swap button checked']=1}
  // ring trains have no destination: boards, train details and journey cards show their direction, never 'To <station>'
  {let nr=0;const done=new Set(),st0=currentStation;for(const t of TRAINS){if(!t.ring)continue;nr++;const want=t.ring==='cw'?'Clockwise':'Anticlockwise';
    if(rrDestText(t,false)!==want||rrDestText(t,true)!==want)bad('ring train shows no direction',rrTrainLabel(t)+' '+t.id);
