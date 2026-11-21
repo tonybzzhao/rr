@@ -870,3 +870,12 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 :root[data-theme="dark"] .service-chip:not(.active){background:color-mix(in srgb,var(--chip-fill) 24%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 40%,var(--ink-strong))!important}
 /* phone: the filters follow the station block (same order group, after it in the page), not the top tabs */
 @media(max-width:750px){.side-content>.board-controls{order:2}}
+/* Departures / Arrivals + filters card, refined (user 2026-11-20: "improve this design"): one clear primary choice and a lighter
+   secondary one. Departures / Arrivals is a slim segmented control on a flat track (no inner shadow); the filters are smaller pills;
+   a chosen colour filter fills with its colour, a chosen "All" is outlined, so it never competes with the chosen Departures / Arrivals. */
+.board-controls{display:flex;flex-direction:column;gap:8px;padding:8px!important}
+.board-controls .station-tabs{margin:0!important;padding:3px!important;gap:3px!important;height:auto!important;min-height:0!important;border-radius:10px!important;box-shadow:none!important;background:var(--rr-canvas)!important}
+.board-controls .station-tabs .board-tab{height:34px!important;min-height:34px!important;border-radius:7px!important;border:0!important}
+.board-controls .service-filter{gap:6px!important;height:auto!important}
+.board-controls .service-chip{height:30px!important;border-radius:15px!important;font-size:var(--fs-small)!important}
+.board-controls .service-chip[data-filter="all"].active{background:transparent!important;color:var(--ink-strong)!important;box-shadow:inset 0 0 0 1.5px var(--ink-strong)!important}
