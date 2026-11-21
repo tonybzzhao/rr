@@ -187,6 +187,8 @@
   $('arrivalsTab').click();if(board.scrollTop!==0)bad('arrivals did not start at the top',board.scrollTop);
   board.scrollTop=300;$('departuresTab').click();if(board.scrollTop!==0)bad('departures did not start at the top',board.scrollTop);
   if(st0)setCurrentStation(st0);out.counts['timetable switches checked']=3}
+ // regional trains reach the main station in cities that work that way (Hamburg / Melbourne / Amsterdam model; 2026-11-21)
+ {for(const n of ['Havenbolme Hbf','Victoria Central','Prinsburg Central','Yenchia Main','Amptonside Central','Somerfield St John'])if(S.has(n)&&!TRAINS.some(t=>t.type==='Regio'&&t.route.some(r=>r[0]===n)))bad('main station without Regio trains',n);out.counts['Regio main stations checked']=6}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
