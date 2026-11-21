@@ -168,6 +168,11 @@
   setCurrentStation(null);if(!vis('#stationPanel .search-picker-main')||!vis('.picker-search-icon'))bad('station search box (with its icon) missing with no station chosen','');
   for(const s of ['#stationHeading','#departuresTab','.service-filter'])if(vis(s))bad('station part shown with no station chosen',s);
   setCurrentStation(st0||LABELS[0]);out.counts['left panel states checked']=2}
+ // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
+ {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
+  for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
+    if(!u||(!document.getElementById(id)))bad('station facility without its pictogram',n+': '+t.textContent.trim())}}
+  if(st0)setCurrentStation(st0);out.counts['station facility tiles checked']=nf}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
