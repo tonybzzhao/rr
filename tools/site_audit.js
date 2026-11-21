@@ -58,6 +58,20 @@
   for(const a of S.keys()){if(!/airport|a[ée]roport/i.test(a))continue;na++;if(loc.has(a))continue;
    const near=[...loc].find(s=>km(a,s)<30);if(near)bad('airport in a Local city without Local trains',a+' (Local at '+near+')')}
   out.counts['airports checked']=na}
+ // airport glyph (U+2708 from fonts/RRGlyphs.woff): loaded, after every airport name in the board, train details and journey,
+ // and never cropped where the name itself shows (user 2026-11-20: the earlier icon showed cropped)
+ {if(!document.fonts.check("15px 'RR Glyphs'",'\u2708'))bad('airport glyph font not loaded','RR Glyphs');
+  const box=(t,i)=>{const r=document.createRange();r.setStart(t,i);r.setEnd(t,i+1);return r.getBoundingClientRect()},inside=(g,c)=>g.left>=c.left-.5&&g.right<=c.right+.5&&g.top>=c.top-.5&&g.bottom<=c.bottom+.5;
+  let ng=0;const scan=async view=>{await null;   /* the glyph is added by a MutationObserver: one microtask, before paint */
+   const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+   for(let t=w.nextNode();t;t=w.nextNode()){const v=t.data.trim();if(rrIsAirport(v)&&S.has(v)&&!(t.parentNode instanceof SVGElement))bad('airport name without its glyph',view+': '+v);
+    const i=t.data.indexOf('\u2708');if(i<2||!t.parentElement.getClientRects().length)continue;const g=box(t,i),l=box(t,i-2);
+    for(let a=t.parentElement;a;a=a.parentElement){const cs=getComputedStyle(a),top=a===document.documentElement;if(!top&&cs.overflowX==='visible'&&cs.overflowY==='visible')continue;
+     const c=top?{left:0,top:0,right:innerWidth,bottom:innerHeight}:a.getBoundingClientRect();if(!inside(l,c))break;ng++;if(!inside(g,c))bad('airport glyph cropped',view+': '+t.data.trim()+' in '+(a.className||a.tagName));break}}};
+  const st0=currentStation,ap=[...S.keys()].filter(n=>rrIsAirport(n)&&TRAINS.some(t=>t.route.some(r=>r[0]===n)));
+  for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
+  const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
+  if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);

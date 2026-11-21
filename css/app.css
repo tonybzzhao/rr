@@ -1,5 +1,7 @@
 /* Type sizes: 11 caption · 12 meta · 13 controls & UI · 14 body · 16 subheading · 18 · 21 title · 24 · 28 hero (map labels scale separately; ≤10 for superscripts/icons). */
 /* Type weights: three faces only. 400 Regular = body copy and notes; 500 Medium = UI text, labels, secondary buttons, inactive tabs/chips, calling points; 700 Bold = headings, times, key values, active tabs/chips, primary buttons. No other weights. */
+/* RR Glyphs: the airport pictogram as the character U+2708 (tools/make_glyph_font.py); only that character comes from it */
+@font-face{font-family:'RR Glyphs';src:url('../fonts/RRGlyphs.woff') format('woff');unicode-range:U+2708;font-display:block}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
@@ -37,7 +39,7 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{font-family:Frutiger,'Helvetica Neue',Arial,sans-serif;font-weight:400;color:var(--ink);background:var(--surface);font-size:14px}
+body{font-family:'RR Glyphs',Frutiger,'Helvetica Neue',Arial,sans-serif;font-weight:400;color:var(--ink);background:var(--surface);font-size:14px}
 button,input,select{font:inherit}
 button{cursor:pointer}
 button:focus-visible,select:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
@@ -94,7 +96,7 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--ui);outline-of
 .rail-under{fill:none;stroke:var(--surface);stroke-width:10;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
 .route-line{fill:none;vector-effect:non-scaling-stroke;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
 .mapnode{cursor:pointer}
-.label{font-family:Frutiger,'Helvetica Neue',Arial,sans-serif;fill:var(--ink);font-size:15.625px;letter-spacing:-.01em;font-weight:500;cursor:pointer;pointer-events:all}
+.label{font-family:'RR Glyphs',Frutiger,'Helvetica Neue',Arial,sans-serif;fill:var(--ink);font-size:15.625px;letter-spacing:-.01em;font-weight:500;cursor:pointer;pointer-events:all}
 .label.important{font-weight:700}
 /* a name that has to cross lines (a busy hub) keeps a halo in the land colour so it stays legible */
 .label.over-lines{paint-order:stroke fill;stroke:var(--map-land);stroke-width:3.5px;stroke-linejoin:round}

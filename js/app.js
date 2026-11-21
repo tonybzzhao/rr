@@ -1144,6 +1144,10 @@ function lineRect(x1,y1,x2,y2,r){
  for(const [p,q] of [[-dx,x1-r.x],[dx,r.x+r.w-x1],[-dy,y1-r.y],[dy,r.y+r.h-y1]]){if(Math.abs(p)<1e-8){if(q<0)return false}else{const t=q/p;if(p<0){if(t>t1)return false;t0=Math.max(t0,t)}else{if(t<t0)return false;t1=Math.min(t1,t)}}}return t0<=t1
 }
 // Two-line candidates are measured in screen pixels and attached to the actual dot.
+// Airport glyph: the RR airport pictogram is a font character (U+2708 in fonts/RRGlyphs.woff), joined to the name so it never
+// wraps onto a line of its own. Map labels add it before they are measured; everywhere else rrAirportText adds it.
+const RR_AIR='\u2060\u2708';
+function rrIsAirport(n){return /\bAirport\b|^A\u00e9roport\b/.test(n)}
 function splitName(name){
  const parts=name.split(' ');
  if(parts.length<2)return [[name]];
@@ -1417,8 +1421,8 @@ function drawMap(){
   const mixedServiceInterchange=!!(selectedJourney&&selectedPath.length&&selectedSet.has(name)&&interchangeMarkers.get(name)?.colors.length>1);
   const minor=(!!byVisible.get(name)?.regio&&!important)||tripHub;
   const fontSize=minor?12.5:15.625,weight=important||mixedServiceInterchange?700:500,lh=minor?14.5:18.125;
-  ctx.font=`${weight} ${fontSize}px Frutiger,Arial`;
-  const splits=splitName(name);
+  ctx.font=`${weight} ${fontSize}px 'RR Glyphs',Frutiger,Arial`;
+  const splits=rrIsAirport(name)?splitName(name).map(ls=>[...ls.slice(0,-1),ls.at(-1)+RR_AIR]):splitName(name);
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
   // Prefer a side label. Left-side labels are right-aligned; right-side labels are left-aligned.
   const preferredSide=s.sx>W*.68?'W':s.sx<W*.32?'E':hint[2]==='end'?'W':hint[2]==='start'?'E':s.sx<W/2?'E':'W';
@@ -2174,13 +2178,20 @@ function rrPlacePlanner(){
 rrPlacePlanner();
 rrPlannerMobileQuery.addEventListener('change',()=>{rrPlacePlanner();requestAnimationFrame(resize)});
 
-pathsByType();stationList();['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
+pathsByType();stationList();
+{const AIR=new Set(RR_STATION_NAMES.filter(rrIsAirport));   // any HTML text that is exactly an airport's name gets the glyph (the map draws its own)
+ const mark=t=>{const v=t.data.trim();if(AIR.has(v))t.data=t.data.replace(v,v+RR_AIR)};
+ const scan=el=>{const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);for(let t=w.nextNode();t;t=w.nextNode())mark(t)};
+ new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes){if(n.nodeType===3){if(!(n.parentNode instanceof SVGElement))mark(n)}else if(n.nodeType===1&&!(n instanceof SVGElement))scan(n)}}).observe(document.body,{childList:true,subtree:true});
+ scan(document.body)}
+['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
 // Recompute map-label collision positions once the hosted fonts are available.
 if (document.fonts && document.fonts.load) {
   Promise.all([
     document.fonts.load('400 14px Frutiger'),
     document.fonts.load('500 15.625px Frutiger'),
-    document.fonts.load('700 15.625px Frutiger')
+    document.fonts.load('700 15.625px Frutiger'),
+    document.fonts.load("15.625px 'RR Glyphs'",'\u2708')
   ]).then(()=>{if(W&&H)updateWorld()}).catch(()=>{});
 }
 
