@@ -52,6 +52,13 @@
  {let na=0;for(const t of TRAINS){const a=rrVisibleAlert(t);if(!a)continue;na++;const tier=rrAlertTier(a),flag=rrAlertFlag(t);
    if(tier==='info'&&flag)bad('notice flagged in the timetable',rrTrainLabel(t));if(tier!=='info'&&!flag)bad('red / yellow alert not flagged in the timetable',rrTrainLabel(t))}
   out.counts['alerts checked']=na}
+ // ring trains have no destination: boards, train details and journey cards show their direction, never 'To <station>'
+ {let nr=0;const done=new Set(),st0=currentStation;for(const t of TRAINS){if(!t.ring)continue;nr++;const want=t.ring==='cw'?'Clockwise':'Anticlockwise';
+   if(rrDestText(t,false)!==want||rrDestText(t,true)!==want)bad('ring train shows no direction',rrTrainLabel(t)+' '+t.id);
+   const k=rrTrainLabel(t)+t.ring;if(done.has(k))continue;done.add(k);setCurrentStation(t.route[1][0]);chooseTrain(t);
+   const lab=detail.querySelector('.destination-label')?.textContent,d=detail.querySelector('.service-dest')?.textContent.trim();
+   if(lab!=='Ring line'||d!==want)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)}
+  if(st0)setCurrentStation(st0);out.counts['ring trains checked']=nr}
  // times never run backwards: scheduled and revised (delayed) times along every train, and every journey's legs and changes
  {let nt2=0;for(const t of TRAINS){nt2++;let ps=-1,pr=-1;for(let i=0;i<t.route.length;i++){const s=timeOrdinal(t.route[i][1]),r=stopOrdinal(t,i);
    if(s<ps){bad('scheduled time earlier than the stop before',rrTrainLabel(t)+' '+t.route[i][0]+' '+t.route[i][1]);break}
