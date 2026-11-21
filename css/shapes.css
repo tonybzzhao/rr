@@ -838,3 +838,5 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 /* A cancelled train's time is crossed out, in the muted ink (the line through each inline-block time part: decoration does not reach into them) */
 .time-cancelled{color:var(--muted-slate)}
 .time-cancelled .time-primary,.time-cancelled .day-offset{text-decoration:line-through;text-decoration-thickness:1px}
+/* Train formation: nothing selected at first, so the coach summary is empty and takes no room */
+.rr-selected-summary:empty{min-height:0;padding:0}

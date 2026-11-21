@@ -425,7 +425,7 @@ function drawBoard(){
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
   row.style.setProperty('--service-color',rrTrainCss(t));
   row.style.setProperty('--rr-white-text-fill',rrTrainFill(t));if(rrInk(t))row.style.setProperty('--on-accent','#24282C');
-  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</span><span><span class="dest">${rrRingIcon(t)}<span>${rrDestText(t,isArrival)}</span></span>${(t.ring||ways.get(rrDestText(t,isArrival)).size>1)&&viaOf.get(t.id).length?`<span class="row-via">via ${viaOf.get(t.id).join(' · ')}</span>`:''}<span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrCrowdMarkup(t,t.hereIndex)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
+  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</span><span><span class="dest">${rrRingIcon(t)}<span>${rrDestText(t,isArrival)}</span></span>${(t.ring||ways.get(rrDestText(t,isArrival)).size>1)&&viaOf.get(t.id).length?`<span class="row-via">via ${viaOf.get(t.id).map(rrStnText).join(' · ')}</span>`:''}<span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrCrowdMarkup(t,t.hereIndex)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
   row.addEventListener('click',()=>selectedTrain?.id===t.id?clear():chooseTrain(t));   // a second click deselects: map back to default
   board.append(row);
  }
@@ -649,7 +649,7 @@ function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;
  if(all.includes(from)){
   const up=upcoming(from).filter(t=>trains.includes(t)||(t.type===type&&t.network===net&&lanes.includes(keyOf(t))&&(type!=='Regio'||t.line===line))),groups=new Map();
   for(const t of up){if(!groups.has(t.dest))groups.set(t.dest,[]);if(groups.get(t.dest).length<3)groups.get(t.dest).push(t)}
-  deps=`<section class="rr-card"><h3 class="rr-card-title">Next departures from ${from}</h3>${[...groups].map(([dest,list])=>`<div class="route-dir"><div class="rr-card-sub">Towards ${dest}</div>${list.map(t=>`<button type="button" class="route-dep" data-train="${t.id}"><span class="route-dep-time">${stopTimeMarkup(t,t.hereIndex)}</span>${rrBadge(t)}<span class="route-dep-main"><span class="route-dep-dest">${t.dest}</span><span class="route-dep-status">${statusTag(rrBoardStatus(t,false))}</span></span><span class="route-dep-plat" title="Platform">${rrBoardPlatform(t,from)}</span></button>`).join('')}</div>`).join('')||'<div class="rr-card-sub">No more departures today.</div>'}</section>`;
+  deps=`<section class="rr-card"><h3 class="rr-card-title">Next departures from ${from}</h3>${[...groups].map(([dest,list])=>`<div class="route-dir"><div class="rr-card-sub">Towards ${rrStnText(dest)}</div>${list.map(t=>`<button type="button" class="route-dep" data-train="${t.id}"><span class="route-dep-time">${stopTimeMarkup(t,t.hereIndex)}</span>${rrBadge(t)}<span class="route-dep-main"><span class="route-dep-dest">${t.dest}</span><span class="route-dep-status">${statusTag(rrBoardStatus(t,false))}</span></span><span class="route-dep-plat" title="Platform">${rrBoardPlatform(t,from)}</span></button>`).join('')}</div>`).join('')||'<div class="rr-card-sub">No more departures today.</div>'}</section>`;
  }
  const many=lanes.length>1;
  const rows=all.map((n,i)=>`<div class="route-row${n===from?' is-here':''}${many&&lanes.every(k=>stopsOf[k].has(n))?' all-stop':''}">${lanes.map(k=>{const [a,b]=span[k];return `<span class="route-lane lane-${k}${stopsOf[k].has(n)?' stops':''}${i<a||i>b?' off':''}${i===a?' first':''}${i===b?' last':''}"></span>`}).join('')}<button type="button" class="route-stn" data-station="${n}">${n}</button></div>`).join('');
@@ -689,7 +689,7 @@ function rrRingRoute(type,net,line,from=currentStation){
  let deps='';
  if(order.includes(from)){const up=upcoming(from).filter(t=>t.ring&&t.network===net),g=new Map();
   for(const t of up){if(!g.has(t.ring))g.set(t.ring,[]);if(g.get(t.ring).length<3)g.get(t.ring).push(t)}
-  deps=`<section class="rr-card"><h3 class="rr-card-title">Next departures from ${from}</h3>${['cw','ccw'].filter(w=>g.has(w)).map(w=>`<div class="route-dir"><div class="rr-card-sub ring-dir">${rrRingIcon({ring:w})}<span>${w==='cw'?'Clockwise':'Anticlockwise'}</span></div>${g.get(w).map(t=>`<button type="button" class="route-dep" data-train="${t.id}"><span class="route-dep-time">${stopTimeMarkup(t,t.hereIndex)}</span>${rrBadge(t)}<span class="route-dep-main"><span class="route-dep-dest">via ${(rrVia(t,false).join(' · '))||t.dest}</span><span class="route-dep-status">${statusTag(rrBoardStatus(t,false))}</span></span><span class="route-dep-plat" title="Platform">${rrBoardPlatform(t,from)}</span></button>`).join('')}</div>`).join('')||'<div class="rr-card-sub">No more departures today.</div>'}</section>`}
+  deps=`<section class="rr-card"><h3 class="rr-card-title">Next departures from ${from}</h3>${['cw','ccw'].filter(w=>g.has(w)).map(w=>`<div class="route-dir"><div class="rr-card-sub ring-dir">${rrRingIcon({ring:w})}<span>${w==='cw'?'Clockwise':'Anticlockwise'}</span></div>${g.get(w).map(t=>`<button type="button" class="route-dep" data-train="${t.id}"><span class="route-dep-time">${stopTimeMarkup(t,t.hereIndex)}</span>${rrBadge(t)}<span class="route-dep-main"><span class="route-dep-dest">via ${(rrVia(t,false).map(rrStnText).join(' · '))||rrStnText(t.dest)}</span><span class="route-dep-status">${statusTag(rrBoardStatus(t,false))}</span></span><span class="route-dep-plat" title="Platform">${rrBoardPlatform(t,from)}</span></button>`).join('')}</div>`).join('')||'<div class="rr-card-sub">No more departures today.</div>'}</section>`}
  // the ring as a long oval (user 2026-11-20): stations evenly down both sides - clockwise down the right side from the station
  // you came from, then up the left
  const major=n=>LABELS.includes(n)||/[MR]/.test(S.get(n)?.sys||'');
@@ -972,7 +972,7 @@ function rrCoachSelectionOutline(shape){
 function rrCoachFormation(t,fromStation=null,toStation=null){
  if(t.type==='Local')return '';   // RR Local shows no train formation
  const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
- const n=form.cars.length,initial=Math.min(form.highlight||0,n-1);
+ const n=form.cars.length;   // no coach selected at first; a coach is selected and deselected by clicking it (user 2026-11-20)
  const color=RR_UI_CSS_COLOR('--ink-soft');
  const leftHead=form.power!=='EMU',rightHead=form.power==='POWER';
  const cars=form.cars.map((car,i)=>{
@@ -980,7 +980,7 @@ function rrCoachFormation(t,fromStation=null,toStation=null){
   const edgeStart=i===0&&!leftHead,edgeEnd=i===n-1&&!rightHead;
   const outline=edgeStart?(isFirst?'end-first-car-left':'end-car-left'):edgeEnd?(isFirst?'end-first-car-right':'end-car-right'):isFirst?'first-car':'car';
   const icon=rrInCarIcon(car,t,form,i);
-  return `<button class="rr-car${isFirst?' rr-class-first':''}${outline.endsWith('-left')?' rr-end-left':''}${outline.endsWith('-right')?' rr-end-right':''}" type="button" data-rr-coach="${i}" aria-label="${i+1}, ${rrRole(t,car)}" aria-pressed="${i===initial}">
+  return `<button class="rr-car${isFirst?' rr-class-first':''}${outline.endsWith('-left')?' rr-end-left':''}${outline.endsWith('-right')?' rr-end-right':''}" type="button" data-rr-coach="${i}" aria-label="${i+1}, ${rrRole(t,car)}" aria-pressed="false">
    ${rrIcon(outline,'rr-car-outline')}
    ${rrCoachSelectionOutline(outline)}
    <span class="rr-car-content">${icon?rrIcon(icon,'rr-car-function'):`<span class="rr-car-number">${i+1}</span>`}</span>
@@ -1003,7 +1003,7 @@ function rrCoachFormation(t,fromStation=null,toStation=null){
     <div class="rr-car-line rr-direction-${dir}"><span class="rr-arrow-unit">${rrIcon(dir==='left'?'arrow-left':'arrow-right','rr-arrow')}</span>${head}${cars}${tail}<span class="rr-arrow-unit">${rrIcon(dir==='left'?'arrow-left':'arrow-right','rr-arrow')}</span></div>
    </div>
   </div>
-  <div class="rr-selected-summary" aria-live="polite">${rrCoachDetail(t,form,initial)}</div>
+  <div class="rr-selected-summary" aria-live="polite"></div>
  </section>`;
 }
 detail.addEventListener('click',event=>{
@@ -1013,9 +1013,9 @@ detail.addEventListener('click',event=>{
  const t=TRAINS.find(x=>x.id===wrap.dataset.rrTrain);
  const form=RR_FORMATIONS[wrap.dataset.rrForm];
  if(!form||!t)return;
- const selected=button.dataset.rrCoach;
- wrap.querySelectorAll('.rr-car').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
- wrap.querySelector('.rr-selected-summary').innerHTML=rrCoachDetail(t,form,/^\d+$/.test(selected)?Number(selected):selected);
+ const selected=button.dataset.rrCoach,on=button.getAttribute('aria-pressed')!=='true';   // clicking the selected coach deselects it
+ wrap.querySelectorAll('.rr-car').forEach(b=>b.setAttribute('aria-pressed',String(on&&b===button)));
+ wrap.querySelector('.rr-selected-summary').innerHTML=on?rrCoachDetail(t,form,/^\d+$/.test(selected)?Number(selected):selected):'';
 });
 function rrEnsureCoachVisible(){
  detail.querySelectorAll('.rr-formation').forEach(w=>{
@@ -1173,6 +1173,8 @@ function lineRect(x1,y1,x2,y2,r){
 // (its own station since 2026-11-19): Newport itself has no plane (user 2026-11-20).
 const RR_AIR='\u00a0\u2708',RR_AIRPORT_LINKS=new Set(['Jiangkou','Findel','Cartier','Cosgrove']);
 function rrIsAirport(n){return /\bAirport\b|^A\u00e9roport\b/.test(n)||RR_AIRPORT_LINKS.has(n)}
+// a station name inside a longer text (via lists, 'Towards ...'): the observer only marks text that is a name on its own
+function rrStnText(n){return rrIsAirport(n)?n+RR_AIR:n}
 function splitName(name){
  const parts=name.split(' ');
  if(parts.length<2)return [[name]];

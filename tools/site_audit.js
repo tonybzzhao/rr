@@ -119,6 +119,22 @@
    if(/day-offset/.test(stopTimeMarkup(t,h).replace(/retime-box[\s\S]*/,'')))bad('day mark on the time being looked at',rrTrainLabel(t)+' '+t.route[h][0]+' '+t.route[h][1]);
    for(let i=h;i<t.route.length;i++)if(rrDayIdx(t.route[i][1])-b<0){bad('negative day mark after the stop being looked at',rrTrainLabel(t)+' '+t.route[i][0]);break}}
   out.counts['day marks checked']=nd}
+ // airport names inside longer texts (via lists, 'Towards ...') carry the glyph too (user 2026-11-20: "not showing icon in via xxx")
+ {const AIR=[...S.keys()].filter(rrIsAirport).sort((a,b)=>b.length-a.length),st0=currentStation;let nv=0;
+  const scan=async view=>{await null;const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);for(let t=w.nextNode();t;t=w.nextNode()){if(t.parentNode instanceof SVGElement||!t.parentElement.getClientRects().length)continue;
+   const v=t.data;if(v.length>160)continue;for(const n of AIR){let k=v.indexOf(n);while(k>=0){const after=v.slice(k+n.length),before=v[k-1]||' ';nv++;
+     if(!/\w/.test(before)&&!/^\w/.test(after)&&!after.startsWith(RR_AIR)&&!/^(Departures|Arrivals|Next departures from|Show departures at|Journey|Runs between)/.test(v.trim()))bad('airport name without its glyph in a text',view+': '+v.trim().slice(0,60));
+     k=v.indexOf(n,k+n.length)}}}};
+  const ap=[...S.keys()].filter(n=>rrIsAirport(n)&&TRAINS.some(t=>t.route.some(r=>r[0]===n)));
+  let nb=0;for(const st of STATIONS.map(s=>s.name)){if(nb>=6)break;if(!upcoming(st).slice(0,12).some(t=>rrVia(t,false).some(rrIsAirport)))continue;nb++;setCurrentStation(st);await scan('board '+st)}   // timetables whose via lines name an airport
+  for(const t of TRAINS.filter(t=>t.ring).slice(0,2)){fillRouteInfo('Local',t.network,t.line,t.route[1][0]);await scan('ring route')}
+  if(st0)setCurrentStation(st0);out.counts['airport names in texts checked']=nv}
+ // train formation: no coach selected at first; clicking a coach selects it, clicking it again deselects it (user 2026-11-20)
+ {const t=TRAINS.find(x=>x.type!=='Local'&&RR_FORMATIONS[rrFormationKey(x)]);if(t){setCurrentStation(t.route[0][0]);chooseTrain(t);const w=detail.querySelector('.rr-formation');
+   if(!w)bad('train formation missing',rrTrainLabel(t));else{if(w.querySelector('.rr-car[aria-pressed="true"]'))bad('a coach is selected before any click',rrTrainLabel(t));
+    const c=w.querySelector('.rr-car[data-rr-coach="0"]');c.click();if(c.getAttribute('aria-pressed')!=='true'||!w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking a coach does not select it',rrTrainLabel(t));
+    c.click();if(w.querySelector('.rr-car[aria-pressed="true"]')||w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking the selected coach does not deselect it',rrTrainLabel(t))}}
+  out.counts['train formation checked']=1}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
