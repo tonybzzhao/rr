@@ -174,6 +174,11 @@
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
     if(!u||(!document.getElementById(id)))bad('station facility without its pictogram',n+': '+t.textContent.trim())}}
   if(st0)setCurrentStation(st0);out.counts['station facility tiles checked']=nf}
+ // a journey's change stations: a neutral ring on the map, not the lines' colours (user 2026-11-20)
+ {const st0=currentStation;let nc=0;const js=[[LABELS[0],LABELS[5]],['Peiting Central','Songchiao Airport'],[LABELS[2],LABELS[9]]].flatMap(([a,b])=>findJourneys(a,b,false).filter(j=>j.change>0).slice(0,1));const ink=RR_UI_CSS_COLOR('--ink');
+  for(const j of js){chooseJourney(j);for(let i=0;i<j.legs.length-1;i++){rrFocusStation(j.legs[i].to);rrRedraw();const g=document.querySelector(`#stationLayer g[data-station="${CSS.escape(j.legs[i].to)}"]`);if(!g)continue;nc++;
+    const strokes=[...g.querySelectorAll('circle,path')].map(e=>e.getAttribute('stroke')).filter(x=>x&&x!=='none');if(strokes.some(c=>c!==ink))bad('journey change ring not neutral',j.legs[i].to+': '+strokes.join(' '))}}
+  if(st0)setCurrentStation(st0);out.counts['journey change rings checked']=nc}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
