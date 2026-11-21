@@ -846,16 +846,21 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .board-tabs.main-tabs,.board-tabs.station-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .main-tabs .board-tab{gap:8px}
 .rr-tab-icon{width:20px;height:20px;flex:none;fill:currentColor}
-.station-tabs{margin:12px 0 0!important}
+/* Departures / Arrivals and the filters share one card (user 2026-11-20) */
+.board-controls{margin:0 0 var(--rr-gap);padding:5px;border-radius:11px;background:var(--surface)}
+.board-controls .station-tabs{margin:0 0 6px!important;background:var(--rr-canvas)!important}
+.board-controls .service-filter{margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important}
+.app.no-station .board-controls,.app.journey-mode .board-controls{display:none!important}
 #stationBoardTitle{display:none}
 .app:not(.no-station) #stationPanel .search-picker-main{display:none}
 .app.no-station #stationHeading,.app.no-station .station-tabs{display:none!important}
 .search-picker-main .picker-control{position:relative}
 .picker-search-icon{position:absolute;left:12px;top:50%;width:18px;height:18px;margin-top:-9px;fill:var(--muted-slate);pointer-events:none;z-index:1}
 .search-picker-main .picker-input{padding-left:38px!important}
-#stationInfoLeft{margin-top:12px!important;padding:12px 14px!important;border-radius:10px;background:var(--surface);gap:10px}
-#stationInfoLeft .rr-station-fac-text{font-size:var(--fs-primary)!important;font-weight:var(--fw-bold)!important;color:var(--ink-strong)}
-#stationInfoLeft .rr-action-icon{width:22px;height:22px;flex-basis:22px}
+/* Station information: a link row as before (icon, text, chevron), body size, medium weight, left aligned (user 2026-11-20) */
+#stationInfoLeft{margin-top:10px!important;justify-content:flex-start;gap:8px}
+#stationInfoLeft .rr-station-fac-text{font-size:var(--fs-body)!important;font-weight:var(--fw-regular)!important;text-align:left}
+#stationInfoLeft .rr-action-icon{width:20px;height:20px;flex-basis:20px}
 /* filters like the status tags: a light tint with the colour as text; the chosen one solid */
 .service-chip:not(.active){border:0!important;background:color-mix(in srgb,var(--chip-fill) 13%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 78%,var(--ink-strong))!important}
 .service-chip:not(.active):hover{background:color-mix(in srgb,var(--chip-fill) 22%,var(--surface))!important}
@@ -864,4 +869,4 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .service-chip:not(.active){background:color-mix(in srgb,var(--chip-fill) 24%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 40%,var(--ink-strong))!important}}
 :root[data-theme="dark"] .service-chip:not(.active){background:color-mix(in srgb,var(--chip-fill) 24%,var(--surface))!important;color:color-mix(in srgb,var(--chip-fill) 40%,var(--ink-strong))!important}
 /* phone: the filters follow the station block (same order group, after it in the page), not the top tabs */
-@media(max-width:750px){.side-content>.service-filter{order:2}}
+@media(max-width:750px){.side-content>.board-controls{order:2}}
