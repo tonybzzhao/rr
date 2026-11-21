@@ -146,6 +146,17 @@
      if(crowd&&zoom<rrMaxZoom()-1e-6)bad('stop named where highlighted dots crowd',rrTrainLabel(t)+': '+n);
      const b=g.getBBox();const dx=Math.max(b.x-p[0],0,p[0]-(b.x+b.width)),dy=Math.max(b.y-p[1],0,p[1]-(b.y+b.height));if(Math.hypot(dx,dy)>24)bad('stop name far from its dot',rrTrainLabel(t)+': '+n+' '+Math.round(Math.hypot(dx,dy))+' px')}}}
   zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(st0)setCurrentStation(st0);out.counts['trip stop names checked']=nl}
+ // Mainline train numbers, DB style (user 2026-11-20): 3 digits; one line (type + the same two termini) per block of numbers; odd one
+ // way, even the other; counting up through the day
+ {const L=new Map();let nn=0;for(const t of TRAINS){if(t.type==='Regio'||t.type==='Local')continue;nn++;const m=String(t.id).match(/^(MAX|IC|VIA|NL) (\d{3})$/);if(!m){bad('Mainline train number not 3 digits with its type prefix',t.id);continue}
+   const k=t.type+'|'+[t.origin,t.dest].sort().join('~');if(!L.has(k))L.set(k,[]);L.get(k).push(t)}
+  const blocks=[];for(const [k,ts] of L){const ns=ts.map(t=>+t.id.split(' ')[1]);blocks.push([k.split('|')[0],Math.min(...ns),Math.max(...ns),k]);
+   const par=new Map();for(const t of ts){const p=+t.id.split(' ')[1]%2,d=t.origin+'>'+t.dest;if(!par.has(d))par.set(d,new Set());par.get(d).add(p)}
+   for(const [d,ps] of par)if(ps.size>1)bad('one direction of a line has odd and even numbers',k+' '+d);
+   if(new Set([...par.values()].map(ps=>[...ps][0])).size<par.size)bad('both directions of a line share odd / even',k);
+   for(const p of [0,1]){const seq=ts.filter(t=>+t.id.split(' ')[1]%2===p).sort((a,b)=>+a.id.split(' ')[1]-+b.id.split(' ')[1]);for(let i=1;i<seq.length;i++)if(timeOrdinal(seq[i].route[0][1])<timeOrdinal(seq[i-1].route[0][1])){bad('line numbers do not count up through the day',k);break}}}
+  for(const a of blocks)for(const b of blocks)if(a!==b&&a[0]===b[0]&&a[1]<=b[2]&&b[1]<=a[2])bad('two lines share a number block',a[3]+' / '+b[3]);
+  out.counts['Mainline train numbers checked']=nn}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
