@@ -1165,10 +1165,12 @@ function lineRect(x1,y1,x2,y2,r){
  for(const [p,q] of [[-dx,x1-r.x],[dx,r.x+r.w-x1],[-dy,y1-r.y],[dy,r.y+r.h-y1]]){if(Math.abs(p)<1e-8){if(q<0)return false}else{const t=q/p;if(p<0){if(t>t1)return false;t0=Math.max(t0,t)}else{if(t<t0)return false;t1=Math.min(t1,t)}}}return t0<=t1
 }
 // Two-line candidates are measured in screen pixels and attached to the actual dot.
-// Airport glyph: the RR airport pictogram is a font character (U+2708 in fonts/RRGlyphs.woff), joined to the name so it never
-// wraps onto a line of its own. Map labels add it before they are measured; everywhere else rrAirportText adds it.
-const RR_AIR='\u2060\u2708';
-function rrIsAirport(n){return /\bAirport\b|^A\u00e9roport\b/.test(n)}
+// Airport glyph: the RR airport pictogram is a font character (U+2708 in fonts/RRGlyphs.woff), one no-break space after the name
+// (user 2026-11-20) so it never wraps onto a line of its own. Map labels add it before they are measured; elsewhere an observer adds it.
+// Stations that serve an airport: every name with Airport / Aeroport, and the stations the old Mainline map marks with the airport
+// symbol (RR Mainline Map, 7 Nov 2026: Chiangkou, now Jiangkou; Findel; Newport; Cartier; Cosgrove).
+const RR_AIR='\u00a0\u2708',RR_AIRPORT_LINKS=new Set(['Jiangkou','Findel','Newport','Cartier','Cosgrove']);
+function rrIsAirport(n){return /\bAirport\b|^A\u00e9roport\b/.test(n)||RR_AIRPORT_LINKS.has(n)}
 function splitName(name){
  const parts=name.split(' ');
  if(parts.length<2)return [[name]];

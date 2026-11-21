@@ -1,7 +1,7 @@
 /* Type sizes: 11 caption · 12 meta · 13 controls & UI · 14 body · 16 subheading · 18 · 21 title · 24 · 28 hero (map labels scale separately; ≤10 for superscripts/icons). */
 /* Type weights: three faces only. 400 Regular = body copy and notes; 500 Medium = UI text, labels, secondary buttons, inactive tabs/chips, calling points; 700 Bold = headings, times, key values, active tabs/chips, primary buttons. No other weights. */
 /* RR Glyphs: the airport pictogram as the character U+2708 (tools/make_glyph_font.py); only that character comes from it */
-@font-face{font-family:'RR Glyphs';src:url('../fonts/RRGlyphs.woff') format('woff');unicode-range:U+2708;font-display:block}
+@font-face{font-family:'RR Glyphs';src:url('../fonts/RRGlyphs.woff?v=96e4b254') format('woff');unicode-range:U+2708;font-display:block}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:Frutiger;src:url('../fonts/FrutigerNext-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}

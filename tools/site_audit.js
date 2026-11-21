@@ -61,6 +61,7 @@
  // airport glyph (U+2708 from fonts/RRGlyphs.woff): loaded, after every airport name in the board, train details and journey,
  // and never cropped where the name itself shows (user 2026-11-20: the earlier icon showed cropped)
  {if(!document.fonts.check("15px 'RR Glyphs'",'\u2708'))bad('airport glyph font not loaded','RR Glyphs');
+  for(const n of RR_AIRPORT_LINKS)if(!S.has(n))bad('airport-linked station (old Mainline map) not found - renamed?',n);
   const box=(t,i)=>{const r=document.createRange();r.setStart(t,i);r.setEnd(t,i+1);return r.getBoundingClientRect()},inside=(g,c)=>g.left>=c.left-.5&&g.right<=c.right+.5&&g.top>=c.top-.5&&g.bottom<=c.bottom+.5;
   let ng=0;const scan=async view=>{await null;   /* the glyph is added by a MutationObserver: one microtask, before paint */
    const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
