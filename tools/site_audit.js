@@ -84,6 +84,21 @@
   if(st0)setCurrentStation(st0);out.counts['station services checked']=ns}
  // a delay status never breaks over two lines in a timetable row ("Expected" shortens to "Expt" when space runs out)
  {let nt=0;for(const tag of document.querySelectorAll('#board .rowstatus .status-tag')){nt++;if(tag.getClientRects().length>1)bad('status breaks over two lines',tag.textContent)}out.counts['row statuses checked']=nt}
+ // alignment: in every row laid out to centre its items (flex / grid, align-items:center), items side by side share one centre
+ // line (user 2026-11-20: "Ring line" sat 4 px under its O badge - a margin meant for the route header; "fix all problems alike").
+ // Skipped: items aligned on purpose (align-self start / end / baseline / stretch), nudged on purpose (transform), or more than 2.5x taller.
+ {const st0=currentStation;let nr=0;const scan=view=>{for(const el of document.querySelectorAll('body *')){const cs=getComputedStyle(el);if(!/flex|grid/.test(cs.display)||cs.alignItems!=='center'||(cs.display.includes('flex')&&/column/.test(cs.flexDirection)))continue;
+   const kids=[...el.children].filter(k=>{const s=getComputedStyle(k);return s.display!=='none'&&s.position!=='absolute'&&s.position!=='fixed'&&s.visibility!=='hidden'&&s.transform==='none'&&k.getBoundingClientRect().height>0&&!['start','flex-start','baseline','end','flex-end','stretch'].includes(s.alignSelf)});if(kids.length<2)continue;nr++;
+   const rs=kids.map(k=>[k,k.getBoundingClientRect()]);
+   outer:for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++){const [a,ra]=rs[i],[b,rb]=rs[j];if(ra.bottom<=rb.top||rb.bottom<=ra.top||ra.height>2.5*rb.height||rb.height>2.5*ra.height)continue;
+    const d=(ra.top+ra.height/2)-(rb.top+rb.height/2);if(Math.abs(d)>1.5){bad('items in a row not centred on each other',view+': '+(a.className.baseVal??a.className)+' / '+(b.className.baseVal??b.className)+' '+d.toFixed(1)+' px');break outer}}}};
+  const st=LABELS.find(n=>S.has(n));setCurrentStation(st);scan('board');fillStationInfo(st);detail.querySelectorAll('details').forEach(d=>d.open=true);scan('station information');
+  for(const ty of ['Local','Regio','InterCity']){const t=upcoming(st).find(x=>x.type===ty);if(t){chooseTrain(t);scan('train '+ty)}}
+  const tr=TRAINS.find(x=>x.ring);if(tr){setCurrentStation(tr.route[1][0]);chooseTrain(tr);scan('ring train');fillRouteInfo('Local',tr.network,tr.line,tr.route[1][0]);scan('ring route')}
+  const tl=TRAINS.find(x=>x.type==='Local'&&!x.ring);fillRouteInfo('Local',tl.network,tl.line,tl.route[0][0]);scan('route');
+  for(const n of new Set(TRAINS.filter(x=>x.type==='Local').map(x=>x.network))){fillLocalSystem(n);scan('network '+n)}
+  const js=findJourneys(st,TRAINS.find(x=>x.type==='Local'&&x.route.some(r=>r[0]===st))?.route.at(-1)[0]||st,false);if(js[0]){chooseJourney(js[0]);scan('journey')}
+  if(st0)setCurrentStation(st0);out.counts['centred rows checked']=nr}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
