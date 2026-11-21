@@ -133,7 +133,9 @@
  {const t=TRAINS.find(x=>x.type!=='Local'&&RR_FORMATIONS[rrFormationKey(x)]);if(t){setCurrentStation(t.route[0][0]);chooseTrain(t);const w=detail.querySelector('.rr-formation');
    if(!w)bad('train formation missing',rrTrainLabel(t));else{if(w.querySelector('.rr-car[aria-pressed="true"]'))bad('a coach is selected before any click',rrTrainLabel(t));
     const c=w.querySelector('.rr-car[data-rr-coach="0"]');c.click();if(c.getAttribute('aria-pressed')!=='true'||!w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking a coach does not select it',rrTrainLabel(t));
-    c.click();if(w.querySelector('.rr-car[aria-pressed="true"]')||w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking the selected coach does not deselect it',rrTrainLabel(t))}}
+    c.click();if(w.querySelector('.rr-car[aria-pressed="true"]')||w.querySelector('.rr-selected-summary').textContent.trim())bad('clicking the selected coach does not deselect it',rrTrainLabel(t));
+    detail.scrollTop=0;c.click();const sb=w.querySelector('.rr-selected-summary').getBoundingClientRect(),db=detail.getBoundingClientRect();
+    if(sb.height&&(sb.bottom>db.bottom+1||sb.top<db.top-1))bad('selected coach details not brought into view',rrTrainLabel(t)+' '+Math.round(sb.bottom-db.bottom)+' px below');c.click()}}
   out.counts['train formation checked']=1}
  // a selected train's names: its other stops (not ends, current station, changes or major stations) are named only where their dot has
  // room (no other highlighted stop within 22 px) and right beside it; zoomed out, names never scatter (user 2026-11-20)

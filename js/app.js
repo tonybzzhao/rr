@@ -1023,6 +1023,8 @@ detail.addEventListener('click',event=>{
  const selected=button.dataset.rrCoach,on=button.getAttribute('aria-pressed')!=='true';   // clicking the selected coach deselects it
  wrap.querySelectorAll('.rr-car').forEach(b=>b.setAttribute('aria-pressed',String(on&&b===button)));
  wrap.querySelector('.rr-selected-summary').innerHTML=on?rrCoachDetail(t,form,/^\d+$/.test(selected)?Number(selected):selected):'';
+ // the coach's details come into view by themselves (user 2026-11-20: no scrolling by hand); only as far as needed
+ if(on)wrap.querySelector('.rr-selected-summary').scrollIntoView({block:'nearest'});   // a jump, as asked
 });
 function rrEnsureCoachVisible(){
  detail.querySelectorAll('.rr-formation').forEach(w=>{
