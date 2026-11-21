@@ -772,7 +772,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .station-reset .rr-action-icon{width:20px;height:20px;fill:currentColor}
 .station-reset:hover{background:var(--hover)}
 .station-reset:focus-visible{outline:2px solid var(--ui);outline-offset:1px}
-.app.no-station .station-reset{display:none}
+.app.no-station #stationReset{display:none}
 /* SF Symbol icons from RR Info/UI (2026-11-20): xmark (close), chevron.right, map (phone toggle), change (journey changes),
    exclamationmark.bubble (disruption messages) */
 #closeDetail .rr-action-icon{width:20px;height:20px;fill:currentColor}
@@ -851,7 +851,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .board-controls .station-tabs{margin:0 0 6px!important;background:var(--rr-canvas)!important}
 .board-controls .service-filter{margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important}
 .app.no-station .board-controls,.app.journey-mode .board-controls{display:none!important}
-#stationBoardTitle{display:none}
+.app:not(.no-station) #stationBoardTitle{display:none}
+.app.no-station #stationBoardTitle{margin-bottom:10px}
 .app:not(.no-station) #stationPanel .search-picker-main{display:none}
 .app.no-station #stationHeading,.app.no-station .station-tabs{display:none!important}
 .search-picker-main .picker-control{position:relative}
@@ -898,3 +899,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .journey-head-top .jp-edit.station-reset{position:static!important;width:32px;height:32px;padding:0!important;min-width:0!important;background:transparent!important;border:0!important}
 /* station card: less space above the name (user 2026-11-21) */
 .side-controls{padding-top:14px!important}
+/* journey Edit shows once the search is folded away (user 2026-11-21: it had vanished, hidden by the home rule for the station reset) */
+.journey-head-top .jp-edit.station-reset{display:none!important}
+.jp-collapsed .journey-head-top .jp-edit.station-reset{display:inline-flex!important}
+/* station card: a divider between the name row and Station information, like the journey card's (user 2026-11-21) */
+#stationInfoLeft{border-top:1px solid var(--stroke-soft);padding-top:12px!important;margin-top:12px!important}

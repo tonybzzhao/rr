@@ -218,7 +218,10 @@ function rrRingIcon(t){return t.ring?`<svg class="rr-action-icon rr-ring-icon" a
 // arrivals), the end itself left out - two for a ring train, one otherwise.
 function rrVia(t,isArrival,n=t.ring?2:1){const i0=t.hereIndex??t.route.findIndex(r=>r[0]===currentStation);if(i0<0)return [];
  const seq=isArrival?t.route.slice(0,i0).reverse():t.route.slice(i0+1),end=isArrival?t.origin:t.dest,out=[];
- for(const [nm] of seq){if(nm===end&&!t.ring)continue;const s_=S.get(nm);if(LABELS.includes(nm)||/[MR]/.test(s_?.sys||'')&&s_?.sys!==(t.type==='Regio'?'R':'')){out.push(nm);if(out.length>=n)break}}return out}
+ for(const [nm] of seq){if(nm===end&&!t.ring)continue;const s_=S.get(nm);if(LABELS.includes(nm)||/[MR]/.test(s_?.sys||'')&&s_?.sys!==(t.type==='Regio'?'R':'')){out.push(nm);if(out.length>=n)break}}
+ const air=rrViaAirport(t,seq,end);if(air&&!out.includes(air))out.push(air);return out}
+// a Regio or Local train always names the airport it calls at on the way (user 2026-11-21), the end itself left out
+function rrViaAirport(t,seq,end){if(t.type!=='Regio'&&t.type!=='Local')return null;for(const [nm] of seq)if(nm!==end&&rrIsAirport(nm))return nm;return null}
 function rrBadge(t){return `<span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}">${rrTrainLabel(t)}</span>`}
 function isHighSpeed(train){return train.type==='Max'||train.type==='VIA'}
 const P=GRAPH.pts, E=GRAPH.edges;
@@ -395,7 +398,7 @@ function drawBoard(){
  if(viewMode==='journeys'){renderJourneyResults();return}
  const isArrival=viewMode==='arrivals';
  app.classList.toggle('no-station',!currentStation);
- $('stationBoardTitle').textContent=isArrival?'Arrivals':'Departures';
+ $('stationBoardTitle').textContent=!currentStation?'Find a station':isArrival?'Arrivals':'Departures';   // home: a caption above the search box (user 2026-11-21)
  if(!currentStation){
   // Home: no station is assumed. The passenger picks one, or starts from a major station.
   $('stationHeading').textContent='Choose a station';
@@ -427,7 +430,7 @@ function drawBoard(){
   row.className='trainrow'+(selectedTrain?.id===t.id?' selected':'');
   row.style.setProperty('--service-color',rrTrainCss(t));
   row.style.setProperty('--rr-white-text-fill',rrTrainFill(t));if(rrInk(t))row.style.setProperty('--on-accent','#24282C');
-  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</span><span><span class="dest">${rrRingIcon(t)}<span>${rrDestText(t,isArrival)}</span></span>${(t.ring||ways.get(rrDestText(t,isArrival)).size>1)&&viaOf.get(t.id).length?`<span class="row-via">via ${viaOf.get(t.id).map(rrStnText).join(' · ')}</span>`:''}<span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrCrowdMarkup(t,t.hereIndex)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
+  row.innerHTML=`<span class="row-time">${stopTimeMarkup(t,t.hereIndex)}</span><span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</span><span><span class="dest">${rrRingIcon(t)}<span>${rrDestText(t,isArrival)}</span></span>${(()=>{const v=viaOf.get(t.id),full=t.ring||ways.get(rrDestText(t,isArrival)).size>1,sh=full?v:v.filter(rrIsAirport);return sh.length?`<span class="row-via">via ${sh.map(rrStnText).join(' · ')}</span>`:''})()}<span class="rowstatus">${statusTag(rrBoardStatus(t,isArrival))}${rrCrowdMarkup(t,t.hereIndex)}</span></span><span class="platform">${rrBoardPlatform(t,currentStation)}</span>`;
   row.addEventListener('click',()=>selectedTrain?.id===t.id?clear():chooseTrain(t));   // a second click deselects: map back to default
   board.append(row);
  }
@@ -2386,7 +2389,7 @@ const rrFrenchExact=Object.freeze({
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
  'Close train details':'Fermer les détails du train',
  'Collapse departures':'Réduire le panneau','Expand departures':'Déployer le panneau',
- 'Search station':'Rechercher une gare','Browse stations':'Parcourir les gares',
+ 'Search station':'Rechercher une gare','Find a station':'Trouver une gare','Browse stations':'Parcourir les gares',
  'Current station':'Gare sélectionnée','From station':'Gare de départ',
  'To station':'Gare d’arrivée',
  'Swap From and To stations':'Inverser le départ et l’arrivée',

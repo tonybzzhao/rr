@@ -74,6 +74,14 @@
   for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
   const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
+// a Regio or Local train names the airport it calls at on the way in its board "via" (user 2026-11-21)
+{const st0=currentStation;let nv=0;const seen=new Set();
+  for(const t of TRAINS){if(t.type!=='Regio'&&t.type!=='Local')continue;const k=t.route.findIndex((r,i)=>i>0&&i<t.route.length-1&&rrIsAirport(r[0])&&r[0]!==t.dest);if(k<1)continue;
+   const st=t.route[k-1][0];if(seen.has(st)||seen.size>=12)continue;seen.add(st);viewMode='departures';setCurrentStation(st);
+   const rows=[...board.querySelectorAll('.trainrow')];departures.slice(0,rows.length).forEach((tr,j)=>{const row=rows[j];if(tr.type!=='Regio'&&tr.type!=='Local')return;
+    const i0=tr.hereIndex??tr.route.findIndex(r=>r[0]===st),air=tr.route.slice(i0+1).find(r=>r[0]!==tr.dest&&rrIsAirport(r[0]));if(!air)return;nv++;
+    if(!(row.querySelector('.row-via')?.textContent||'').includes(air[0]))bad('Regio / Local via without the airport on the way',st+': '+rrTrainLabel(tr)+' to '+tr.dest+' (via '+air[0]+')')})}
+  setCurrentStation(st0);out.counts['airport vias checked']=nv}
  // station services: grouped by kind in RR_SERVICE_GROUPS order; every network with lines is a drop-down (user 2026-11-20)
  {const st0=currentStation;let ns=0;const order=RR_SERVICE_GROUPS.map(g=>g[0]);
   for(const name of LABELS.slice(0,12)){if(!S.has(name))continue;fillStationInfo(name);const card=[...detail.querySelectorAll('.rr-card')].find(c=>c.querySelector('.rr-card-title')?.textContent==='Services');if(!card)continue;
