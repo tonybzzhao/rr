@@ -72,6 +72,16 @@
   for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
   const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
+ // station services: grouped by kind in RR_SERVICE_GROUPS order; every network with lines is a drop-down (user 2026-11-20)
+ {const st0=currentStation;let ns=0;const order=RR_SERVICE_GROUPS.map(g=>g[0]);
+  for(const name of LABELS.slice(0,12)){if(!S.has(name))continue;fillStationInfo(name);const card=[...detail.querySelectorAll('.rr-card')].find(c=>c.querySelector('.rr-card-title')?.textContent==='Services');if(!card)continue;
+   const hs=[...card.querySelectorAll('.station-svc-group')].map(h=>h.textContent),idx=hs.map(h=>order.indexOf(h)).filter(i=>i>=0);
+   if(idx.some((v,i)=>i&&v<idx[i-1]))bad('station services out of group order',name+': '+hs.join(' / '));
+   for(const r of card.querySelectorAll('.station-svc')){ns++;if(!r.parentElement.previousElementSibling?.classList.contains('station-svc-group'))bad('station service outside a group',name);
+    if(r.querySelector('.route-link')&&r.tagName!=='DETAILS')bad('station service with lines is not a drop-down',name+': '+r.querySelector('.station-svc-name')?.textContent)}}
+  if(st0)setCurrentStation(st0);out.counts['station services checked']=ns}
+ // a delay status never breaks over two lines in a timetable row ("Expected" shortens to "Expt" when space runs out)
+ {let nt=0;for(const tag of document.querySelectorAll('#board .rowstatus .status-tag')){nt++;if(tag.getClientRects().length>1)bad('status breaks over two lines',tag.textContent)}out.counts['row statuses checked']=nt}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
