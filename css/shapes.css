@@ -894,3 +894,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .board-controls .station-tabs .board-tab:not(.active):hover{background:transparent!important;color:var(--ink-strong)!important}
 .board-controls .station-tabs .board-tab.active{background:var(--ui)!important;color:var(--ui-on)!important;font-weight:var(--fw-bold)!important}
 .board-controls .station-tabs .board-tab{transition:none!important}   /* switch at once like Depart after / Arrive by: no fade with the text already switched */
+/* journey Edit: an icon button like the station reset (user 2026-11-21) */
+.journey-head-top .jp-edit.station-reset{position:static!important;width:32px;height:32px;padding:0!important;min-width:0!important;background:transparent!important;border:0!important}
+/* station card: less space above the name (user 2026-11-21) */
+.side-controls{padding-top:14px!important}
