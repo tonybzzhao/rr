@@ -156,7 +156,7 @@ const RR_TRAVELLED_C=Object.freeze({
  [C.Nightline]:RR_UI_CSS_COLOR('--rr-base-travel-night'),[C.Regio]:RR_UI_CSS_COLOR('--rr-base-travel-regio')
 });
 function serviceName(type,network=''){return ({Max:'RR Max',VIA:'RR Via',InterCity:'RR InterCity',Nightline:'RR Nightline',Regio:'RR Regio',Local:'RR Local'})[type]||('RR '+type)}
-function rrDetailsHeading(title,mark='rr-ui-train-information'){
+function rrDetailsHeading(title,mark='rr-ui-more'){   // three dots on every details panel; Station information keeps its info icon (user 2026-11-21)
  $('detailsTitle').textContent=title;
  $('detailsHeadingIcon').querySelector('use').setAttribute('href','#'+mark);
 }
@@ -651,7 +651,7 @@ function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;
   if(pending.length)all.splice(cur+1,0,...pending)}
  const sample=Object.fromEntries(lanes.map(k=>[k,trains.find(t=>keyOf(t)===k)]));
  const span=Object.fromEntries(lanes.map(k=>{const ix=runs[k].map(n=>all.indexOf(n));return [k,[Math.min(...ix),Math.max(...ix)]]}));
- rrDetailsHeading('Route details','rr-ui-route');$('focusRoute').hidden=false;
+ rrDetailsHeading('Route details','rr-ui-more');$('focusRoute').hidden=false;
  let deps='';
  if(all.includes(from)){
   const up=upcoming(from).filter(t=>trains.includes(t)||(t.type===type&&t.network===net&&lanes.includes(keyOf(t))&&(type!=='Regio'||t.line===line))),groups=new Map();
@@ -692,7 +692,7 @@ function rrRingRoute(type,net,line,from=currentStation){
  const loop=cw.route.map(r=>r[0]);if(loop.length>1&&loop[0]===loop.at(-1))loop.pop();
  const k=loop.indexOf(from),order=k>0?loop.slice(k).concat(loop.slice(0,k)):loop;
  const ccw=trains.find(t=>t.ring==='ccw'),badges=net==='Havenbolme'&&ccw?rrBadge(cw)+rrBadge(ccw):rrBadge(cw);
- rrDetailsHeading('Route details','rr-ui-route');$('focusRoute').hidden=false;
+ rrDetailsHeading('Route details','rr-ui-more');$('focusRoute').hidden=false;
  let deps='';
  if(order.includes(from)){const up=upcoming(from).filter(t=>t.ring&&t.network===net),g=new Map();
   for(const t of up){if(!g.has(t.ring))g.set(t.ring,[]);if(g.get(t.ring).length<3)g.get(t.ring).push(t)}
@@ -1043,7 +1043,7 @@ function rrTraveledColor(color){
  return RR_TRAVELLED_C[color]||color;
 }
 const rrFoldOpen=new Set();   // trains whose passed stops are unfolded (kept across live refreshes)
-function fillDetails(t){rrDetailsHeading('Train details','rr-ui-train-information');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
+function fillDetails(t){rrDetailsHeading('Train details','rr-ui-more');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  // Many passed stops fold between the origin and the stop before this one (same toggle as a journey leg's stops).
  const fold=here>=5?here-2:0;
  const stops=t.route.map(([name,time],i)=>`${fold&&i===1?`<div class="stop travelled stop-fold"><div class="stop-marker"></div><div class="stop-time"></div><button type="button" class="jt-calls-toggle stop-fold-btn" aria-expanded="${rrFoldOpen.has(t.id)}" data-count="${fold}"><span>${rrFoldOpen.has(t.id)?'Hide earlier stops':fold+' earlier stops'}</span><span class="jt-chevron" aria-hidden="true"></span></button></div>`:''}<div class="stop${i===here?' current':''}${i<here?' travelled':''}${fold&&i>=1&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
@@ -1643,7 +1643,7 @@ function fillLocalSystem(net,from=currentStation){
  const sample=k=>letters.get(k)[0];
  const interRows=inter.map(n=>`<button type="button" class="system-stn" data-station="${n}"><span class="system-stn-name">${n}</span><span class="system-stn-lines">${[...lettersAt.get(n)].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>rrBadge(sample(k))).join('')}</span></button>`).join('');
  const firsts=trains.map(t=>t.route[0][1]).sort((a,b)=>timeOrdinal(a)-timeOrdinal(b));
- rrDetailsHeading('Network details','rr-ui-route');$('focusRoute').hidden=false;rrLocalSystem=net;
+ rrDetailsHeading('Network details','rr-ui-more');$('focusRoute').hidden=false;rrLocalSystem=net;
  detail.innerHTML=`<div class="train-hero system-hero" data-system="${net}"><div class="system-name">${rrServiceLabel('Local',net)}</div></div>
  <section class="rr-card"><h3 class="rr-card-title">Lines</h3><div class="system-lines">${lines}</div></section>
  ${inter.length?`<section class="rr-card"><h3 class="rr-card-title">Change for Mainline and Regio</h3><div class="system-stns">${interRows}</div></section>`:''}
@@ -1938,7 +1938,7 @@ function setViewMode(mode){
  selectedJourney=null;selectedTrain=null;selectedPath=[];selectedLegPaths=[];selectedRouteLine=null;
  selectedNames=appliedJourneyQuery?[appliedJourneyQuery.from,appliedJourneyQuery.to]:[];
  manualTrace=false;viewMode='journeys';updateBoardTabs();renderJourneyResults();
- routeWorld.replaceChildren();drawMap();rrDetailsHeading('Journey details','rr-ui-info');
+ routeWorld.replaceChildren();drawMap();rrDetailsHeading('Journey details','rr-ui-more');
  detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
  $('focusRoute').hidden=true;app.classList.remove('detail-open');
  requestAnimationFrame(resize);
@@ -2039,7 +2039,7 @@ function refreshJourneyFilters(){
   selectedJourney=null;selectedTrain=null;selectedPath=[];selectedLegPaths=[];selectedRouteLine=null;
   selectedNames=[query.from,query.to];manualTrace=false;
   routeWorld.replaceChildren();
-  rrDetailsHeading('Journey details','rr-ui-info');
+  rrDetailsHeading('Journey details','rr-ui-more');
   detail.innerHTML='<div class="empty">Select a journey to see train-specific facilities.</div>';
   $('focusRoute').hidden=true;app.classList.remove('detail-open');
   drawMap();requestAnimationFrame(resize);
@@ -2079,7 +2079,7 @@ function rrJourneyCoachSummary(t,fromStation,toStation){
  return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Train formation</span><span class="jt-coach-section">${n} coaches</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
 }
 function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
- rrDetailsHeading('Journey details','rr-ui-info');$('focusRoute').hidden=false;
+ rrDetailsHeading('Journey details','rr-ui-more');$('focusRoute').hidden=false;
  const from=j.legs[0].from,to=j.legs[j.legs.length-1].to;
  let rows='';
  j.legs.forEach((leg,index)=>{
