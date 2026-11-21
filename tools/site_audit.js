@@ -74,6 +74,16 @@
   for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
   const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
+// fast Local trains (user 2026-11-21, approved): same letter as the all-stations train, the word "Fast" on the board, by the
+// destination in the details, and every station it runs through listed as "does not stop"; never a new code
+{const st0=currentStation;let nf=0;const fs=TRAINS.filter(t=>t.fast);
+  for(const t of fs){const a=TRAINS.find(x=>x.type==='Local'&&!x.fast&&x.network===t.network&&x.line===t.line&&x.dir===t.dir);if(!a||rrTrainLabel(a)!==rrTrainLabel(t))bad('fast Local train not under its line letter',t.id);
+   if(a&&t.route.length+t.pass.flat().length!==a.route.length)bad('fast Local train: stops + run-through stations differ from the all-stations train',t.id)}
+  for(const t of fs.slice(0,6)){viewMode='departures';setCurrentStation(t.route[0][0]);const j=departures.findIndex(x=>x.id===t.id),rows=[...board.querySelectorAll('.trainrow')];
+   if(j>=0&&rows[j]){nf++;if(!rows[j].querySelector('.rr-fast-tag'))bad('fast train without "Fast" on the board',t.id)}
+   chooseTrain(t,false);if(!detail.querySelector('.service-dest .rr-fast-tag'))bad('fast train without "Fast" by its destination',t.id);
+   if(detail.querySelectorAll('.stop-pass').length!==t.pass.flat().length)bad('fast train: run-through stations missing from the calling list',t.id)}
+  selectedTrain=null;setCurrentStation(st0);out.counts['fast Local trains checked']=fs.length;out.counts['fast board rows checked']=nf}
 // a Regio or Local train names the airport it calls at on the way in its board "via" (user 2026-11-21)
 {const st0=currentStation;let nv=0;const seen=new Set();
   for(const t of TRAINS){if(t.type!=='Regio'&&t.type!=='Local')continue;const k=t.route.findIndex((r,i)=>i>0&&i<t.route.length-1&&rrIsAirport(r[0])&&r[0]!==t.dest);if(k<1)continue;
