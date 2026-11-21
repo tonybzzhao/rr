@@ -835,3 +835,6 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 /* Station services by kind (Mainline / Regio / Local); a Local network's name opens its network page */
 .station-svc-group{margin-top:14px}.station-svc-group:first-of-type{margin-top:4px}
 .station-svc-link{justify-self:start;font-weight:var(--fw-bold);color:var(--ink-strong)}   /* name = network page (underlined on hover, as every system link); the rest of the row = drop-down */
+/* A cancelled train's time is crossed out, in the muted ink (the line through each inline-block time part: decoration does not reach into them) */
+.time-cancelled{color:var(--muted-slate)}
+.time-cancelled .time-primary,.time-cancelled .day-offset{text-decoration:line-through;text-decoration-thickness:1px}

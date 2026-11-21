@@ -46,11 +46,12 @@
  out.counts['train routes checked']=nt;
  // crowding: every Local train has a level at each stop (1-3); other trains none
  {let nc=0;for(const t of TRAINS){for(let i=0;i<t.route.length;i+=Math.max(1,Math.floor(t.route.length/3))){nc++;const c=rrCrowd(t,i);
-   if(t.type==='Local'?!(c>=1&&c<=3):c!==0){bad('crowding level wrong',rrTrainLabel(t)+' '+t.route[i][0]+' '+c);break}}}
+   const want=t.type==='Local'&&statusTone(t.status)!=='cancelled';   // cancelled trains: no crowding
+   if(want?!(c>=1&&c<=3):c!==0){bad('crowding level wrong',rrTrainLabel(t)+' '+t.route[i][0]+' '+c);break}}}
   out.counts['crowding levels checked']=nc}
  // alert tiers: red (cancelled) and yellow (delayed) flag a train in the timetable; a blue notice never does
  {let na=0;for(const t of TRAINS){const a=rrVisibleAlert(t);if(!a)continue;na++;const tier=rrAlertTier(a),flag=rrAlertFlag(t);
-   if(tier==='info'&&flag)bad('notice flagged in the timetable',rrTrainLabel(t));if(tier!=='info'&&!flag)bad('red / yellow alert not flagged in the timetable',rrTrainLabel(t))}
+   if(tier==='info'&&flag)bad('notice flagged',rrTrainLabel(t))}
   out.counts['alerts checked']=na}
  // airports: every airport in a city with a Local system has Local trains (user 2026-11-20: "airports are all served by
  // local lines (if that city has one)"); a city has one when a Local station lies within 30 km
@@ -99,6 +100,25 @@
   for(const n of new Set(TRAINS.filter(x=>x.type==='Local').map(x=>x.network))){fillLocalSystem(n);scan('network '+n)}
   const js=findJourneys(st,TRAINS.find(x=>x.type==='Local'&&x.route.some(r=>r[0]===st))?.route.at(-1)[0]||st,false);if(js[0]){chooseJourney(js[0]);scan('journey')}
   if(st0)setCurrentStation(st0);out.counts['centred rows checked']=nr}
+ // cancelled trains in the timetable and train details: time crossed out, no crowding (user 2026-11-20)
+ {const st0=currentStation;let nc=0;for(const st of LABELS.filter(n=>S.has(n)).slice(0,30)){setCurrentStation(st);
+   for(const row of board.querySelectorAll('.trainrow')){if(!/Cancelled/.test(row.querySelector('.rowstatus')?.textContent||''))continue;nc++;
+    const tp=row.querySelector('.row-time .time-primary');if(!tp||!getComputedStyle(tp).textDecorationLine.includes('line-through'))bad('cancelled train time not crossed out',st+': '+row.querySelector('.dest')?.textContent);
+    if(row.querySelector('.rr-crowd'))bad('cancelled train shows crowding',st+': '+row.querySelector('.dest')?.textContent)}
+   if(nc>=6)break}
+  const tc=TRAINS.find(t=>statusTone(t.status)==='cancelled'&&t.type==='Local');if(tc){setCurrentStation(tc.route[0][0]);chooseTrain(tc);
+   const tp=detail.querySelector('.depart-time .time-primary');if(!tp||!getComputedStyle(tp).textDecorationLine.includes('line-through'))bad('cancelled train time not crossed out','train details');
+   if(detail.querySelector('.rr-crowd')||[...detail.querySelectorAll('.keylabel')].some(e=>e.textContent==='Crowding'))bad('cancelled train shows crowding','train details')}
+  if(st0)setCurrentStation(st0);out.counts['cancelled trains checked']=nc}
+ // timetable rows carry no alert triangle: the status (Cancelled / Expected) says it (user 2026-11-20)
+ {let nf=0;const st0=currentStation;for(const st of LABELS.filter(n=>S.has(n)).slice(0,10)){setCurrentStation(st);for(const row of board.querySelectorAll('.trainrow')){nf++;if(row.querySelector('.rr-alert-flag,[class*="alert-flag"]'))bad('alert triangle in a timetable row',st)}}
+  if(st0)setCurrentStation(st0);out.counts['triangle-free timetable rows checked']=nf}
+ // day marks: a train's time at the stop being looked at never carries a day mark (timetable, route details); along a train or a
+ // journey a mark counts the visitor's days from that stop / the first departure and never goes backwards (user 2026-11-20: "-1")
+ {let nd=0;for(const t of TRAINS.filter((_,i)=>i%7===0)){const h=Math.min(t.hereIndex??0,t.route.length-1),b=rrDayIdx(t.route[h][1]);nd++;
+   if(/day-offset/.test(stopTimeMarkup(t,h).replace(/retime-box[\s\S]*/,'')))bad('day mark on the time being looked at',rrTrainLabel(t)+' '+t.route[h][0]+' '+t.route[h][1]);
+   for(let i=h;i<t.route.length;i++)if(rrDayIdx(t.route[i][1])-b<0){bad('negative day mark after the stop being looked at',rrTrainLabel(t)+' '+t.route[i][0]);break}}
+  out.counts['day marks checked']=nd}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
