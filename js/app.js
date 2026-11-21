@@ -390,6 +390,7 @@ document.querySelectorAll('.service-chip').forEach(b=>b.addEventListener('click'
  document.querySelectorAll('.service-chip').forEach(x=>{const on=x===b;x.classList.toggle('active',on);x.setAttribute('aria-checked',String(on))});
  drawBoard();drawMap();
 }));
+let rrBoardNewList=false;
 function drawBoard(){
  if(viewMode==='journeys'){renderJourneyResults();return}
  const isArrival=viewMode==='arrivals';
@@ -411,7 +412,7 @@ function drawBoard(){
  if(!departures.length){board.innerHTML=serviceFilter==='local'?'<div class="empty">No Local services yet.</div>':`<div class="empty">No ${isArrival?'arrivals':'departures'}.</div>`;return}
  // Like journeys: a page of trains, then "Show more trains" (no endless scroll).
  const boardKey=currentStation+'|'+viewMode+'|'+serviceFilter;
- if(boardKey!==rrBoardKey){rrBoardKey=boardKey;rrBoardShown=RR_BOARD_PAGE}
+ if(boardKey!==rrBoardKey){rrBoardKey=boardKey;rrBoardShown=RR_BOARD_PAGE;rrBoardNewList=true}   // a different list (station, departures / arrivals, filter) starts at the top
  const selIndex=selectedTrain?departures.findIndex(t=>t.id===selectedTrain.id):-1;
  if(selIndex>=rrBoardShown)rrBoardShown=Math.ceil((selIndex+1)/RR_BOARD_PAGE)*RR_BOARD_PAGE;   // keep the chosen train visible
  let dividerShown=false;
@@ -436,6 +437,7 @@ function drawBoard(){
   board.append(more);
  }
  rrFitStatus(board);
+ if(rrBoardNewList){rrBoardNewList=false;board.scrollTop=0}
 }
 // A status that does not fit on its line shortens: "Expected +24 min" -> "Expt +24 min" (display only; the data keeps "Expected")
 function rrFitStatus(root){root.querySelectorAll('.rowstatus').forEach(rs=>{const tag=rs.querySelector('.status-tag');if(!tag)return;

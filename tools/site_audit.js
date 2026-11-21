@@ -179,6 +179,12 @@
   for(const j of js){chooseJourney(j);for(let i=0;i<j.legs.length-1;i++){rrFocusStation(j.legs[i].to);rrRedraw();const g=document.querySelector(`#stationLayer g[data-station="${CSS.escape(j.legs[i].to)}"]`);if(!g)continue;nc++;
     const strokes=[...g.querySelectorAll('circle,path')].map(e=>e.getAttribute('stroke')).filter(x=>x&&x!=='none');if(strokes.some(c=>c!==ink))bad('journey change ring not neutral',j.legs[i].to+': '+strokes.join(' '))}}
   if(st0)setCurrentStation(st0);out.counts['journey change rings checked']=nc}
+ // the timetable: another list (departures <-> arrivals, another filter) starts at the top; choosing the chosen tab keeps the place
+ {const st0=currentStation;setViewMode('departures');setCurrentStation(LABELS.find(n=>S.has(n)));board.scrollTop=300;const y0=board.scrollTop;
+  $('departuresTab').click();if(y0>0&&board.scrollTop!==y0)bad('choosing the chosen tab moved the timetable','');
+  $('arrivalsTab').click();if(board.scrollTop!==0)bad('arrivals did not start at the top',board.scrollTop);
+  board.scrollTop=300;$('departuresTab').click();if(board.scrollTop!==0)bad('departures did not start at the top',board.scrollTop);
+  if(st0)setCurrentStation(st0);out.counts['timetable switches checked']=3}
  // journey form: the swap button exchanges From and To (each select only holds its chosen station)
  {const f=$('from'),t=$('to'),f0=f.value,t0=t.value,[a,b]=RR_STATION_NAMES;rrSelectValue(f,a);rrSelectValue(t,b);$('swapStations').click();
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
