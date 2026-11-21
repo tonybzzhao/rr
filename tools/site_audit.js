@@ -92,7 +92,8 @@
     if(/RR Local/.test(r.textContent)&&!r.querySelector('summary .rr-system-link'))bad('Local network name does not open its network page',name)}}
   if(st0)setCurrentStation(st0);out.counts['station services checked']=ns}
  // a delay status never breaks over two lines in a timetable row ("Expected" shortens to "Expt" when space runs out)
- {let nt=0;for(const tag of document.querySelectorAll('#board .rowstatus .status-tag')){nt++;if(tag.getClientRects().length>1)bad('status breaks over two lines',tag.textContent)}out.counts['row statuses checked']=nt}
+ {let nt=0;for(const tag of document.querySelectorAll('#board .rowstatus .status-tag')){nt++;if(tag.getClientRects().length>1)bad('status breaks over two lines',tag.textContent);
+   const cr=tag.parentElement.querySelector('.rr-crowd');if(cr&&cr.getBoundingClientRect().top>=tag.getBoundingClientRect().bottom-2)bad('crowding pushed under its status (user 2026-11-21)',tag.textContent)}out.counts['row statuses checked']=nt}
  // alignment: in every row laid out to centre its items (flex / grid, align-items:center), items side by side share one centre
  // line (user 2026-11-20: "Ring line" sat 4 px under its O badge - a margin meant for the route header; "fix all problems alike").
  // Skipped: items aligned on purpose (align-self start / end / baseline / stretch), nudged on purpose (transform), or more than 2.5x taller.
@@ -176,7 +177,8 @@
   {const y=s=>document.querySelector(s).getBoundingClientRect().top,ord=['#stationsTab','#stationHeading','#stationInfoLeft','#departuresTab','.service-filter','#board'];
    for(let i=1;i<ord.length;i++)if(y(ord[i])<y(ord[i-1])-1)bad('left panel parts out of order',ord[i-1]+' then '+ord[i])}
   setCurrentStation(null);if(!vis('#stationPanel .search-picker-main')||!vis('.picker-search-icon'))bad('station search box (with its icon) missing with no station chosen','');
-  for(const s of ['#stationHeading','#departuresTab','.service-filter'])if(vis(s))bad('station part shown with no station chosen',s);
+  for(const s of ['#departuresTab','.service-filter'])if(vis(s))bad('station part shown with no station chosen',s);
+  if(!vis('#stationHeading')||$('stationHeading').textContent.trim()!=='Choose a station')bad('home without its "Choose a station" heading (user 2026-11-21)','#stationHeading');
   setViewMode('journeys');if(vis('#stationHeading')||vis('#stationInfoLeft')||vis('.board-controls'))bad('station block shown while Journeys is open','');if(!vis('#journeyPanel')&&!vis('.journey-results-head'))bad('journey planner missing while Journeys is open','');setViewMode('departures');
   setCurrentStation(st0||LABELS[0]);out.counts['left panel states checked']=3}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)

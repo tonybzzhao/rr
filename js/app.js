@@ -398,7 +398,7 @@ function drawBoard(){
  if(viewMode==='journeys'){renderJourneyResults();return}
  const isArrival=viewMode==='arrivals';
  app.classList.toggle('no-station',!currentStation);
- $('stationBoardTitle').textContent=!currentStation?'Find a station':isArrival?'Arrivals':'Departures';   // home: a caption above the search box (user 2026-11-21)
+ $('stationBoardTitle').textContent=isArrival?'Arrivals':'Departures';
  if(!currentStation){
   // Home: no station is assumed. The passenger picks one, or starts from a major station.
   $('stationHeading').textContent='Choose a station';
@@ -446,7 +446,8 @@ function drawBoard(){
 function rrFitStatus(root){root.querySelectorAll('.rowstatus').forEach(rs=>{const tag=rs.querySelector('.status-tag');if(!tag)return;
  const long=tag.dataset.long||tag.textContent;if(!/^Expected /.test(long))return;tag.dataset.long=long;if(tag.textContent!==long)tag.textContent=long;
  const wraps=()=>{const b=tag.getBoundingClientRect().bottom;return tag.getClientRects().length>1||[...rs.children].some(c=>c!==tag&&c.getBoundingClientRect().top>=b-2)};
- if(wraps())tag.textContent=long.replace(/^Expected /,'Expt ')})}
+ // still no room (user 2026-11-21: "Expt +32 min" pushed the crowding figures onto a new line): the delay alone, then without "min"; the tag's colour still says expected
+ if(wraps())tag.textContent=long.replace(/^Expected /,'Expt ');if(wraps()&&/^Expected \+/.test(long))tag.textContent=long.replace(/^Expected /,'');if(wraps())tag.textContent=tag.textContent.replace(/ min$/,'');tag.title=tag.textContent!==long?long:''})}
 new ResizeObserver(()=>rrFitStatus(board)).observe(board);
 function setCurrentStation(name){rrLocalSystem=null;
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
@@ -2389,7 +2390,7 @@ const rrFrenchExact=Object.freeze({
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
  'Close train details':'Fermer les détails du train',
  'Collapse departures':'Réduire le panneau','Expand departures':'Déployer le panneau',
- 'Search station':'Rechercher une gare','Find a station':'Trouver une gare','Browse stations':'Parcourir les gares',
+ 'Search station':'Rechercher une gare','Browse stations':'Parcourir les gares',
  'Current station':'Gare sélectionnée','From station':'Gare de départ',
  'To station':'Gare d’arrivée',
  'Swap From and To stations':'Inverser le départ et l’arrivée',

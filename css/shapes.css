@@ -851,10 +851,10 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .board-controls .station-tabs{margin:0 0 6px!important;background:var(--rr-canvas)!important}
 .board-controls .service-filter{margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important}
 .app.no-station .board-controls,.app.journey-mode .board-controls{display:none!important}
-.app:not(.no-station) #stationBoardTitle{display:none}
-.app.no-station #stationBoardTitle{margin-bottom:10px}
+#stationBoardTitle{display:none}
 .app:not(.no-station) #stationPanel .search-picker-main{display:none}
-.app.no-station #stationHeading,.app.no-station .station-tabs{display:none!important}
+.app.no-station .station-tabs{display:none!important}
+.app.no-station #stationHeading{margin-bottom:12px!important}   /* home: the "Choose a station" heading above the search box (user 2026-11-21) */
 .search-picker-main .picker-control{position:relative}
 .picker-search-icon{position:absolute;left:12px;top:50%;width:18px;height:18px;margin-top:-9px;fill:var(--muted-slate);pointer-events:none;z-index:1}
 .search-picker-main .picker-input{padding-left:38px!important}
@@ -903,4 +903,4 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .journey-head-top .jp-edit.station-reset{display:none!important}
 .jp-collapsed .journey-head-top .jp-edit.station-reset{display:inline-flex!important}
 /* station card: a divider between the name row and Station information, like the journey card's (user 2026-11-21) */
-#stationInfoLeft{border-top:1px solid var(--stroke-soft);padding-top:12px!important;margin-top:12px!important}
+#stationInfoLeft{border-top:1px solid var(--stroke-soft);padding-top:9px!important;margin-top:12px!important;margin-bottom:-4px!important}   /* lower part a little shorter (user 2026-11-21) */
