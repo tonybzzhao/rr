@@ -582,9 +582,9 @@ function pictoItem(name){
 }
 const STATION_CORE=['Information','Help point','Defibrillator (AED)','Ticket machines','Accessible','Accessible Toilet','Toilet','Lift','Escalator','Seating'];
 const STATION_AMENITIES={
- national:['Interchange','Café','Dining','Pharmacy','Business centre','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
- major:['Interchange','Café','Dining','Pharmacy','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
- regional:['Interchange','Café','Wi-Fi','Luggage','Drop-off','Baby Changing','Water fountain','Vending machines'],
+ national:['Café','Dining','Pharmacy','Business centre','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
+ major:['Café','Dining','Pharmacy','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
+ regional:['Café','Wi-Fi','Luggage','Drop-off','Baby Changing','Water fountain','Vending machines'],
  local:['Café','Wi-Fi']
 };
 function stationFacilities(name){
@@ -593,7 +593,7 @@ function stationFacilities(name){
  // of major status (e.g. Medway Central is a smaller station on this map).
  const tier=rrStationTier(name);
  const items=[...STATION_CORE,...STATION_AMENITIES[tier]];
- if(airport)for(const item of ['Airport','Interchange','Luggage','Baby Changing'])items.push(item);
+ if(airport)for(const item of ['Airport','Luggage','Baby Changing'])items.push(item);
  return [...new Set(items)];
 }
 function trainFacilities(train){
@@ -2116,7 +2116,7 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   if(!last){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
-   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-change"></use></svg>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min · Arrive platform ${arrivalPlatform} · Depart platform ${departurePlatform}</span></div></li>`;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-interchange"></use></svg>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
