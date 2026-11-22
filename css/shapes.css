@@ -966,3 +966,14 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .system-lines-tiles .system-line-wide{grid-column:span 2}   /* 3-digit lines: two badges do not fit one column */
 .system-lines-tiles .system-line-tile{display:flex;justify-content:center;width:auto;min-height:0;padding:5px 4px;border:1px solid var(--stroke-soft)!important;border-radius:var(--rr-radius-control)}
 .system-lines-tiles .system-line-tile .system-line-badges{flex-wrap:nowrap;flex:none;min-width:max-content;gap:4px}   /* min-width:0 let the row shrink to one badge: RS fell under RX */
+/* station opening hours: one line under the name, clock + text (user 2026-11-22) */
+.station-hero .station-hours{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate)}
+.station-hero .station-hours .rr-action-icon{width:16px;height:16px;flex:none;fill:currentColor}
+/* first and last trains at your station: Towards | First | Last, one row per direction and pattern */
+.fl-at{margin:0 0 8px;font-size:var(--fs-small);color:var(--muted-slate)}
+.rr-firstlast{width:100%;border-collapse:collapse;font-size:var(--fs-body)}
+.rr-firstlast th{font-size:var(--fs-caption);font-weight:var(--fw-regular);color:var(--muted-slate);text-align:left;padding:0 0 6px}
+.rr-firstlast th:not(:first-child),.rr-firstlast td:not(:first-child){text-align:right;width:56px;font-variant-numeric:tabular-nums}
+.rr-firstlast td{padding:8px 0;border-top:1px solid var(--stroke-soft);vertical-align:top;font-weight:var(--fw-bold);color:var(--ink-strong)}
+.rr-firstlast td:first-child .rr-fast-tag{margin-left:6px}
+.rr-firstlast .fl-from{display:block;font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate)}
