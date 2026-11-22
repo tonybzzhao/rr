@@ -2320,7 +2320,7 @@ rrPlannerMobileQuery.addEventListener('change',()=>{rrPlacePlanner();requestAnim
 
 pathsByType();stationList();
 {const AIR=new Set(RR_STATION_NAMES.filter(rrIsAirport));   // any HTML text that is exactly an airport's name gets the glyph (the map draws its own)
- const mark=t=>{const v=t.data.trim();if(AIR.has(v))t.data=t.data.replace(v,v+RR_AIR)};
+ const mark=t=>{if(t.parentElement?.closest('.station-conn'))return;const v=t.data.trim();if(AIR.has(v))t.data=t.data.replace(v,v+RR_AIR)};   // not in Connections: the airport pictogram is already there (user 2026-11-22)
  const scan=el=>{const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);for(let t=w.nextNode();t;t=w.nextNode())mark(t)};
  new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes){if(n.nodeType===3){if(!(n.parentNode instanceof SVGElement))mark(n)}else if(n.nodeType===1&&!(n instanceof SVGElement))scan(n)}}).observe(document.body,{childList:true,subtree:true});
  scan(document.body)}
