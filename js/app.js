@@ -301,7 +301,7 @@ function rrSharedPath(o,kind=1){return rrSharedChains(kind).map(({pts,ns})=>'M'+
 // the Mainline lane split by track class: high-speed-capable (class 1) drawn thicker than Mainline-only (user 2026-11-22)
 const RR_EDGE_CLS=new Map(E.map(([a,b,t])=>[a<b?a+'_'+b:b+'_'+a,t]));
 function rrSharedPathCls(o,kind,hs){let d='';for(const {pts,ns,ids} of rrSharedChains(kind)){let run=false;for(let i=0;i<pts.length;i++){
-  const t=i<pts.length-1?RR_EDGE_CLS.get(ids[i]<ids[i+1]?ids[i]+'_'+ids[i+1]:ids[i+1]+'_'+ids[i]):null,on=t!=null&&(t===1)===hs,xy=(pts[i][0]+ns[i][0]*o).toFixed(2)+' '+(pts[i][1]+ns[i][1]*o).toFixed(2);
+  const t=i<pts.length-1?RR_EDGE_CLS.get(ids[i]<ids[i+1]?ids[i]+'_'+ids[i+1]:ids[i+1]+'_'+ids[i]):null,on=t!=null&&(t===1||t===4)===hs,xy=(pts[i][0]+ns[i][0]*o).toFixed(2)+' '+(pts[i][1]+ns[i][1]*o).toFixed(2);
   if(on&&!run){d+='M'+xy;run=true}else if(run){d+='L'+xy;if(!on)run=false}}}return d}
 function rrDrawShared(sc){if(sc===rrDrawShared.sc)return;rrDrawShared.sc=sc;const o=1.6/sc,d={ml:'',hsl:'',regio:'',local:''};
  for(const [k,lanes] of Object.entries(RR_SHARE_LANES))for(const [sys,m] of Object.entries(lanes)){if(sys==='ml'){d.ml+=rrSharedPathCls(m*o,+k,false);d.hsl+=rrSharedPathCls(m*o,+k,true)}else d[sys]+=rrSharedPath(m*o,+k)}
@@ -312,7 +312,7 @@ function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',(GRAPH.la
  // colour, and per network its own track, centred, shown only with that filter
  const all=[],sys={M:[],H:[],R:[],L:[]},seen=new Set();   // H: Mainline track high-speed trains can use too (drawn thicker with the Mainline filter)
  for(const [a,b,t,sh] of E){const k=a<b?a+'_'+b:b+'_'+a;if(seen.has(k))continue;seen.add(k);const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;all.push(d);
-  if(t===1)sys.H.push(d);else if(t===0||sh===1||sh===3||sh===4)sys.M.push(d);if(t===2||sh===1||sh===2||sh===3)sys.R.push(d);if(t===3||sh===2||sh===3||sh===4)sys.L.push(d)}
+  if(t===1||t===4)sys.H.push(d);else if(t===0||sh===1||sh===3||sh===4)sys.M.push(d);/* class 4: high-speed track on its own alignment, drawn like class 1 */if(t===2||sh===1||sh===2||sh===3)sys.R.push(d);if(t===3||sh===2||sh===3||sh===4)sys.L.push(d)}
  $('allTrack').setAttribute('d',all.join(' '));$('sysMainline').setAttribute('d',sys.M.join(' '));$('sysMainlineHs').setAttribute('d',sys.H.join(' '));$('sysRegio').setAttribute('d',sys.R.join(' '));$('sysLocal').setAttribute('d',sys.L.join(' '))}
 
 const routeCache=new Map(),routeStopPathEnds=new Map();
