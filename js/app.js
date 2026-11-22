@@ -409,7 +409,7 @@ const RR_MAINLINE_TYPES=new Set(['Max','VIA','InterCity','Nightline']);
 function rrMatchesFilter(t){
  if(serviceFilter==='all')return true;
  if(serviceFilter==='mainline')return RR_MAINLINE_TYPES.has(t.type);
- if(serviceFilter==='regio')return t.type==='Regio'&&(!rrStationNetwork||t.network===rrStationNetwork);
+ if(serviceFilter==='regio')return t.type==='Regio';   // every Regio train at the station, from each region serving it
  return t.type==='Local';
 }
 document.querySelectorAll('.service-chip').forEach(b=>b.addEventListener('click',()=>{
@@ -646,7 +646,7 @@ function rrServiceRow(s){
  const name=`<span class="station-svc-name">${rrServiceLabel(s.type,s.network)}</span>`;
  if(!s.badges.size)return `<div class="station-svc"><div class="station-svc-row">${name}</div></div>`;
  const lines=[...s.badges.entries()].sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([,t])=>`<button type="button" class="route-link" data-route-type="${t.type}" data-route-net="${t.network}" data-route-line="${t.line}" title="Route details">${rrBadge(t)}</button>`).join('');
- const head=(s.type==='Local'||s.type==='Regio')&&s.network?`<button type="button" class="station-svc-name station-svc-link rr-system-link" data-system="${s.network}" data-type="${s.type}" title="Network details">${rrServiceLabel(s.type,s.network)}</button>`:name;
+ const head=s.type==='Local'&&s.network?`<button type="button" class="station-svc-name station-svc-link rr-system-link" data-system="${s.network}" data-type="${s.type}" title="Network details">${rrServiceLabel(s.type,s.network)}</button>`:name;
  return `<details class="station-svc"><summary>${head}<span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${lines}</div></details>`}
 // Connections to local transport (GIS station_connections, exported as STATIONS[].conn = [[mode, name, detail]]; user 2026-11-21):
 // pictograms from the user's set; a metro / underground / urban rail system shows the underground pictogram (user 2026-11-22),
@@ -1663,7 +1663,16 @@ function rrLocalSystemShown(){return rrLocalSystem}
 function rrLocalSystemPoints(){const net=rrLocalSystemShown(),m=net&&rrLocalNetworkEdges().get(net);return m?[...new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)))]:[]}
 // Network focus: other stations and labels fade, the base track fades, a Regio network's lines are drawn in colour on top
 // (a Local network's lines are coloured by drawLocalColours)
-function rrApplySystemFocus(){const f=rrFocusSystem;app.classList.toggle('system-focus',!!f);
+// Regio filter on a station's board: the map shows the Regio lines of the regions serving that station and dims the rest (user
+// 2026-11-22: "when filter regio in timetable, only highlight regio regions that station is served by")
+let rrRegioFilterKey='',rrRegioFilterFocus=null;
+function rrRegioFilterSystem(){
+ if(serviceFilter!=='regio'||viewMode==='journeys'||!currentStation||selectedPath.length||rrLocalSystem)return null;
+ if(rrRegioFilterKey!==currentStation){rrRegioFilterKey=currentStation;
+  const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio'&&t.route.some(r=>r[0]===currentStation)).map(t=>t.network))].sort(),ts=TRAINS.filter(t=>t.type==='Regio'&&nets.includes(t.network));
+  rrRegioFilterFocus=nets.length?{type:'Regio',net:nets.join('+'),nets,filter:true,names:new Set(ts.flatMap(t=>t.route.map(r=>r[0]))),lines:[...new Map(ts.filter(t=>t.dir===1).map(t=>[t.network+'|'+t.line+'|'+t.pattern,t])).values()].map(t=>[getTrainPath(t),rrMapColor(t)])}:null}
+ return rrRegioFilterFocus}
+function rrApplySystemFocus(){if(!rrFocusSystem||rrFocusSystem.filter)rrFocusSystem=rrRegioFilterSystem();const f=rrFocusSystem;app.classList.toggle('system-focus',!!f);
  let g=$('systemOverlay');if(!g){g=document.createElementNS('http://www.w3.org/2000/svg','g');g.id='systemOverlay';g.setAttribute('aria-hidden','true');routeWorld.before(g)}
  const key=f?f.type+'|'+f.net:'';if(g.dataset.key!==key){g.dataset.key=key;g.replaceChildren();
   if(f)for(const [ids,col] of f.lines){if(ids.length<2)continue;const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d','M'+ids.map(i=>P[i][0]+' '+P[i][1]).join('L'));p.setAttribute('class','system-overlay-line');p.style.stroke=col;g.append(p)}}
@@ -1729,12 +1738,13 @@ function rrFocusStation(name){const s=S.get(name);if(!s||!W||!H)return;
 // other side's branches forking out to its ends. One end a side is a plain line between two names.
 function rrLineEnds(a,z,color,links=false){const nm=n=>links?rrStnLink(n):rrWrapStationName(n),side=(e,k)=>`<ul class="le-side le-${k}">${e.map(n=>`<li>${nm(n)}</li>`).join('')}</ul>`;
  return `<div class="line-ends${links?' le-lg':''}" style="--le:${color}" role="group" aria-label="Runs between ${a.join(' or ')} and ${z.join(' or ')}">${side(a,'a')}<span class="le-trunk" aria-hidden="true"></span>${side(z,'z')}</div>`}
-function rrSystemLink(type,net){return (type==='Local'||type==='Regio')&&net?`<button type="button" class="rr-system-link" data-system="${net}" data-type="${type}" title="Network details">${rrServiceLabel(type,net)}</button>`:rrServiceLabel(type,net)}
+function rrSystemLink(type,net){return type==='Local'&&net?`<button type="button" class="rr-system-link" data-system="${net}" data-type="${type}" title="Network details">${rrServiceLabel(type,net)}</button>`:rrServiceLabel(type,net)}
 /* Local network page (passenger facing, no network statistics): each line with its ends (the letter only, as on the trains),
    the stations to change for Mainline and Regio trains, and when trains run. */
 /* Regio networks get the same page (user 2026-11-21: "each regional system get a network page, same treatment as local"): one row
    per line number (RX / RS are stopping patterns of one line), change stations for Mainline and Local. */
 function fillLocalSystem(net,from=currentStation,type='Local'){
+ if(type!=='Local')return;   // Regio has no network page (user 2026-11-22: "no more dedicated network details for regio")
  const trains=TRAINS.filter(t=>t.type===type&&t.network===net);if(!trains.length)return;
  const regio=type==='Regio';
  const key=t=>regio?String(t.line):t.ring&&net==='Havenbolme'?'S11':rrLocalLetter(t);
@@ -2764,7 +2774,8 @@ function rrApplyHash(){
    const line=a==='Local'&&b==='Havenbolme'?c.replace(/^S4([12])$/,'S1$1'):c;
    fillRouteInfo(a,b,line,d||currentStation)
   }
-  else if((kind==='local'||kind==='regio')&&TRAINS.some(t=>t.type===(kind==='regio'?'Regio':'Local')&&t.network===a)){if(b&&S.has(b)){viewMode='departures';setCurrentStation(b)}fillLocalSystem(a,b||currentStation,kind==='regio'?'Regio':'Local')}
+  else if(kind==='local'&&TRAINS.some(t=>t.type==='Local'&&t.network===a)){if(b&&S.has(b)){viewMode='departures';setCurrentStation(b)}fillLocalSystem(a,b||currentStation,'Local')}
+   else if(kind==='regio'&&b&&S.has(b)){viewMode='departures';setCurrentStation(b);fillStationInfo(b)}   // old Regio network links open the station
   else if(kind==='station'&&S.has(a)){viewMode='departures';setCurrentStation(a);fillStationInfo(a)}
   else if(kind==='train'){
    const id=a?.replace(/^S4([12])(?=·HB-)/,'S1$1');

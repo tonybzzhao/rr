@@ -82,14 +82,9 @@
   for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
   const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
-// every Regio network has a network page like a Local one (user 2026-11-21), and the journey Reset leaves an empty planner on Journeys
+// the journey Reset leaves an empty planner on Journeys (Regio network pages removed 2026-11-22)
 {let nn=0;const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio').map(t=>t.network))];
-  for(const n of nets){fillLocalSystem(n,currentStation,'Regio');drawMap();nn++;
-   if(!app.classList.contains('system-focus')||!document.querySelectorAll('#systemOverlay path').length)bad('Regio network page does not single out its network on the map',n);
-   if([...document.querySelectorAll('#stationLayer g[data-station]:not(.off-system)')].some(g=>!rrFocusSystem.names.has(g.dataset.station)))bad('another network\'s station not faded on a network page',n);if(!detail.querySelector('.system-hero[data-type="Regio"]')||!detail.querySelectorAll('.system-line').length)bad('Regio network without its network page',n);
-   if(!location.hash.startsWith('#regio/'))bad('Regio network page not at a #regio/ address',n+' '+location.hash);
-   for(const b of detail.querySelectorAll('.system-line')){const arrow=b.querySelector('.rr-arrow-icon')?.getBoundingClientRect(),ends=b.querySelector('.line-ends')?.getBoundingClientRect();if(arrow&&ends&&ends.right>arrow.left+1){bad('line ends run into the arrow',n+': '+b.innerText.replace(/\s+/g,' '));break}}}
-  app.classList.remove('detail-open');clear();drawMap();if(document.querySelector('#stationLayer g.off-system'))bad('faded stations left after the network page closed','');out.counts['Regio network pages checked']=nn;
+  app.classList.remove('detail-open');clear();drawMap();
   setViewMode('journeys');rrSelectValue($('from'),LABELS[0]);rrSelectValue($('to'),LABELS[1]);$('clear').click();
   if(viewMode!=='journeys'||$('from').value||$('to').value)bad('journey Reset did not leave an empty planner on Journeys',viewMode+' '+$('from').value+' '+$('to').value);
   setViewMode('departures')}
@@ -290,16 +285,14 @@
   const regioNets=new Set(TRAINS.filter(t=>t.type==='Regio'&&t.pattern!=='AX').map(t=>t.network));
   for(const t of TRAINS)if(t.pattern==='AX'&&!regioNets.has(t.network))bad('AX train not run by a Regio network of its region',t.id+' '+t.network);
   if(!nx)bad('no Airport Express trains','');out.counts['AX trains checked']=nx}
- // Regio network page (user 2026-11-22: badges had stacked - a train-link button nested in the line button): each line one tile with
- // its RX and RS badges side by side, no button inside a button, no tile overflowing; no network "Service hours" card ("no use")
- {let nt=0;const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio').map(t=>t.network))];for(const net of nets){fillLocalSystem(net,currentStation,'Regio');
-   if(/Service hours|Horaires de service/.test($('detailsBody').textContent))bad('network page still shows Service hours',net);
-   if(document.querySelector('#detailsBody button button, #detailsBody button .rr-train-link'))bad('button nested in a network line button',net);
-   for(const x of document.querySelectorAll('.system-line-tile')){nt++;const tr=x.getBoundingClientRect(),bs=[...x.querySelectorAll('.service')];
-    const want=(x.getAttribute('aria-label')||'').split(':')[1]?.split(',').length||1;if(bs.length!==want)bad('line tile missing a badge',net+' '+x.dataset.line);
-    if(new Set(bs.map(b=>Math.round(b.getBoundingClientRect().top))).size>1)bad('line tile badges not on one row',net+' '+x.dataset.line);
-    if(bs.some(b=>{const r=b.getBoundingClientRect();return r.right>tr.right+0.5||r.left<tr.left-0.5}))bad('line tile badge outside its tile',net+' '+x.dataset.line)}}
-  out.counts['Regio line tiles checked']=nt}
+ // no Regio network page (user 2026-11-22: "no more dedicated network details for regio"): no Regio network link anywhere; with the
+ // Regio filter on a station's board the map highlights exactly the Regio regions serving that station
+ {let nr=0;const st0=currentStation,f0=serviceFilter;for(const n of LABELS.slice(0,6)){fillStationInfo(n);if(document.querySelector('#detailsBody .rr-system-link[data-type="Regio"]'))bad('Regio network link on a station page',n);
+   const rt=TRAINS.find(t=>t.type==='Regio'&&t.route.some(r=>r[0]===n));if(rt){fillRouteInfo('Regio',rt.network,rt.line,n);if(document.querySelector('#detailsBody .rr-system-link[data-type="Regio"]'))bad('Regio network link on a route page',rt.network+' '+rt.line)}
+   setViewMode('departures');setCurrentStation(n);clear();serviceFilter='regio';rrRegioFilterKey='';drawMap();nr++;
+   const want=[...new Set(TRAINS.filter(t=>t.type==='Regio'&&t.route.some(r=>r[0]===n)).map(t=>t.network))].sort().join('+');
+   if(want&&(!rrFocusSystem||rrFocusSystem.net!==want))bad('Regio filter does not highlight the regions serving the station',n+': '+(rrFocusSystem?.net||'none')+' vs '+want)}
+  serviceFilter=f0;rrRegioFilterKey='';setCurrentStation(st0||LABELS[0]);drawMap();out.counts['Regio filter focus checked']=nr}
  // stations show opening hours (user 2026-11-22), and Local route pages first and last trains each way
  {let nh=0;for(const n of LABELS.slice(0,8)){fillStationInfo(n);const c=document.querySelector('#detailsBody .station-hero .station-hours');nh++;if(document.querySelector('#detailsBody section.station-hours'))bad('opening hours still a separate card',n);
    if(!c)bad('station without opening hours',n);else if(!/Open 24 hours|Ouvert 24|\d\d:\d\d.*–.*\d\d:\d\d/.test(c.textContent))bad('station opening hours unreadable',n+': '+c.textContent.trim().slice(0,60))}
