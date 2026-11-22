@@ -313,6 +313,9 @@
  // a Connections row never repeats the plane after the airport name: its pictogram says it (user 2026-11-22: "why tf icon in connections")
  {let nc=0;for(const x of STATIONS.filter(x=>(x.conn||[]).some(c=>c[0]==='airport')).slice(0,20)){fillStationInfo(x.name);for(const r of document.querySelectorAll('#detailsBody .station-conn')){nc++;if(r.textContent.includes('✈'))bad('plane glyph in a Connections row',x.name+': '+r.textContent.trim())}}
   out.counts['connection rows without plane checked']=nc}
+ // track widths: Mainline + high-speed thicker than Mainline-only (user 2026-11-22)
+ {const w=id=>parseFloat(getComputedStyle($(id)).strokeWidth);if(!(w('hslTrack')>w('mlTrack')))bad('high-speed-capable Mainline track not drawn thicker than Mainline-only',w('hslTrack')+' vs '+w('mlTrack'));
+  if(!$('hslTrack').getAttribute('d')&&!$('hslShared').getAttribute('d'))bad('no high-speed-capable track drawn','');if(parseFloat(getComputedStyle($('hslShared')).strokeWidth)!==w('hslTrack'))bad('shared high-speed lane not as thick as high-speed track','');out.counts['track widths checked']=2}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
