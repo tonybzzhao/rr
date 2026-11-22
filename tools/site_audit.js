@@ -291,7 +291,11 @@
    const rt=TRAINS.find(t=>t.type==='Regio'&&t.route.some(r=>r[0]===n));if(rt){fillRouteInfo('Regio',rt.network,rt.line,n);if(document.querySelector('#detailsBody .rr-system-link[data-type="Regio"]'))bad('Regio network link on a route page',rt.network+' '+rt.line)}
    setViewMode('departures');setCurrentStation(n);clear();serviceFilter='regio';rrRegioFilterKey='';drawMap();nr++;
    const want=[...new Set(TRAINS.filter(t=>t.type==='Regio'&&t.route.some(r=>r[0]===n)).map(t=>t.network))].sort().join('+');
-   if(want&&(!rrFocusSystem||rrFocusSystem.net!==want))bad('Regio filter does not highlight the regions serving the station',n+': '+(rrFocusSystem?.net||'none')+' vs '+want)}
+   if(want&&(!rrFocusSystem||rrFocusSystem.net!==want))bad('Regio filter does not highlight the regions serving the station',n+': '+(rrFocusSystem?.net||'none')+' vs '+want)
+   // Local filter (user 2026-11-22): zoomed out only the station's Local network(s) in red; zoomed in their lines colour-coded, no other network
+   const wl=[...new Set(TRAINS.filter(t=>t.type==='Local'&&t.route.some(r=>r[0]===n)).map(t=>t.network))].sort().join('+');
+   if(wl&&W&&H){const z0=zoom;   // the map must be on screen (on a phone it opens with the Map button)serviceFilter='local';rrRegioFilterKey='';zoom=1;updateWorld();drawMap();if(!rrFocusSystem||rrFocusSystem.net!==wl||!rrFocusSystem.lines.length)bad('Local filter zoomed out does not highlight the station network in red',n+': '+(rrFocusSystem?.net||'none'));
+    zoom=RR_LOCAL_COLOUR_ZOOM+1;updateWorld();drawMap();const k=$('localColours').dataset.key||'';if(!k.startsWith('*'+wl+'|'))bad('Local filter zoomed in colours other networks',n+': '+k);zoom=z0;updateWorld()}}
   serviceFilter=f0;rrRegioFilterKey='';setCurrentStation(st0||LABELS[0]);drawMap();out.counts['Regio filter focus checked']=nr}
  // stations show opening hours (user 2026-11-22), and Local route pages first and last trains each way
  {let nh=0;for(const n of LABELS.slice(0,8)){fillStationInfo(n);const c=document.querySelector('#detailsBody .station-hero .station-hours');nh++;if(document.querySelector('#detailsBody section.station-hours'))bad('opening hours still a separate card',n);

@@ -1680,14 +1680,20 @@ function rrLocalSystemShown(){return rrLocalSystem}
 function rrLocalSystemPoints(){const net=rrLocalSystemShown(),m=net&&rrLocalNetworkEdges().get(net);return m?[...new Set([...m.keys()].flatMap(k=>k.split('_').map(Number)))]:[]}
 // Network focus: other stations and labels fade, the base track fades, a Regio network's lines are drawn in colour on top
 // (a Local network's lines are coloured by drawLocalColours)
-// Regio filter on a station's board: the map shows the Regio lines of the regions serving that station and dims the rest (user
-// 2026-11-22: "when filter regio in timetable, only highlight regio regions that station is served by")
+// Regio / Local filter on a station's board: the map shows only the networks serving that station and fades the rest (user 2026-11-22:
+// "when filter regio in timetable, only highlight regio regions that station is served by" / "when filter local, only highlight local
+// system serving that station. keep zoom out all red - zoom in color coding rule"). Regio: its lines in colour. Local: red when zoomed
+// out; zoomed in, drawLocalColours colours that network's lines one by one.
 let rrRegioFilterKey='',rrRegioFilterFocus=null;
+function rrFilterNets(type){return [...new Set(TRAINS.filter(t=>t.type===type&&t.route.some(r=>r[0]===currentStation)).map(t=>t.network))].sort()}
 function rrRegioFilterSystem(){
- if(serviceFilter!=='regio'||viewMode==='journeys'||!currentStation||selectedPath.length||rrLocalSystem)return null;
- if(rrRegioFilterKey!==currentStation){rrRegioFilterKey=currentStation;
-  const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio'&&t.route.some(r=>r[0]===currentStation)).map(t=>t.network))].sort(),ts=TRAINS.filter(t=>t.type==='Regio'&&nets.includes(t.network));
-  rrRegioFilterFocus=nets.length?{type:'Regio',net:nets.join('+'),nets,filter:true,names:new Set(ts.flatMap(t=>t.route.map(r=>r[0]))),lines:[...new Map(ts.filter(t=>t.dir===1).map(t=>[t.network+'|'+t.line+'|'+t.pattern,t])).values()].map(t=>[getTrainPath(t),rrMapColor(t)])}:null}
+ const type=serviceFilter==='regio'?'Regio':serviceFilter==='local'?'Local':null;
+ if(!type||viewMode==='journeys'||!currentStation||selectedPath.length||rrLocalSystem)return null;
+ const close=type==='Local'&&zoom>=RR_LOCAL_COLOUR_ZOOM,key=type+'|'+currentStation+'|'+close;
+ if(rrRegioFilterKey!==key){rrRegioFilterKey=key;
+  const nets=rrFilterNets(type),ts=TRAINS.filter(t=>t.type===type&&nets.includes(t.network)),red=getComputedStyle(document.documentElement).getPropertyValue('--rail-local-strong').trim();
+  rrRegioFilterFocus=nets.length?{type,net:nets.join('+')+(close?'@close':''),nets,filter:true,names:new Set(ts.flatMap(t=>t.route.map(r=>r[0]))),
+   lines:close?[]:[...new Map(ts.filter(t=>t.dir===1||t.ring).map(t=>[t.network+'|'+t.line+'|'+(t.pattern||'')+'|'+(t.ring||''),t])).values()].map(t=>[getTrainPath(t),type==='Local'?red:rrMapColor(t)])}:null}
  return rrRegioFilterFocus}
 function rrApplySystemFocus(){if(!rrFocusSystem||rrFocusSystem.filter)rrFocusSystem=rrRegioFilterSystem();const f=rrFocusSystem;app.classList.toggle('system-focus',!!f);
  let g=$('systemOverlay');if(!g){g=document.createElementNS('http://www.w3.org/2000/svg','g');g.id='systemOverlay';g.setAttribute('aria-hidden','true');routeWorld.before(g)}
@@ -1697,9 +1703,9 @@ function rrApplySystemFocus(){if(!rrFocusSystem||rrFocusSystem.filter)rrFocusSys
  for(const el of labels.querySelectorAll('.station-label'))el.classList.toggle('off-system',!!f&&!f.names.has((el.getAttribute('aria-label')||'').replace(/^Show departures at /,'')))}
 function drawLocalColours(){
  const g=$('localColours');if(!g)return;
- const net=rrLocalSystemShown(),all=!net&&viewMode!=='journeys'&&serviceFilter==='local'&&zoom>=RR_LOCAL_COLOUR_ZOOM&&!selectedPath.length;
+ const net=rrLocalSystemShown(),all=!net&&viewMode!=='journeys'&&serviceFilter==='local'&&zoom>=RR_LOCAL_COLOUR_ZOOM&&!selectedPath.length,only=all&&currentStation?new Set(rrFilterNets('Local')):null,onlyKey=only&&only.size?[...only].join('+'):'';
  app.classList.toggle('local-colours',!!(net||all));app.classList.toggle('local-system',!!net);
- const sc=fit*zoom,key=(net||(all?'*':''))+'|'+sc;if(g.dataset.key===key)return;g.dataset.key=key;g.replaceChildren();
+ const sc=fit*zoom,key=(net||(all?'*'+onlyKey:''))+'|'+sc;if(g.dataset.key===key)return;g.dataset.key=key;g.replaceChildren();
  if(!net&&!all)return;
  // each line one continuous stroke (user 2026-11-20: "local colored line breaking"): a piece's lane offset used to be drawn as
  // its own short stroke, so pieces pulled apart at every bend. Now each colour's pieces are chained and the offset lines meet
@@ -1710,14 +1716,14 @@ function drawLocalColours(){
  // from the order of the end points' numbers, so neighbouring pieces could face opposite ways and the lanes swapped sides -
  // the lines crossed between stations in fans). Walked piece to piece: a neighbour faces the way that turns least.
  const FR=new Map(),kOf=(a,b)=>a<b?a+'_'+b:b+'_'+a,nbr=new Map();
- for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;for(const k of m.keys()){const [a,b]=k.split('_').map(Number);for(const u of [a,b]){if(!nbr.has(u))nbr.set(u,[]);nbr.get(u).push(k)}}}
+ for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;if(onlyKey&&!only.has(n))continue;for(const k of m.keys()){const [a,b]=k.split('_').map(Number);for(const u of [a,b]){if(!nbr.has(u))nbr.set(u,[]);nbr.get(u).push(k)}}}
  for(const k0 of new Set([...nbr.values()].flat())){if(FR.has(k0))continue;
   const [a0,b0]=k0.split('_').map(Number),east=P[b0][0]-P[a0][0]>0||(P[b0][0]===P[a0][0]&&P[b0][1]>P[a0][1]);FR.set(k0,east?[a0,b0]:[b0,a0]);
   const queue=[k0];while(queue.length){const k=queue.pop(),[u,v]=FR.get(k),du=[P[v][0]-P[u][0],P[v][1]-P[u][1]];
    for(const [end,dir] of [[v,1],[u,-1]])for(const k2 of nbr.get(end)||[]){if(FR.has(k2))continue;const [c,d]=k2.split('_').map(Number),w=c===end?d:c;
     const dw=[(P[w][0]-P[end][0])*dir,(P[w][1]-P[end][1])*dir],fwd=du[0]*dw[0]+du[1]*dw[1]>=0;   // continue the way we came
     FR.set(k2,(dir===1)===fwd?[end,w]:[w,end]);queue.push(k2)}}}
- for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;
+ for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;if(onlyKey&&!only.has(n))continue;
   for(const [k,cols] of m)cols.forEach((c,i)=>{if(!lanes.has(c))lanes.set(c,new Map());lanes.get(c).set(k,(i-(cols.length-1)/2)*gap)})}
  for(const [c,em] of lanes){
   const adj=new Map();for(const k of em.keys()){const [a,b]=k.split('_').map(Number);for(const [u,v] of [[a,b],[b,a]]){if(!adj.has(u))adj.set(u,[]);adj.get(u).push(v)}}

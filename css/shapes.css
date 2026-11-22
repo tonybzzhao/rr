@@ -996,3 +996,4 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rail.sys-mainline{stroke-width:2.2}.rail.sys-mainline.sys-hs{stroke-width:4}
 .keymark.ml-hs{border-top-color:var(--rail-strong);border-top-width:4px}.keymark.ml-only{border-top-color:var(--rail-strong);border-top-width:2.2px}
 
+.app.system-focus .rail.unified{opacity:.18!important}   /* a focused network stands out over a well-faded base */
