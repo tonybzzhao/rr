@@ -95,6 +95,8 @@
 // own logo once provided), no airport row repeating the station's name, and an airport station always has its airport row
 {const st0=currentStation;let nc=0;const withC=STATIONS.filter(x=>x.conn?.length);
   for(const x of STATIONS)if(rrIsAirport(x.name)&&/Airport\b/.test(x.name)&&!(x.conn||[]).some(c=>c[0]==='airport'))bad('airport station without its airport connection',x.name);
+  /* coaches (user 2026-11-22): every airport station and every city main station has long-distance coaches, once the data has them */
+  if(STATIONS.some(x=>(x.conn||[]).some(c=>c[0]==='coach')))for(const x of STATIONS)if(rrIsAirport(x.name)&&/Airport\b/.test(x.name)&&!(x.conn||[]).some(c=>c[0]==='coach'))bad('airport station without coaches',x.name);
   for(const x of withC.filter((_,i)=>i%Math.max(1,Math.floor(withC.length/12))===0).slice(0,12)){fillStationInfo(x.name);const rows=[...detail.querySelectorAll('.station-conn')];nc++;
    if(rows.length!==x.conn.length)bad('station connections missing from Services',x.name);
    for(const r of rows){const m=r.dataset.mode;if(m!=='metro'&&!r.querySelector('.station-conn-icon use'))bad('connection without its pictogram',x.name+': '+m);
