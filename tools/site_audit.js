@@ -488,5 +488,20 @@
     const mb=container.getBoundingClientRect(),ovs=[...container.querySelectorAll('.map-legend,.zoom-control')].map(e=>{const b=e.getBoundingClientRect();return{x:b.left-mb.left,y:b.top-mb.top,w:b.width,h:b.height}}).filter(r=>r.w>0&&r.h>0);
     if(x<40||y<40||x>W-40||y>H-40||ovs.some(p=>x>=p.x-8&&x<=p.x+p.w+8&&y>=p.y-8&&y<=p.y+p.h+8))continue;nz++;   /* as the map: not at the edge or under its legend / controls */ if(!named.has(g.dataset.station))off('station without its name at the deepest zoom','"'+g.dataset.station+'"')}}
   zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(phone)rrSetPhoneView(false,false);out.counts['station markers checked']=nmk;out.counts['deepest-zoom names checked']=nz}
+ // Map speed (2026-11-22, user: "improve desktop/tablet map slow loading problem"): the map is drawn once per change - a resize to
+ // the same size or an unchanged theme does not redraw it (startup drew it 7 times) - colour tokens are read from a cache (each
+ // read was a forced style recalc), and a redraw stays within budget at three zoom levels (it took 100 ms+ when every name
+ // candidate was tested against every on-screen line and dot).
+ {clear();app.classList.remove('detail-open');setCurrentStation(null);if(phone)rrSetPhoneView(true,false);resize();const v0={zoom,panX,panY},draw0=drawMap;let n=0;
+  const settle=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(r,50))));await settle();   // earlier steps' queued redraws run first
+  drawMap=function(){n++;return draw0.apply(this,arguments)};
+  try{resize();if(n)bad('map redrawn by a same-size resize',n+' draws');n=0;
+   const root=document.documentElement;root.dataset.theme=root.dataset.theme;await Promise.resolve();await Promise.resolve();if(n)bad('map redrawn for an unchanged theme',n+' draws')}
+  finally{drawMap=draw0}
+  let t0=performance.now();for(let i=0;i<2000;i++)RR_UI_CSS_COLOR('--ink');if(performance.now()-t0>20)bad('colour tokens not cached',(performance.now()-t0).toFixed(1)+' ms for 2000 reads');
+  const RR_DRAW_BUDGET=60;out.mapDrawMs={};
+  for(const z of [1,2.5,4]){zoom=z;panX=panY=0;updateWorld();const t=[];for(let i=0;i<3;i++){t0=performance.now();drawMap();t.push(performance.now()-t0)}t.sort((x,y)=>x-y);
+   out.mapDrawMs['zoom '+z]=+t[1].toFixed(1);if(t[1]>RR_DRAW_BUDGET)bad('map redraw over its '+RR_DRAW_BUDGET+' ms budget','zoom '+z+': '+t[1].toFixed(0)+' ms')}
+  zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(phone)rrSetPhoneView(false,false);out.counts['map redraw timings checked']=3}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
