@@ -452,7 +452,7 @@
    for(const ar of [false,true]){const dt=rrDestText(t,ar);if(!(/^via \S/.test(dt)||dt===rrRingName(t.ring))||(dt.match(/\bvia\b/g)||[]).length>1){bad('ring train shows no direction',rrTrainLabel(t)+' '+t.id+': '+dt);break}}
    const k=rrTrainLabel(t)+t.ring;if(done.has(k))continue;done.add(k);setCurrentStation(t.route[1][0]);chooseTrain(t);
    const lab=detail.querySelector('.destination-label')?.textContent,d=detail.querySelector('.service-dest')?.textContent.trim();
-   const tg=detail.querySelector('.service-dest .rr-ring-tag');if(lab!=='Ring line'||!/^via \S/.test(d||'')||!tg||(d.match(/\bvia\b/g)||[]).length>1)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)
+   const tg=detail.querySelector('.service-dest .rr-ring-tag');const vl=[...detail.querySelectorAll('.service-dest .ring-via .station-link')];if(!vl.length)bad('ring train page via stations are not links',rrTrainLabel(t));if(lab!=='Ring line'||!/^via \S/.test(d||'')||!tg||(d.match(/\bvia\b/g)||[]).length>1)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)
    if([...detail.querySelectorAll('.keylabel')].some(e=>e.textContent==='Origin'))bad('ring train details show an origin',rrTrainLabel(t))}
   if(st0)setCurrentStation(st0);out.counts['ring trains checked']=nr}
  // times never run backwards: scheduled and revised (delayed) times along every train, and every journey's legs and changes
