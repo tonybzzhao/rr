@@ -10,6 +10,7 @@
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
    - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
    - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
+   - journey results: no train formation; every train badge opens that train departing from the leg's boarding station;
    - journeys (findJourneys + getSegmentPath) for a wide sample of station pairs, incl. whole-city choices: each leg on its
      train's route from its boarding point to its alighting point, every call on the way on it, changes at the same place.
    Run in the page:  await (await fetch('tools/site_audit.js')).text().then(eval)  -> {ok, counts, examples}
@@ -265,6 +266,30 @@
   for(const j of js){chooseJourney(j);for(let i=0;i<j.legs.length-1;i++){rrFocusStation(j.legs[i].to);rrRedraw();const g=document.querySelector(`#stationLayer g[data-station="${CSS.escape(j.legs[i].to)}"]`);if(!g)continue;nc++;
     const strokes=[...g.querySelectorAll('circle,path')].map(e=>e.getAttribute('stroke')).filter(x=>x&&x!=='none');if(strokes.some(c=>c!==ink))bad('journey change ring not neutral',j.legs[i].to+': '+strokes.join(' '))}}
   if(st0)setCurrentStation(st0);out.counts['journey change rings checked']=nc}
+ // journey results (user 2026-11-22): no train formation in the cards or the legs; every train badge is a button (not inside another
+ // button) that opens that train's page departing from the leg's boarding station, and does not choose / fold the journey card
+ {const st0=currentStation;let nl=0;const pairs=[[LABELS[0],LABELS[5]],['Peiting Central','Songchiao Airport'],[LABELS[2],LABELS[9]],[LABELS[1],LABELS[7]]];
+  const noForm=(root,where)=>{if(root.querySelector('.rr-formation,.jt-coach,.rr-car')||/\b(Train formation|coaches)\b/.test(root.textContent))bad('train formation shown in journey results',where)};
+  const tryLink=(b,leg,where)=>{nl++;
+   if(b.tagName!=='BUTTON'||!b.classList.contains('rr-train-link')||b.parentElement.closest('button')){bad('journey train badge not its own button',where+': '+b.outerHTML.slice(0,80));return}
+   if(decodeURIComponent(b.dataset.from)!==leg.from||b.dataset.train!==leg.train.id)bad('journey train badge links to another train or station',where+': '+b.dataset.train+' @ '+decodeURIComponent(b.dataset.from));
+   if(!/^Train .+ from .+/.test(b.getAttribute('aria-label')||''))bad('journey train badge without its "Train … from …" label',where);
+   b.click();
+   if(selectedTrain?.id!==leg.train.id||currentStation!==leg.from||!detail.querySelector('.train-hero')||selectedJourney)bad('journey train badge does not open that train at its boarding station',where+': '+rrTrainLabel(leg.train)+' @ '+leg.from+' -> '+(selectedTrain?.id||'none')+' @ '+currentStation);
+   else if(!location.hash.startsWith('#train/'))bad('journey train badge leaves the address off the train page',where+': '+location.hash)};
+  const sig=r=>[...r.querySelectorAll('.service')].map(x=>(x.dataset.train||'?')+'@'+decodeURIComponent(x.dataset.from||'')).join('|');
+  for(const [a,b] of pairs){if(!(S.has(a)||RR_CITIES.has(a))||!(S.has(b)||RR_CITIES.has(b)))continue;
+   rrSelectValue($('from'),a);rrSelectValue($('to'),b);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();searchJourneys();
+   noForm(board,'journey cards '+a+' - '+b);
+   const cards=[...board.querySelectorAll('.journey-row')];if(!cards.length)continue;
+   const card=cards.reduce((m,r)=>r.querySelectorAll('.service').length>m.querySelectorAll('.service').length?r:m),key=sig(card);   // the one with most changes
+   const j=journeyResults.find(x=>x.legs.map(l=>l.train.id+'@'+l.from).join('|')===key);
+   if(!j){bad('journey card badges do not match its journey (train @ boarding station)',a+' - '+b+': '+key);continue}
+   if(!card.querySelector('button.journey-row-open'))bad('journey card without its open button',a+' - '+b);
+   j.legs.forEach((leg,i)=>{searchJourneys();const c=[...board.querySelectorAll('.journey-row')].find(r=>sig(r)===key);if(c)tryLink(c.querySelectorAll('.service')[i],leg,'card '+a+' - '+b)});
+   j.legs.forEach((leg,i)=>{setViewMode('journeys');chooseJourney(j);if(i===0)noForm(detail,'journey legs '+a+' - '+b);const heads=detail.querySelectorAll('.jt-card-head .service');
+    if(heads.length!==j.legs.length){bad('journey leg without its train badge',a+' - '+b);return}tryLink(heads[i],leg,'leg '+a+' - '+b)})}
+  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey train links checked']=nl;if(!nl)bad('no journey train links checked','')}
  // the timetable: another list (departures <-> arrivals, another filter) starts at the top; choosing the chosen tab keeps the place
  {const st0=currentStation;setViewMode('departures');setCurrentStation(LABELS.find(n=>S.has(n)));board.scrollTop=300;const y0=board.scrollTop;
   $('departuresTab').click();if(y0>0&&board.scrollTop!==y0)bad('choosing the chosen tab moved the timetable','');

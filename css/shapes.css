@@ -122,7 +122,6 @@ body,.app{background:var(--rr-canvas)}
 .rr-car-line{border:0!important}
 .jt-timeline{background:var(--surface);border-radius:var(--rr-radius-card);padding:var(--rr-card-pad)!important;margin:0!important;box-shadow:var(--rr-card-shadow)}
 .jt-card{border:0!important;border-radius:var(--rr-radius-control)!important;background:var(--rr-canvas)!important;box-shadow:none!important}
-.jt-coach{border-top:0!important}
 .rr-alert-banner{border-left:0!important;border-radius:var(--rr-radius-card)!important;margin-left:0!important;margin-right:0!important;padding:12px var(--rr-card-pad)!important}
 .jt-card .rr-alert-banner,.rr-alert-leg{border-radius:var(--rr-radius-control)!important}
 
@@ -564,8 +563,15 @@ body,.app{background:var(--rr-canvas)}
 .details-body .stop.current .stop-icon,.stop.current .stop-icon{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)!important}
 .route-row.is-here .route-lane.stops::after,.route-row.is-here.all-stop .route-lane:first-child::after{box-shadow:0 0 0 4px color-mix(in srgb,var(--route) 30%,transparent)}
 .route-ends .route-arrow{color:var(--ink-strong)}
-button.train-number.train-route-link{border:0;font:inherit;font-weight:700;cursor:pointer}
-button.train-number.train-route-link:hover{text-decoration:underline}
+button.train-number.train-route-link,button.service.rr-train-link{border:0;font:inherit;font-weight:700;cursor:pointer}
+button.train-number.train-route-link:hover,button.service.rr-train-link:hover{text-decoration:underline}
+/* journey result card: its open button covers the card, the train badges (links to that train) sit above it */
+.journey-row{position:relative}
+.journey-row-open{display:block;width:100%;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left}
+.journey-row-open::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.journey-row-open:focus-visible{outline:0}
+.journey-row-open:focus-visible::after{outline:2px solid var(--ui);outline-offset:-2px}
+.journey-row .rr-train-link{position:relative;z-index:1}
 .picker-option.picker-city{font-weight:700}
 /* Route details mini timetable: the live value on top in the status colour, the timetabled one small and struck below.
    No box: one quiet row per train, every row the same height. */
@@ -710,8 +716,8 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span,
 .service-chip,.depart-label,.destination-label,.rr-card-sub,.jt-service .rr-service-identity>span,
 .details-actions .station-info-button span,.eyebrow,.rr-station-fac-text,.stop-fold-btn,.stop-fold-btn span,.jt-calls-toggle,.jt-calls-toggle span,.jt-plat,.jt-plat .pl-short,.jt-plat .pl-long,
-.journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-size:var(--fs-small)!important}
-.journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-weight:var(--fw-regular)!important}
+.journey-via,.journey-summary-time small,.jt-meta span{font-size:var(--fs-small)!important}
+.journey-via,.journey-summary-time small,.jt-meta span{font-weight:var(--fw-regular)!important}
 .route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span:not(.jr-time){font-weight:var(--fw-regular)!important}
 .status-tag,.status-tag.status-tag{font-size:var(--fs-small)!important;font-weight:var(--fw-regular)!important}
 .route-dep-dest,.route-stn,.journey-row-meta .change,.journey-row-meta .duration,.journey-summary-sub,.board .journey-more,.keylabel,.stop-name,
