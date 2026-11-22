@@ -190,6 +190,11 @@
    for(let i=1;i<ord.length;i++)if(y(ord[i])<y(ord[i-1])-1)bad('left panel parts out of order',ord[i-1]+' then '+ord[i])}
   setCurrentStation(null);if(!vis('#stationPanel .search-picker-main')||!vis('.picker-search-icon'))bad('station search box (with its icon) missing with no station chosen','');
   for(const s of ['#departuresTab','.service-filter'])if(vis(s))bad('station part shown with no station chosen',s);
+  {const st_=currentStation;setViewMode('journeys');$('sidebarContent').classList.remove('jp-collapsed');if(!vis('#journeyHeading')||$('journeyHeading').textContent.trim()!=='Plan a journey')bad('Journeys without its "Plan a journey" heading (user 2026-11-21)','#journeyHeading');
+   else{const g=document.querySelector('#journeyPlannerSlot').getBoundingClientRect().top-$('journeyHeading').getBoundingClientRect().bottom;if(g<10||g>16)bad('journey heading not spaced from From / To (10-16 px)',Math.round(g)+' px')}
+   setViewMode('departures');setCurrentStation(st_)}
+  // an airport is a connection, not a station facility (user 2026-11-21: "stop putting airports in facilities")
+  for(const n of S.keys())if(stationFacilities(n).includes('Airport'))bad('Airport listed as a station facility',n);
   if(!vis('#stationHeading')||$('stationHeading').textContent.trim()!=='Choose a station')bad('home without its "Choose a station" heading (user 2026-11-21)','#stationHeading');
   {const g=document.querySelector('#stationPanel .search-picker-main').getBoundingClientRect().top-$('stationHeading').getBoundingClientRect().bottom;if(g<10||g>16)bad('home heading not spaced from the search box (10-16 px)',Math.round(g)+' px')}
   setViewMode('journeys');if(vis('#stationHeading')||vis('#stationInfoLeft')||vis('.board-controls'))bad('station block shown while Journeys is open','');if(!vis('#journeyPanel')&&!vis('.journey-results-head'))bad('journey planner missing while Journeys is open','');setViewMode('departures');

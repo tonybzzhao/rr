@@ -720,7 +720,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .rr-card-title,.details-body .rr-formation h3,.details .details-body .stops-heading{font-size:var(--fs-body)!important;font-weight:var(--fw-bold)!important}
 .row-time .time-primary,.trainrow .dest,.board .trainrow .platform,.journey-pair strong,.journey-clock .time-primary,.jt-leg-list .jt-station,
 .details-head .details-heading h2,.line-ends.le-lg .le-side li{font-size:var(--fs-primary)!important}
-.route-hero .route-op,.system-hero .system-name,#stationHeading,.train-hero .depart-time .time-primary,.train-hero .service-dest .station-link,.details-body .train-hero .station-name-band{font-size:var(--fs-hero)!important;font-weight:var(--fw-bold)!important}
+.route-hero .route-op,.system-hero .system-name,#stationHeading,#journeyHeading,.train-hero .depart-time .time-primary,.train-hero .service-dest .station-link,.details-body .train-hero .station-name-band{font-size:var(--fs-hero)!important;font-weight:var(--fw-bold)!important}
 .journey-summary-time strong .time-primary{font-size:var(--fs-display)!important}
 @media(max-width:750px){:root{--fs-hero:19px;--fs-display:24px}}
 
@@ -908,3 +908,5 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rr-fast-tag{display:inline-flex;align-items:center;height:18px;padding:0 6px;margin-left:6px;border-radius:4px;vertical-align:middle;font-size:var(--fs-caption);font-weight:var(--fw-bold);line-height:1;color:var(--ui);background:color-mix(in srgb,var(--ui) 12%,transparent);white-space:nowrap}
 .row-via .rr-fast-tag{margin-left:0;margin-right:6px}
 .row-via:has(.rr-fast-tag){display:flex;align-items:center;flex-wrap:wrap;row-gap:2px}
+/* Journeys: a heading like the home's "Choose a station" above From / To (user 2026-11-21) */
+#journeyHeading{margin:0 0 12px!important}
