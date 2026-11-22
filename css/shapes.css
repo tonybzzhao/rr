@@ -1009,7 +1009,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
    ("Enregistrement en ville") read on one or two lines inside the tile instead of running past it. */
 .rr-card .station-picto-grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))!important;gap:8px 10px!important}
 .station-picto-grid .facility{flex-direction:row!important;align-items:center;justify-content:flex-start;gap:10px;text-align:left;width:auto;min-width:0}
-.station-picto-grid .facility.has-hours{padding:4px 6px!important;margin:0 -6px}
+.station-picto-grid .facility.has-hours{padding:4px 6px!important;margin:0}
 .station-picto-grid .facility>span:not(.fac-icon){min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 .station-picto-grid .fac-icon{flex:none}
 /* The status light sits at the row's right end, vertically centred, so the lights form one column down the list (open / closed /
@@ -1020,7 +1020,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .station-picto-grid .fac-dot{left:auto;right:6px;top:50%;transform:translateY(-50%);box-shadow:none}
 /* Uniform rows (user 2026-11-22: "uniform line spacing"): every facility row, with or without hours, has the same box - a 29 px icon
    cell, the same padding and one row height - and the same gap between rows. */
-.station-picto-grid .facility{box-sizing:border-box;min-height:calc(2 * 1.3 * var(--fs-small) + 8px);padding:4px 6px!important;margin:0 -6px!important;line-height:1.2}
+.station-picto-grid .facility{box-sizing:border-box;min-height:calc(2 * 1.3 * var(--fs-small) + 8px);padding:4px 6px!important;margin:0!important;line-height:1.2}
 .station-picto-grid .facility .fac-icon,.station-picto-grid .facility>svg{width:29px;height:29px;display:flex;align-items:center;justify-content:center;flex:none}
 .rr-card .station-picto-grid{row-gap:4px!important}
 /* Dividers between categories, not inside them (user 2026-11-22): in the Services and Facilities cards the rows of one category
@@ -1030,3 +1030,9 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rr-card :is(.station-services,.station-picto-grid)+.rr-card-sub{border-top:1px solid var(--stroke);padding-top:14px!important;margin-top:14px!important}
 
 .station-picto-grid .facility>span:not(.fac-icon){line-height:1.3}   /* two lines of name fit the row: rows stay one height when a name wraps */
+/* Rows inside a Services category sit slightly closer (user 2026-11-22: "slightly tighter spacing inside that category"): 36 px rows
+   instead of 44; the space between categories (divider) is unchanged. */
+.station-svc>summary,.station-svc-row,.station-conn-row{min-height:36px}
+/* Every facility tile fills exactly its grid cell (2026-11-22: a negative margin pushed the highlighted tile 6 px past its column and out
+   of line with the details card below); the details card spans the grid's full width, edge to edge with the tiles. */
+.station-picto-grid .fac-detail{margin-left:0;margin-right:0}
