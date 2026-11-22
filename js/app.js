@@ -571,12 +571,24 @@ const STATION_HELP=['RR Services','City check-in','Police','First aid','Mobility
 // Express trains) within 90 minutes lets you check in your bags for your flight; open like RR Services there.
 let rrCheckInMemo=null;
 function rrMajorAirports(){const a=new Set();for(const t of TRAINS)if(RR_MAINLINE_TYPES.has(t.type)||t.pattern==='AX')for(const [n] of t.route)if(rrIsAirport(n))a.add(n);return a}
+// an airport serves its own city (user 2026-11-22: "only airport/s serving that city!"): the airport station's city, else the city in
+// its full name ("Havenbolme Findel Airport" -> Havenbolme), else the city of the nearest major station by direct train; cities of one
+// urban area (city_terminals.json: Farinport-Hiltsbury-Amptonside, Somerfield-Grafton) share their airports
+const RR_METROS=[['Farinport','Hiltsbury','Amptonside'],['Somerfield','Grafton']];
+const rrMetro=c=>RR_METROS.find(m=>m.includes(c))||[c];
+let RR_CITY_NAMES=null;
+function rrAirportCity(st){const x=S.get(st);if(x?.city)return x.city;RR_CITY_NAMES??=new Set(STATIONS.map(y=>y.city).filter(Boolean));
+ const full=(x?.conn||[]).find(c=>c[0]==='airport')?.[1]||st,own=st.replace(/\s*Airport$/,''),base=full.replace(/\s*Airport$/,'');
+ const pre=(base.endsWith(' '+own)?base.slice(0,-own.length-1):base).trim();
+ if(RR_CITY_NAMES.has(pre))return pre;let best=null,bm=1e9;
+ for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===st);if(i<0)continue;for(let k=0;k<t.route.length;k++){const n=t.route[k][0];if(k===i||!MAJOR_STATIONS.has(n)||!S.get(n)?.city)continue;const m=Math.abs(timeOrdinal(t.route[k][1])-timeOrdinal(t.route[i][1]));if(m<bm){bm=m;best=S.get(n).city}}}
+ return best}
 function rrAirportName(st){const c=(S.get(st)?.conn||[]).find(c=>c[0]==='airport');return c?[c[1],c[3]||c[1]]:[st,st]}
 function rrCityCheckIn(name){
  if(!rrCheckInMemo){rrCheckInMemo=new Map();const air=rrMajorAirports();
   for(const n of MAJOR_STATIONS){if(rrIsAirport(n))continue;const hit=new Set();
    for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===n);if(i<0)continue;
-    for(let k=i+1;k<t.route.length;k++){const a=t.route[k][0];if(air.has(a)&&timeOrdinal(t.route[k][1])-timeOrdinal(t.route[i][1])<=90)hit.add(a)}}
+    for(let k=i+1;k<t.route.length;k++){const a=t.route[k][0];if(air.has(a)&&timeOrdinal(t.route[k][1])-timeOrdinal(t.route[i][1])<=90&&rrMetro(S.get(n)?.city).includes(rrAirportCity(a)))hit.add(a)}}
    if(hit.size)rrCheckInMemo.set(n,[...hit].sort())}}
  return rrCheckInMemo.get(name)||null}
 function rrCheckInNote(name){const a=(rrCityCheckIn(name)||[]).map(rrAirportName),j=(xs,w)=>xs.length>1?xs.slice(0,-1).join(', ')+' '+w+' '+xs.at(-1):xs[0]||'';
