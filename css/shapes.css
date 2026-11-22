@@ -1051,3 +1051,14 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .jt-towards .rr-ring-tag{margin-left:0!important}
 .service-dest.ring-dest{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:4px}
 .service-dest.ring-dest .rr-ring-tag{margin-left:0;top:0}
+/* Ring badge (user 2026-11-22: "improve this badge"): the icon sits inside the badge at the text's size (it was 24 px in a 22 px
+   badge), optically centred, with a small even gap and slightly less padding on the icon side. */
+.rr-fast-tag.rr-ring-tag{gap:4px;padding-left:5px!important}
+.rr-ring-tag .rr-ring-icon,.service-dest.ring-dest .rr-ring-tag .rr-ring-icon,.jt-towards .rr-ring-tag .rr-ring-icon{width:1em!important;height:1em!important;margin:0!important;position:static;flex:none}
+/* the loop carries on: the calling-at line runs into a ring icon in the line's colour, then a muted "Continues round the … circle" */
+.stop-continues .stop-marker .rr-ring-icon{position:relative;z-index:1;width:18px;height:18px;color:var(--route);background:var(--surface);border-radius:50%;margin:auto;display:block}
+.stop-continues .stop-marker{display:flex;align-items:flex-start;justify-content:center}
+.stop-continues .stop-cont-text{padding-top:6px;line-height:19px}   /* first line centred 15.5 px down */
+.stop-continues .stop-marker .rr-ring-icon{margin-top:6.5px!important}   /* 18 px icon centred on that first line */
+.stop-continues .stop-marker::before{bottom:calc(100% - 15.5px)!important}   /* the route line ends at the icon */
+.stop-continues .stop-cont-text{color:var(--muted);font-weight:var(--fw-regular)}

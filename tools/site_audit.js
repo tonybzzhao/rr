@@ -742,5 +742,13 @@
    if(tag&&!/^(Intérieure|Extérieure)$/.test(tag.textContent.trim()))bad('French ring badge not Intérieure / Extérieure',tag.textContent)}rrApplyLocale(loc0);
   if(/\b(Clockwise|Anticlockwise)\b/.test(document.getElementById('board').textContent))bad('clockwise used as a passenger label','board');
   setCurrentStation(st0||LABELS[0]);out.counts['ring trains checked']=nr}
+ // ring badge and loop (user 2026-11-22): the badge icon fits inside the badge; a ring train's calling-at list ends with the line running
+ // into a ring icon and "Continues round the inner / outer circle" (FR "Continue sur la boucle …")
+ {const st0=currentStation;let nk=0;const t=TRAINS.find(x=>x.ring);if(t){setCurrentStation(t.route[1][0]);chooseTrain(t);nk++;
+   const tag=detail.querySelector('.service-dest .rr-ring-tag'),ic=tag?.querySelector('svg');if(tag&&ic){const a=tag.getBoundingClientRect(),b=ic.getBoundingClientRect();if(b.top<a.top-0.5||b.bottom>a.bottom+0.5||b.height>a.height-4)bad('ring badge icon not inside its badge',Math.round(b.height)+' in '+Math.round(a.height))}
+   const last=detail.querySelector('.stop-list>.stop:last-child');if(!last?.classList.contains('stop-continues')||!last.querySelector('.rr-ring-icon')||!/^Continues round the (inner|outer) circle$/.test(last.textContent.trim()))bad('ring train list does not show the loop carrying on',last?.textContent.trim());
+   if(last?.classList.contains('stop-continues')&&W){const ic=last.querySelector('svg').getBoundingClientRect(),r=document.createRange();r.selectNodeContents(last.querySelector('.stop-cont-text'));const l1=r.getClientRects()[0];if(ic.height&&l1&&Math.abs((ic.top+ic.height/2)-(l1.top+l1.height/2))>1)bad('loop icon not level with its text',Math.round((ic.top+ic.height/2)-(l1.top+l1.height/2))+' px')}
+   if(rrFrenchText('Continues round the inner circle')!=='Continue sur la boucle intérieure')bad('loop continuation not in French','')}
+  setCurrentStation(st0||LABELS[0]);out.counts['ring loops checked']=nk}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
