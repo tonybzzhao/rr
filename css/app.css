@@ -1063,7 +1063,7 @@ body{font-size:14px}
   .app:not(.folded):not(.detail-open){grid-template-columns:390px minmax(0,1fr)}
   .app:not(.folded).detail-open{grid-template-columns:390px minmax(300px,1fr) 362px}
   .boardhead,.trainrow{
-    grid-template-columns:70px 85px minmax(0,1fr) 50px;
+    grid-template-columns:var(--rr-board-time) 73px minmax(0,1fr) 50px;   /* the shared time column (was a one-off 70px / 85px) */
     column-gap:8px;padding-inline:18px
   }
 }
@@ -1102,14 +1102,14 @@ body{font-size:14px}
 }
 @media (max-width:750px){
   .boardhead,.trainrow{
-    grid-template-columns:71px 87px minmax(0,1fr) 48px;
+    grid-template-columns:var(--rr-board-time) 87px minmax(0,1fr) 48px;
     column-gap:10px;padding-inline:17px
   }
   .boardhead>span:nth-child(3){display:block}
 }
 @media (min-width:351px) and (max-width:370px){
   .boardhead,.trainrow{
-    grid-template-columns:64px 83px minmax(0,1fr) 48px;
+    grid-template-columns:var(--rr-board-time) 83px minmax(0,1fr) 48px;
     column-gap:8px;padding-inline:12px
   }
 }

@@ -682,5 +682,47 @@
   for(const r of detail.querySelectorAll('.station-svc,.station-picto-grid .facility')){nd++;const cs=getComputedStyle(r);if(parseFloat(cs.borderTopWidth)>0||parseFloat(cs.borderBottomWidth)>0){bad('divider inside a category',n+': '+r.textContent.trim().slice(0,30));break}}
   for(const card of detail.querySelectorAll('.rr-card')){const hs=[...card.querySelectorAll(':scope>.rr-card-sub')];hs.forEach((h,i)=>{nd++;const w=parseFloat(getComputedStyle(h).borderTopWidth);if(i===0&&w>0)bad('divider above the first category',n+': '+h.textContent);if(i>0&&!(w>0))bad('no divider between categories',n+': '+h.textContent)})}}
   setCurrentStation(st0||LABELS[0]);out.counts['category dividers checked']=nd}
+ // Services rows: one height inside every category (user 2026-11-22: "slightly tighter spacing inside that category": 36 px)
+ {const st0=currentStation;let ns=0;for(const n of ['Peiting Central','Mapleriver Central'].filter(n=>S.has(n))){fillStationInfo(n);
+  const hs=new Set([...detail.querySelectorAll('.station-svc')].map(r=>{ns++;return Math.round(r.querySelector(':scope>summary,:scope>.station-svc-row,:scope>.station-conn-row')?.getBoundingClientRect().height||0)}));
+  if(hs.size>1||!hs.has(36))bad('Services rows not one 36 px height',n+': '+[...hs].join('/'))}setCurrentStation(st0||LABELS[0]);out.counts['service rows checked']=ns}
+ // Nothing spills out of its box in the details panel (2026-11-22, user: "styling mess up. must not happen again this whole kind of
+ // issues"): every visible element of a station-information card stays inside its card; every facility tile stays inside its own grid
+ // cell (open or closed); an open facility's details card lines up with the grid edges. Run at every audit width.
+ {const st0=currentStation;let nb=0;const inside=(r,o,t=0.5)=>r.left>=o.left-t&&r.right<=o.right+t&&r.top>=o.top-t&&r.bottom<=o.bottom+t;
+  for(const n of ['Peiting Central','Mapleriver Central','Havenbolme Hbf'].filter(n=>S.has(n))){fillStationInfo(n);app.classList.add('detail-open');
+   const tiles=[...detail.querySelectorAll('.station-picto-grid .facility.has-hours')];
+   for(const t of [null,...tiles.slice(0,6)]){if(t)t.click();
+    for(const card of detail.querySelectorAll('.rr-card')){const cr=card.getBoundingClientRect();if(!cr.width)continue;
+     for(const el of card.querySelectorAll('*')){if(el.closest('svg')&&el.tagName.toLowerCase()!=='svg')continue;const cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||cs.position==='absolute'||cs.position==='fixed')continue;
+      const r=el.getBoundingClientRect();if(!r.width||!r.height)continue;nb++;if(!inside(r,cr)){bad('element spills out of its card',n+': '+(el.className||el.tagName)+' '+(el.textContent||'').trim().slice(0,24));break}}}
+    for(const g of detail.querySelectorAll('.station-picto-grid')){const gr=g.getBoundingClientRect(),cols=getComputedStyle(g).gridTemplateColumns.split(' ').map(parseFloat),gap=parseFloat(getComputedStyle(g).columnGap)||0;
+     for(const f of g.querySelectorAll(':scope>.facility')){const r=f.getBoundingClientRect();let x=gr.left+parseFloat(getComputedStyle(g).paddingLeft),ok=false;for(const w of cols){if(r.left>=x-0.5&&r.right<=x+w+0.5){ok=true;break}x+=w+gap}nb++;
+      if(!ok){bad('facility tile outside its grid cell',n+': '+f.textContent.trim());break}}
+     const d=g.querySelector('.fac-detail');if(d){const dr=d.getBoundingClientRect(),il=gr.left+parseFloat(getComputedStyle(g).paddingLeft),ir=gr.right-parseFloat(getComputedStyle(g).paddingRight);nb++;
+      if(Math.abs(dr.left-il)>0.5||Math.abs(dr.right-ir)>0.5)bad('facility details card not edge to edge with the grid',n+': '+Math.round(dr.left-il)+'/'+Math.round(ir-dr.right))}}}
+   detail.querySelectorAll('.fac-detail').forEach(x=>x.remove());}
+  setCurrentStation(st0||LABELS[0]);out.counts['card boxes checked']=nb}
+ // a station facility never carries a train-formation name that means something else on a train (user 2026-11-22: "luggage on a train
+ // and at a station are two different facilities"): Left luggage, Cycle parking, Family room - each with its own icon
+ {let nf=0;const TRAIN_ONLY=['Luggage','Cycles','Family','Seat','Power','Quiet'];for(const x of STATIONS){nf++;const f=stationFacilities(x.name),hit=f.filter(n=>TRAIN_ONLY.includes(n));if(hit.length){bad('station facility with a train-formation name',x.name+': '+hit.join(', '));break}}
+  for(const [n,id] of [['Left luggage','luggage-locker'],['Cycle parking','cycle-parking']])if(!document.getElementById('rr-picto-'+id)||ICONS[n]!==id)bad('station facility without its own icon',n);
+  out.counts['station facility names checked']=nf}
+ // British English everywhere (user 2026-11-22: "make sure to use British way of saying things, forever"): no American spelling or
+ // term in any visible text, tooltip or screen-reader label on boards, filters, arrivals, station information, every train type,
+ // route pages or journeys (coach not car, platform not track, timetable not schedule, centre, colour, cancelled, lift, toilets ...)
+ {const AM=/\b(center|centers|centered|color|colors|favorite|traveler|travelers|traveling|canceled|canceling|gray|elevators?|restrooms?|bathrooms?|subway|parking lot|schedules?|scheduled|baggage|strollers?|railroad|round[- ]trip|one-way|downtown|ticket booth|toward|neighborhood|organize[ds]?|analyze[ds]?|realize[ds]?|license|track \d+|cars? \d+)\b/i;
+  const loc0=rrActiveLocale,st0=currentStation,vm0=viewMode,f0=serviceFilter,frame=()=>new Promise(r=>setTimeout(r,40)),hits=new Map();
+  const look=(t,lab)=>{if(!t)return;const m=t.match(AM);if(m&&!hits.has(t))hits.set(t,lab+' ['+m[0]+']')};
+  const sweep=lab=>{const tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=tw.nextNode()){const el=n.parentElement;if(!el||el.closest('script,style,svg'))continue;look(n.nodeValue.replace(/\s+/g,' ').trim(),lab)}
+   for(const el of document.querySelectorAll('[aria-label],[title],[placeholder]'))for(const a of ['aria-label','title','placeholder']){const t=el.getAttribute(a);if(t)look(t,lab+' @'+a)}};
+  rrApplyLocale('en');await frame();const pick=[...new Map(TRAINS.map(t=>[t.type+'|'+(t.pattern||''),t])).values()];
+  for(const n of [...new Set(['Peiting Central','Mapleriver Central',...pick.map(t=>t.route[0][0])])].filter(n=>S.has(n)).slice(0,10)){setViewMode('departures');setCurrentStation(n);await frame();sweep('board '+n);
+   $('arrivalsTab')?.click();await frame();sweep('arrivals '+n);$('departuresTab')?.click();try{fillStationInfo(n);await frame();sweep('station information '+n)}catch(e){}}
+  for(const t of pick){try{setCurrentStation(t.route[0][0]);chooseTrain(t);await frame();sweep('train '+t.type)}catch(e){}}
+  for(const t of [...TRAINS.filter(t=>t.type==='Local').slice(0,2),...TRAINS.filter(t=>t.type==='Regio').slice(0,2)]){try{fillRouteInfo(t.type,t.network,t.line,t.route[0][0]);await frame();sweep('route '+t.type)}catch(e){}}
+  setViewMode('journeys');await frame();sweep('journeys');
+  for(const [t,lab] of hits)bad('American English on the site',lab+': '+t);
+  rrApplyLocale(loc0);clear();setViewMode(vm0==='journeys'?'departures':vm0);serviceFilter=f0;setCurrentStation(st0||LABELS[0]);out.counts['British English pages checked']=1}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
