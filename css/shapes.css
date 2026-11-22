@@ -1064,3 +1064,6 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .stop-continues .stop-cont-text{color:var(--muted);font-weight:var(--fw-regular)}
 /* ring train page: "via A · B" - each station a link like a destination, a name and its "·" never split across lines */
 .service-dest.ring-dest .ring-via .ring-via-stop{white-space:nowrap}
+/* ring train page: "via" is the same size and weight as the station names after it (it was the row's own 21/24 px, the names
+   the hero tier) */
+.train-hero .service-dest.ring-dest .ring-via{font-size:var(--fs-hero)!important;font-weight:var(--fw-bold)!important}
