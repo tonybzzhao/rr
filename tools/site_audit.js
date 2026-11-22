@@ -339,6 +339,14 @@
   for(const g of [...document.querySelectorAll('#stationLayer g[data-station]')].slice(0,60)){const s=S.get(g.dataset.station),c=g.querySelector('circle');if(!s||!c||g.querySelector('.local-mark')||s.name===currentStation||LABELS.includes(s.name))continue;nn++;
    const want=s.sys.length>1?mut:neu;if(c.getAttribute('stroke')!==want){bad('station ring not '+(s.sys.length>1?'the interchange colour':'neutral')+' under All',s.name+' '+c.getAttribute('stroke'));break}}
   serviceFilter=f0;app.dataset.sysFocus=f0;zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();setCurrentStation(st0||LABELS[0]);drawMap();if(W&&H&&!nn)bad('no station rings to check under All','');out.counts['station rings checked']=nn}
+ // the board filter shows only the kinds of train serving the station, chips sharing the row (user 2026-11-22)
+ {const st0=currentStation;let nf=0;setViewMode('departures');for(const n of [...LABELS.slice(0,4),...STATIONS.filter(x=>x.sys==='L').slice(0,3).map(x=>x.name),...STATIONS.filter(x=>x.sys==='R').slice(0,3).map(x=>x.name)]){if(!S.has(n))continue;setCurrentStation(n);nf++;
+   const kinds=new Set();for(const t of TRAINS)if(t.route.some(r=>r[0]===n))kinds.add(RR_MAINLINE_TYPES.has(t.type)?'mainline':t.type==='Regio'?'regio':'local');
+   const vis=[...document.querySelectorAll('.service-chip')].filter(c=>c.getClientRects().length);
+   for(const c of vis)if(c.dataset.filter!=='all'&&!kinds.has(c.dataset.filter))bad('filter chip for a kind of train not serving the station',n+': '+c.dataset.filter);
+   for(const k of kinds)if(!vis.some(c=>c.dataset.filter===k))bad('filter chip missing for a kind of train serving the station',n+': '+k);
+   const ws=vis.map(c=>Math.round(c.getBoundingClientRect().width));if(Math.max(...ws)-Math.min(...ws)>1)bad('filter chips not sharing the row equally',n+': '+ws.join('/'))}
+  setCurrentStation(st0||LABELS[0]);out.counts['board filter chips checked']=nf}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);

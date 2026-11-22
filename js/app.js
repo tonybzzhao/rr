@@ -429,6 +429,16 @@ document.querySelectorAll('.service-chip').forEach(b=>b.addEventListener('click'
  document.querySelectorAll('.service-chip').forEach(x=>{const on=x===b;x.classList.toggle('active',on);x.setAttribute('aria-checked',String(on))});
  drawBoard();drawMap();
 }));
+// the board's filter shows only the kinds of train that serve the station (user 2026-11-22: "remove filter if that station does not
+// served by that category. adjust filter button length correspondingly"): All plus Mainline / Regio / Local where they call; the
+// chips share the row equally
+const rrStationKinds=new Map();
+function rrKindsAt(name){if(!rrStationKinds.has(name)){const k=new Set();for(const t of TRAINS)if(t.route.some(r=>r[0]===name))k.add(RR_MAINLINE_TYPES.has(t.type)?'mainline':t.type==='Regio'?'regio':'local');rrStationKinds.set(name,k)}return rrStationKinds.get(name)}
+function rrSyncServiceChips(name){
+ const kinds=name?rrKindsAt(name):new Set(['mainline','regio','local']),chips=[...document.querySelectorAll('.service-chip')];
+ for(const c of chips)c.hidden=c.dataset.filter!=='all'&&!kinds.has(c.dataset.filter);
+ const bar=document.querySelector('.service-filter');if(bar)bar.style.setProperty('--rr-chips',chips.filter(c=>!c.hidden).length);
+ if(serviceFilter!=='all'&&!kinds.has(serviceFilter)){serviceFilter='all';app.dataset.sysFocus='all';for(const c of chips){const on=c.dataset.filter==='all';c.classList.toggle('active',on);c.setAttribute('aria-checked',String(on))}}}
 let rrBoardNewList=false;
 function drawBoard(){
  if(viewMode==='journeys'){renderJourneyResults();return}
@@ -492,7 +502,7 @@ function setCurrentStation(name){rrLocalSystem=null;rrFocusSystem=null;
  selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;currentStation=name;
  rrSelectValue(stationSelect,name);pickerViews.get('stationSelect')?.sync();
  selectedTrain=null;selectedPath=[];selectedNames=name?[name]:[];manualTrace=false;
- routeWorld.replaceChildren();drawBoard();app.classList.remove('detail-open');
+ rrSyncServiceChips(name);routeWorld.replaceChildren();drawBoard();app.classList.remove('detail-open');
  requestAnimationFrame(resize);
  detail.innerHTML='<div class="empty">Select a train to view details.</div>';
  $('focusRoute').hidden=true;
