@@ -652,11 +652,11 @@
  // does; French "Enregistrement en ville".
  {const st0=currentStation,air=new Set();let nc=0;for(const t of TRAINS)if(RR_MAINLINE_TYPES.has(t.type)||t.pattern==='AX')for(const [n] of t.route)if(rrIsAirport(n))air.add(n);
   for(const x of STATIONS){const n=x.name;let want=false;if(MAJOR_STATIONS.has(n)&&!rrIsAirport(n))for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===n);if(i<0)continue;
-    for(let k=i+1;k<t.route.length&&!want;k++)if(air.has(t.route[k][0])&&timeOrdinal(t.route[k][1])-timeOrdinal(t.route[i][1])<=90)want=true;if(want)break}
+    for(let k=i+1;k<t.route.length&&!want;k++)if(air.has(t.route[k][0])&&timeOrdinal(t.route[k][1])-timeOrdinal(t.route[i][1])<=90&&rrMetro(S.get(n)?.city).includes(rrAirportCity(t.route[k][0])))want=true;if(want)break}
    if(!want&&!MAJOR_STATIONS.has(n))continue;nc++;fillStationInfo(n);const tile=detail.querySelector('.facility[data-fac="City check-in"]');
    if(want&&!tile){bad('major station near a major airport without City check-in',n);continue}if(!want&&tile){bad('City check-in where no direct train reaches a major airport',n);continue}
    if(tile){if(!tile.querySelector('use[href="#rr-picto-city-check-in"]')||!document.getElementById('rr-picto-city-check-in'))bad('City check-in without its icon',n);
-    tile.click();const note=detail.querySelector('.fac-detail .fac-note');if(!note||!/^Check in your bags here for flights from .+/.test(note.textContent)||!note.dataset.rrFr?.startsWith('Enregistrez vos bagages'))bad('City check-in note missing or untranslated',n)}}
+    tile.click();const note=detail.querySelector('.fac-detail .fac-note');for(const a of rrCityCheckIn(n)||[])if(!rrMetro(S.get(n)?.city).includes(rrAirportCity(a)))bad('City check-in names an airport of another city',n+': '+a);if(!note||!/^Check in your bags here for flights from .+/.test(note.textContent)||!note.dataset.rrFr?.startsWith('Enregistrez vos bagages'))bad('City check-in note missing or untranslated',n)}}
   if(rrFrenchText('City check-in')!=='Enregistrement en ville')bad('City check-in not in French',rrFrenchText('City check-in'));
   setCurrentStation(st0||LABELS[0]);out.counts['City check-in stations checked']=nc}
  // no vending machines in station facilities (user 2026-11-22: "remove vending machine from facilities")
