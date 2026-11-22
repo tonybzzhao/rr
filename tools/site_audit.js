@@ -313,9 +313,16 @@
  // a Connections row never repeats the plane after the airport name: its pictogram says it (user 2026-11-22: "why tf icon in connections")
  {let nc=0;for(const x of STATIONS.filter(x=>(x.conn||[]).some(c=>c[0]==='airport')).slice(0,20)){fillStationInfo(x.name);for(const r of document.querySelectorAll('#detailsBody .station-conn')){nc++;if(r.textContent.includes('✈'))bad('plane glyph in a Connections row',x.name+': '+r.textContent.trim())}}
   out.counts['connection rows without plane checked']=nc}
- // track widths: Mainline + high-speed thicker than Mainline-only (user 2026-11-22)
- {const w=id=>parseFloat(getComputedStyle($(id)).strokeWidth);if(!(w('hslTrack')>w('mlTrack')))bad('high-speed-capable Mainline track not drawn thicker than Mainline-only',w('hslTrack')+' vs '+w('mlTrack'));
-  if(!$('hslTrack').getAttribute('d')&&!$('hslShared').getAttribute('d'))bad('no high-speed-capable track drawn','');if(parseFloat(getComputedStyle($('hslShared')).strokeWidth)!==w('hslTrack'))bad('shared high-speed lane not as thick as high-speed track','');out.counts['track widths checked']=2}
+ // one unified rail system (user 2026-11-22): under All only the neutral layer shows; each network filter shows its own track in colour
+ {const vis=id=>getComputedStyle($(id)).display!=='none',vis_legend=()=>getComputedStyle(document.querySelector('.map-legend')).display!=='none',f0=serviceFilter,st0=currentStation;setViewMode('departures');setCurrentStation(LABELS[0]);
+  for(const [f,id] of [['all',null],['mainline','sysMainline'],['regio','sysRegio'],['local','sysLocal']]){serviceFilter=f;app.dataset.sysFocus=f;rrRegioFilterKey='';drawMap();
+   if(!vis('allTrack')||!$('allTrack').getAttribute('d'))bad('unified track missing',f);
+   if(vis_legend()!==(f==='mainline'))bad('legend '+(f==='mainline'?'missing':'shown')+' under the '+f+' filter','');
+   if(f==='mainline'&&!(parseFloat(getComputedStyle($('sysMainlineHs')).strokeWidth)>parseFloat(getComputedStyle($('sysMainline')).strokeWidth)))bad('Mainline + high-speed not drawn thicker than Mainline-only','');
+   for(const x of ['sysMainline','sysRegio','sysLocal']){const want=x===id&&!app.classList.contains('system-focus');if(vis(x)!==want)bad('network track '+(want?'hidden':'shown')+' under the '+f+' filter',x)}
+   for(const x of ['mlTrack','regioTrack','localTrack','hslTrack','mlShared','regioShared','localShared'])if(vis(x))bad('typed track layer shown',x);
+   if(f==='all'&&vis('allTrack')&&getComputedStyle($('allTrack')).stroke!==getComputedStyle(document.documentElement).getPropertyValue('--rail-neutral').trim()&&!/rgb/.test(getComputedStyle($('allTrack')).stroke))bad('unified track not neutral','')}
+  serviceFilter=f0;app.dataset.sysFocus=f0;rrRegioFilterKey='';setCurrentStation(st0||LABELS[0]);drawMap();out.counts['unified track checked']=4}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
