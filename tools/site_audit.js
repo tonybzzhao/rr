@@ -286,7 +286,10 @@
    if(!air(t.origin)&&!air(t.dest))bad('AX train not running to an airport',t.id+' '+t.origin+' > '+t.dest);
    if(RR_FORMATIONS[fk]?.cars.some(c=>!c.features.includes('luggage')))bad('AX car without luggage space',t.id)}
   if(new Set(TRAINS.filter(t=>t.pattern==='AX').map(t=>t.id)).size!==nx)bad('AX train ids not unique','');
-  if(!nx)bad('no Airport Express trains','');if(serviceName('Regio','Airport Express')!=='RR Airport Express')bad('AX service name','');out.counts['AX trains checked']=nx}
+  // its operator is its region's Regio network, not a network of its own (user 2026-11-22: "operator of AX is that region!")
+  const regioNets=new Set(TRAINS.filter(t=>t.type==='Regio'&&t.pattern!=='AX').map(t=>t.network));
+  for(const t of TRAINS)if(t.pattern==='AX'&&!regioNets.has(t.network))bad('AX train not run by a Regio network of its region',t.id+' '+t.network);
+  if(!nx)bad('no Airport Express trains','');out.counts['AX trains checked']=nx}
  // Regio network page (user 2026-11-22: badges had stacked - a train-link button nested in the line button): each line one tile with
  // its RX and RS badges side by side, no button inside a button, no tile overflowing; no network "Service hours" card ("no use")
  {let nt=0;const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio').map(t=>t.network))];for(const net of nets){fillLocalSystem(net,currentStation,'Regio');

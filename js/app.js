@@ -161,7 +161,7 @@ const RR_TRAVELLED_C=Object.freeze({
  [C.Max]:RR_UI_CSS_COLOR('--rr-base-travel-main'),[C.VIA]:RR_UI_CSS_COLOR('--rr-base-travel-via'),
  [C.Nightline]:RR_UI_CSS_COLOR('--rr-base-travel-night'),[C.Regio]:RR_UI_CSS_COLOR('--rr-base-travel-regio')
 });
-function serviceName(type,network=''){if(type==='Regio'&&network==='Airport Express')return 'RR Airport Express';return ({Max:'RR Max',VIA:'RR Via',InterCity:'RR InterCity',Nightline:'RR Nightline',Regio:'RR Regio',Local:'RR Local'})[type]||('RR '+type)}
+function serviceName(type,network=''){return ({Max:'RR Max',VIA:'RR Via',InterCity:'RR InterCity',Nightline:'RR Nightline',Regio:'RR Regio',Local:'RR Local'})[type]||('RR '+type)}
 function rrDetailsHeading(title,mark='rr-ui-more'){   // three dots on every details panel; Station information keeps its info icon (user 2026-11-21)
  $('detailsTitle').textContent=title;
  $('detailsHeadingIcon').querySelector('use').setAttribute('href','#'+mark);
@@ -170,7 +170,7 @@ function rrServiceLabel(type,network=''){
  const c=C[type]||RR_UI_CSS_COLOR('--ink-strong');
  const contrastToken=rrServiceAccentToken(type);
  const readable=contrastToken?`var(${contrastToken})`:c;
- return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type,network)}${network&&network!=='Airport Express'?` <span class="rr-network">${network}</span>`:''}</span></span>`;
+ return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type,network)}${network?` <span class="rr-network">${network}</span>`:''}</span></span>`;
 }
 function rrTrainLabel(t){return t.label||t.id}
 function rrOutline(t){return t.type==='InterCity'||t.pattern==='RS'}
@@ -2405,7 +2405,7 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
- 'Airport Express':'Express aéroport','Regional Express':'Express régional','Regional Sprinter':'Sprinter régional',   /* user 2026-11-22 */ 'RR Airport Express':'RR Express aéroport','Airport Express · 4-car single-deck EMU':'Express aéroport · rame automotrice de 4 voitures','Airport Express · two coupled 4-car EMUs':'Express aéroport · deux rames de 4 voitures couplées',
+ 'Airport Express':'Express aéroport','Regional Express':'Express régional','Regional Sprinter':'Sprinter régional',   /* user 2026-11-22 */ 'Airport Express · 4-car single-deck EMU':'Express aéroport · rame automotrice de 4 voitures','Airport Express · two coupled 4-car EMUs':'Express aéroport · deux rames de 4 voitures couplées',
  'Regional Sprinter · 3-car low-floor EMU':'Sprinter régional · automotrice à plancher bas, 3 voitures',
  'Regional Sprinter · two coupled 3-car EMUs':'Sprinter régional · deux automotrices de 3 voitures en unités multiples',
  'Regional Express · 4-car double-deck EMU':'Express régional · automotrice à deux niveaux, 4 voitures',
