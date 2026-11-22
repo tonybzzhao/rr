@@ -468,10 +468,10 @@ function drawBoard(){
 }
 // A status that does not fit on its line shortens: "Expected +24 min" -> "Expt +24 min" (display only; the data keeps "Expected")
 function rrFitStatus(root){root.querySelectorAll('.rowstatus').forEach(rs=>{const tag=rs.querySelector('.status-tag');if(!tag)return;
- const long=tag.dataset.long||tag.textContent;if(!/^Expected /.test(long))return;tag.dataset.long=long;if(tag.textContent!==long)tag.textContent=long;
+ const long=tag.dataset.long||tag.textContent;if(!/^Expected /.test(long))return;tag.dataset.long=long;const expt=long.replace(/^Expected /,'Expt ');if(tag.textContent!==expt)tag.textContent=expt;   // the board always says Expt (user 2026-11-22: "always use Expt in timetable, rest unchanged")
  const wraps=()=>{const b=tag.getBoundingClientRect().bottom;return tag.getClientRects().length>1||[...rs.children].some(c=>c!==tag&&c.getBoundingClientRect().top>=b-2)};
  // still no room (user 2026-11-21: "Expt +32 min" pushed the crowding figures onto a new line): the delay alone, then without "min"; the tag's colour still says expected
- if(wraps())tag.textContent=long.replace(/^Expected /,'Expt ');if(wraps()&&/^Expected \+/.test(long))tag.textContent=long.replace(/^Expected /,'');if(wraps())tag.textContent=tag.textContent.replace(/ min$/,'');tag.title=tag.textContent!==long?long:''})}
+ if(wraps()&&/^Expected \+/.test(long))tag.textContent=long.replace(/^Expected /,'');if(wraps())tag.textContent=tag.textContent.replace(/ min$/,'');tag.title=long})}
 new ResizeObserver(()=>rrFitStatus(board)).observe(board);
 function setCurrentStation(name){rrLocalSystem=null;rrFocusSystem=null;
  viewMode=viewMode==='arrivals'?'arrivals':'departures';
@@ -2405,12 +2405,12 @@ const rrEnglishAttrs=new WeakMap();
 const rrTranslatedAttrs=new WeakMap();
 const rrUIRegions='.rr-phone-toggle,.side,.details,.map-tools,.map-legend,.zoom-control,.rr-site-settings,.mobile-site-footer,.desktop-site-footer';
 const rrFrenchExact=Object.freeze({
- 'Airport Express':'Express aéroport','RR Airport Express':'RR Express aéroport','Airport Express · 4-car single-deck EMU':'Express aéroport · rame automotrice de 4 voitures','Airport Express · two coupled 4-car EMUs':'Express aéroport · deux rames de 4 voitures couplées',
- 'Regional Sprinter · 3-car low-floor EMU':'Régional omnibus · automotrice à plancher bas, 3 voitures',
- 'Regional Sprinter · two coupled 3-car EMUs':'Régional omnibus · deux automotrices de 3 voitures en unités multiples',
- 'Regional Express · 4-car double-deck EMU':'Régional express · automotrice à deux niveaux, 4 voitures',
- 'Regional Express · 6-car double-deck EMU':'Régional express · automotrice à deux niveaux, 6 voitures',
- 'Regional Express · two coupled 4-car double-deck EMUs':'Régional express · deux automotrices à deux niveaux de 4 voitures',
+ 'Airport Express':'Express aéroport','Regional Express':'Express régional','Regional Sprinter':'Sprinter régional',   /* user 2026-11-22 */ 'RR Airport Express':'RR Express aéroport','Airport Express · 4-car single-deck EMU':'Express aéroport · rame automotrice de 4 voitures','Airport Express · two coupled 4-car EMUs':'Express aéroport · deux rames de 4 voitures couplées',
+ 'Regional Sprinter · 3-car low-floor EMU':'Sprinter régional · automotrice à plancher bas, 3 voitures',
+ 'Regional Sprinter · two coupled 3-car EMUs':'Sprinter régional · deux automotrices de 3 voitures en unités multiples',
+ 'Regional Express · 4-car double-deck EMU':'Express régional · automotrice à deux niveaux, 4 voitures',
+ 'Regional Express · 6-car double-deck EMU':'Express régional · automotrice à deux niveaux, 6 voitures',
+ 'Regional Express · two coupled 4-car double-deck EMUs':'Express régional · deux automotrices à deux niveaux de 4 voitures',
  'Stops at every station. Level boarding at all doors.':'Dessert toutes les gares. Accès de plain-pied à toutes les portes.',
  'Two RS3 units at busy times; you can walk through each unit but not between them.':'Deux unités RS3 aux heures chargées ; pas d’intercirculation entre les unités.',
  'Limited stops. First Class is on the upper deck of car 1.':'Arrêts limités. La Première classe se trouve à l’étage de la voiture 1.',
@@ -2432,10 +2432,10 @@ const rrFrenchExact=Object.freeze({
  'Regio (trial: South Radeland)':'Régional (essai : Radeland-Sud)','Regio on Mainline track':'Régional sur voie de magistrale',
  'All':'Tous','Mainline':'Magistrale','Regio':'Régional','Local':'Banlieue','Service type':'Type de service',
  'No Local services yet.':'Aucun service de banlieue pour le moment.',
- 'Regional Sprinter · 3-car single-deck EMU':'Régional omnibus · automotrice à un niveau, 3 voitures',
- 'Regional Sprinter · two coupled 3-car EMUs':'Régional omnibus · deux automotrices de 3 voitures en unités multiples',
- 'Regional Express · 4-car duplex EMU':'Régional express · automotrice à deux niveaux, 4 voitures',
- 'Regional Express · two coupled 4-car duplex EMUs':'Régional express · deux automotrices à deux niveaux de 4 voitures',
+ 'Regional Sprinter · 3-car single-deck EMU':'Sprinter régional · automotrice à un niveau, 3 voitures',
+ 'Regional Sprinter · two coupled 3-car EMUs':'Sprinter régional · deux automotrices de 3 voitures en unités multiples',
+ 'Regional Express · 4-car duplex EMU':'Express régional · automotrice à deux niveaux, 4 voitures',
+ 'Regional Express · two coupled 4-car duplex EMUs':'Express régional · deux automotrices à deux niveaux de 4 voitures',
  'Fast-accelerating stopping train; works in pairs as RS6.':'Train omnibus à forte accélération ; circule aussi en RS6 (deux unités).',
  'Two RS3 units in multiple; no gangway between units.':'Deux unités RS3 en unités multiples ; pas d’intercirculation entre les unités.',
  'Double-deck throughout; First Class on the upper deck of car 1.':'Entièrement à deux niveaux ; Première classe à l’étage de la voiture 1.',
