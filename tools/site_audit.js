@@ -303,6 +303,12 @@
   const loc=TRAINS.find(t=>t.type==='Local'&&!t.ring);if(loc){fillRouteInfo('Local',loc.network,loc.line,loc.route[0][0]);const fl=document.querySelectorAll('#detailsBody .route-firstlast');
    if(fl.length<1)bad('Local route page without first and last trains',loc.network+' '+loc.line);for(const r of fl)if(!/First.*Last|Premier.*Dernier/.test(r.textContent))bad('first / last train row unreadable',r.textContent.trim().slice(0,60))}
   out.counts['station hours / first-last checked']=nh}
+ // French names of the Regio stopping patterns (user 2026-11-22): RS Sprinter régional, RX Express régional, AX Express aéroport
+ {for(const [en,fr] of [['Regional Sprinter','Sprinter régional'],['Regional Express','Express régional'],['Airport Express','Express aéroport']])if(rrFrenchExact[en]!==fr)bad('French name of '+en+' is not '+fr,rrFrenchExact[en]);
+  if(/Régional omnibus|Régional express/.test(Object.values(rrFrenchExact).join('|')))bad('old French Regio names left','Régional omnibus / Régional express');out.counts['French Regio names checked']=3}
+ // board status says Expt, never Expected (user 2026-11-22: "always use Expt in timetable")
+ {const st0=currentStation;let ne=0;setViewMode('departures');for(const n of LABELS.slice(0,10)){setCurrentStation(n);rrFitStatus(board);for(const t of board.querySelectorAll('.rowstatus .status-tag')){if(/^Expected\b/.test(t.textContent))bad('board status says Expected, not Expt',n+': '+t.textContent);if(/^Expt|^\+/.test(t.textContent))ne++}}
+  setCurrentStation(st0||LABELS[0]);out.counts['board Expt statuses checked']=ne}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
