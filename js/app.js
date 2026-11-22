@@ -8,14 +8,11 @@ const GRAPH={"pts":[[937.23,1976.82],[929.89,1956.39],[939.41,1982.85],[1933.39,
 function rrRingWay(mp){const pts=GRAPH.paths?.[mp]?rrMapPath(mp).map(i=>GRAPH.pts[i]):[];if(pts.length<3)return null;
  const c=[pts.reduce((a,p)=>a+p[0],0)/pts.length,pts.reduce((a,p)=>a+p[1],0)/pts.length];let s_=0;
  for(let i=1;i<pts.length;i++)s_+=(pts[i-1][0]-c[0])*(pts[i][1]-c[1])-(pts[i-1][1]-c[1])*(pts[i][0]-c[0]);return s_>0?'cw':'ccw'}
-// fast Local trains (pat F, user 2026-11-21): same letter, fewer stops; pass[j] = stations run through between stop j and j+1
-if(typeof RR_PATTERNS!=='undefined'){const allSt=new Map(RR_PATTERNS.filter(p=>p.type==='Local'&&p.pat==='L').map(p=>[p.net+'|'+p.line+'|'+p.dir,p.stops]));
- for(const p of RR_PATTERNS){if(p.pat!=='F')continue;const a=allSt.get(p.net+'|'+p.line+'|'+p.dir)||[];p.pass=p.stops.slice(0,-1).map((n,j)=>{const i=a.indexOf(n),k=a.indexOf(p.stops[j+1],i+1);return i>=0&&k>i?a.slice(i+1,k):[]})}}
 if(typeof RR_PATTERNS!=='undefined')for(const p of RR_PATTERNS){const ring=p.type==='Local'&&/^(Ring\d+|S4[12])$/.test(p.line)?rrRingWay(p.mp):null;
  if(ring&&p.net==='Havenbolme')p.line=ring==='cw'?'S41':'S42';
  const label=ring&&p.net!=='Havenbolme'?'O':p.type==='Local'?(p.pat==='S'?p.line:p.line.replace(/\d+/g,'')):p.pat+' '+p.line,plat=String(p.dir),platforms=Object.fromEntries(p.stops.map(n=>[n,plat]));
  for(const s0 of p.starts){const hh=Math.floor(s0/60)%24,tm=m=>{const d=Math.floor(m/1440),x=m%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')+(d?' +'+d:'')},route=p.stops.map((n,i)=>[n,tm(s0+p.off[i])]);
-  TRAINS.push({id:`${p.type==='Local'?p.line:label}·${p.code}-${p.dir}${String(hh).padStart(2,'0')}${p.type==='Local'?String(s0%60).padStart(2,'0'):''}`,label,dir:p.dir,hh,mp:p.mp,type:p.type,pattern:p.type==='Regio'?p.pat:undefined,fast:p.pat==='F'||undefined,pass:p.pass,line:p.line,network:p.net,origin:route[0][0],dest:route[route.length-1][0],route,plat,status:'On time',stock:p.stock,fac:p.fac,platforms,ring})}}
+  TRAINS.push({id:`${p.type==='Local'?p.line:label}·${p.code}-${p.dir}${String(hh).padStart(2,'0')}${p.type==='Local'?String(s0%60).padStart(2,'0'):''}`,label,dir:p.dir,hh,mp:p.mp,type:p.type,pattern:p.type==='Regio'?p.pat:undefined,fast:p.pat==='F'||undefined,line:p.line,network:p.net,origin:route[0][0],dest:route[route.length-1][0],route,plat,status:'On time',stock:p.stock,fac:p.fac,platforms,ring})}}
 /* Daily operations. The timetable is identical every day; what changes is
    the day's running: delays, cancellations and platform alterations. They are
    drawn from a seed made of the viewer's local date, so every visitor sees the
@@ -470,7 +467,7 @@ function setCurrentStation(name){rrLocalSystem=null;
 
 // SVG artwork supplied by the RR design team.
 const ICONS={
- 'Wi-Fi':'wifi','Power':'power','Café':'cafe','Dining':'restaurant',
+ 'Wi-Fi':'wifi','Power':'power','Café':'cafe','Dining':'restaurant','Restaurant':'restaurant',
  'Quiet':'quiet','Quiet Zone':'quiet','Accessible':'wheelchair',
  'Places for wheelchair users':'wheelchair','Luggage':'luggage',
  'Cycles':'cycle','Cabin':'sleeper','First Class':'first',
@@ -592,8 +589,8 @@ function pictoItem(name){
 }
 const STATION_CORE=['Information','Assistance','Defibrillator (AED)','Ticket machines','Accessible','Accessible Toilet','Toilet','Lift','Escalator','Seating'];
 const STATION_AMENITIES={
- national:['Café','Dining','Pharmacy','Business centre','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
- major:['Café','Dining','Pharmacy','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
+ national:['Café','Restaurant','Pharmacy','Business centre','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
+ major:['Café','Restaurant','Pharmacy','Wi-Fi','Luggage','Cycles','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family','Water fountain','Dog water bowl','Animal relief area','Vending machines','Photo booth'],
  regional:['Café','Wi-Fi','Luggage','Drop-off','Baby Changing','Water fountain','Vending machines'],
  local:['Café','Wi-Fi']
 };
@@ -1054,7 +1051,7 @@ const rrFoldOpen=new Set();   // trains whose passed stops are unfolded (kept ac
 function fillDetails(t){rrDetailsHeading('Train details','rr-ui-more');$('focusRoute').hidden=!t;if(!t){detail.innerHTML='<div class="empty">Select a train.</div>';return}const c=C[t.type],here=rrTrainProgressIndex(t),isArrival=viewMode==='arrivals';
  // Many passed stops fold between the origin and the stop before this one (same toggle as a journey leg's stops).
  const fold=here>=5?here-2:0;
- const stops=t.route.map(([name,time],i)=>`${fold&&i===1?`<div class="stop travelled stop-fold"><div class="stop-marker"></div><div class="stop-time"></div><button type="button" class="jt-calls-toggle stop-fold-btn" aria-expanded="${rrFoldOpen.has(t.id)}" data-count="${fold}"><span>${rrFoldOpen.has(t.id)?'Hide earlier stops':fold+' earlier stops'}</span><span class="jt-chevron" aria-hidden="true"></span></button></div>`:''}<div class="stop${i===here?' current':''}${i<here?' travelled':''}${fold&&i>=1&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>${(t.pass?.[i]||[]).map(n=>`<div class="stop stop-pass${i<here?' travelled':''}${fold&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time"></div><span class="stop-name stop-pass-name"><span class="stop-pass-stn">${rrStnText(n)}</span><span class="stop-pass-note">does not stop</span></span></div>`).join('')}`).join('');
+ const stops=t.route.map(([name,time],i)=>`${fold&&i===1?`<div class="stop travelled stop-fold"><div class="stop-marker"></div><div class="stop-time"></div><button type="button" class="jt-calls-toggle stop-fold-btn" aria-expanded="${rrFoldOpen.has(t.id)}" data-count="${fold}"><span>${rrFoldOpen.has(t.id)?'Hide earlier stops':fold+' earlier stops'}</span><span class="jt-chevron" aria-hidden="true"></span></button></div>`:''}<div class="stop${i===here?' current':''}${i<here?' travelled':''}${fold&&i>=1&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
  detail.innerHTML=`<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div>${t.ring?`<div class="destination-label">Ring line</div><div class="service-dest ring-dest">${rrRingIcon(t)}<span>${rrDestText(t)}</span></div>`:`<div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}${rrFastTag(t)}</div>`}</div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${rrCrowd(t,here)?`<div class="fact-row"><dt class="keylabel">Crowding</dt><dd class="infoval">${rrCrowdMarkup(t,here,true)}</dd></div>`:''}${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrSystemLink(t.type,t.network)}</dd></div>${t.ring?'':`<div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div>`}</dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelector('.train-route-link')?.addEventListener('click',()=>fillRouteInfo(t.type,t.network,t.line,currentStation));
@@ -2373,7 +2370,7 @@ const rrFrenchExact=Object.freeze({
  'Standard':'Classe Standard','First Class':'Première classe',
  'First Class seats':'Places de première classe','First Sleeper':'Voiture-lits Première','First sleeper':'Voiture-lits Première',
  'Seated accommodation':'Voiture à places assises',
- 'Dining':'Voiture-restaurant','Café':'Bar','Quiet Zone':'Espace calme',
+ 'Dining':'Voiture-restaurant','Restaurant':'Restaurant',   /* a station has a restaurant, a train a dining car (user 2026-11-21) */'Café':'Bar','Quiet Zone':'Espace calme',
  'Quiet zone':'Espace calme','Family Zone':'Espace famille','Family zone':'Espace famille',
  'Family':'Espace famille','Reserved seats':'Places réservées','Reserved Seats':'Places réservées',
  'Priority seats':'Places prioritaires','Priority Seating':'Places prioritaires',
@@ -2394,7 +2391,7 @@ const rrFrenchExact=Object.freeze({
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
  'Close train details':'Fermer les détails du train',
  'Collapse departures':'Réduire le panneau','Expand departures':'Déployer le panneau',
- 'Search station':'Rechercher une gare','Fast':'Direct','does not stop':'sans arrêt','Browse stations':'Parcourir les gares',
+ 'Search station':'Rechercher une gare','Fast':'Direct','Browse stations':'Parcourir les gares',
  'Current station':'Gare sélectionnée','From station':'Gare de départ',
  'To station':'Gare d’arrivée',
  'Swap From and To stations':'Inverser le départ et l’arrivée',

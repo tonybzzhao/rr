@@ -908,8 +908,3 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rr-fast-tag{display:inline-flex;align-items:center;height:18px;padding:0 6px;margin-left:6px;border-radius:4px;vertical-align:middle;font-size:var(--fs-caption);font-weight:var(--fw-bold);line-height:1;color:var(--ui);background:color-mix(in srgb,var(--ui) 12%,transparent);white-space:nowrap}
 .row-via .rr-fast-tag{margin-left:0;margin-right:6px}
 .row-via:has(.rr-fast-tag){display:flex;align-items:center;flex-wrap:wrap;row-gap:2px}
-.stop.stop-pass .stop-icon{width:8px!important;height:8px!important;border-width:2px!important;margin-left:2px;margin-top:4px;border-color:var(--passed)!important;background:var(--surface)!important;box-shadow:none!important}
-.stop.stop-pass .stop-name{color:var(--muted-slate)!important;font-weight:var(--fw-regular)!important;font-size:var(--fs-small)!important;cursor:default}
-.stop.stop-pass .stop-name{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px;min-width:0}
-.stop-pass-stn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stop-pass-note{flex:0 0 auto;font-style:normal;color:var(--muted-slate);font-size:var(--fs-caption);white-space:nowrap}
