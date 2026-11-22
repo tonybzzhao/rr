@@ -38,7 +38,10 @@
   if(full&&(ends[0]!==0||ends[ends.length-1]!==r.length-1))bad('route runs past its first or last call',label);
   for(let i=1;i+1<r.length;i++)if(r[i-1]===r[i+1]&&!ends.includes(i))bad('out-and-back spike between calls',label+' at '+P[r[i]]);
   // over a lake or the sea for more than 2 km in one go (4.5 map units; a shorter stretch is a bridge, as in the GIS rule)
-  let run=0;for(let i=1;i<r.length;i++){const w=wetLen(r[i-1],r[i]),L=Math.hypot(P[r[i]][0]-P[r[i-1]][0],P[r[i]][1]-P[r[i-1]][1]);run=w>=L-1e-6?run+w:w;if(run>4.5&&!(GRAPH.causeways||[]).some(([x,y,rad])=>Math.hypot(P[r[i]][0]-x,P[r[i]][1]-y)<=rad)){bad('route drawn over a lake or the sea for more than 2 km',label+' at '+P[r[i]]);break}}
+  // a wet stretch that takes in a listed causeway is that causeway (2026-11-21: the drawn line now follows it closely and the
+  // stretch ran on to the coast past the old end-point test)
+  const onCw=q=>(GRAPH.causeways||[]).some(([x,y,rad])=>Math.hypot(P[q][0]-x,P[q][1]-y)<=rad);
+  let run=0,cw=false;for(let i=1;i<r.length;i++){const w=wetLen(r[i-1],r[i]),L=Math.hypot(P[r[i]][0]-P[r[i-1]][0],P[r[i]][1]-P[r[i-1]][1]);if(w>=L-1e-6){run+=w;cw=cw||onCw(r[i])||onCw(r[i-1])}else{run=w;cw=w>0&&onCw(r[i])};if(run>4.5&&!cw){bad('route drawn over a lake or the sea for more than 2 km',label+' at '+P[r[i]]);break}}
   return true};
  const seen=new Set();let nt=0;
  for(const t of TRAINS){const key=(t.mp??'x')+'|'+t.route.map(x=>x[0]).join('>');if(seen.has(key))continue;seen.add(key);nt++;
