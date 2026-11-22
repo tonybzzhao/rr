@@ -103,7 +103,11 @@ rrApplyDailyOperations();
 const LABELS=["Yuchow Central", "Peiting Central", "North Chungsia", "Yenchia Main", "Sianning", "Hanjin", "Somerfield St John", "Batavie", "Touraine-Central", "Prinsburg Central", "Cranford Central", "Amptonside Central", "Belwich East", "Farinport Central", "Havenbolme Hbf", "Binchester", "Mapleriver Central", "Grafton Central", "Ribeauvillé", "Brunswick", "Bayarfort", "Vindelle-Central", "Melbridge Central", "Victoria Central", "Southend", "Barton Central", "Westerhafen Hbf", "Königstadt Hbf"];
 const LABEL_HINTS={"Yuchow Central": [0, -24, "middle"], "Peiting Central": [0, 26, "middle"], "North Chungsia": [0, -24, "middle"], "Yenchia Main": [0, -24, "middle"], "Somerfield St John": [0, -24, "middle"], "Batavie": [0, -22, "middle"], "Touraine-Central": [0, -24, "middle"], "Prinsburg Central": [18, 0, "start"], "Cranford Central": [0, 26, "middle"], "Amptonside Central": [0, -24, "middle"], "Farinport Central": [-20, 0, "end"], "Havenbolme Hbf": [-18, 0, "end"], "Binchester": [0, 24, "middle"], "Mapleriver Central": [0, 28, "middle"], "Grafton Central": [0, 24, "middle"], "Ribeauvillé": [0, 26, "middle"], "Brunswick": [18, 0, "start"], "Bayarfort": [18, 0, "start"], "Vindelle-Central": [0, 26, "middle"], "Melbridge Central": [0, 28, "middle"], "Victoria Central": [18, 0, "start"], "Southend": [0, 28, "middle"], "Songqiao Airport": [18, 0, "start"], "Atlantic Airport": [18, 0, "start"]};
 
-const RR_UI_CSS_COLOR=token=>getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+// Tokens are read once per root state (theme, colour scheme, narrow layout, inline style) and cached: drawMap asks for them
+// per station, and each uncached read was a getComputedStyle that forced a style recalc mid-draw (2026-11-22 load profile).
+const RR_UI_CSS_COLOR=(()=>{const root=document.documentElement,dark=matchMedia('(prefers-color-scheme: dark)'),narrow=matchMedia('(max-width:750px)');let key='',cache=new Map();
+ return token=>{const k=root.dataset.theme+'|'+dark.matches+'|'+narrow.matches+'|'+root.style.cssText;if(k!==key){key=k;cache=new Map();const cs=getComputedStyle(root);for(let i=0;i<cs.length;i++)if(cs[i].startsWith('--'))cache.set(cs[i],cs.getPropertyValue(cs[i]).trim())}   // every token in one style read
+  let v=cache.get(token);if(v===undefined){v=getComputedStyle(root).getPropertyValue(token).trim();cache.set(token,v)}return v}})();
 const C={Local:RR_UI_CSS_COLOR('--rr-base-local'),Regio:RR_UI_CSS_COLOR('--rr-base-regio'),Max:RR_UI_CSS_COLOR('--rr-base-main'),VIA:RR_UI_CSS_COLOR('--rr-base-via'),InterCity:RR_UI_CSS_COLOR('--rr-base-main'),Nightline:RR_UI_CSS_COLOR('--rr-base-night')};
 /* The actual light and dark accent colours are defined once in CSS :root.
    No on-the-fly tinting: every consumer uses the same per-system token. */
@@ -255,7 +259,7 @@ const S=new Map(STATIONS.map(s=>[s.name,s]));
 let rrFocusSystem=null;   // the network whose page is open (Local or Regio): only it stands out on the map (user 2026-11-21)
 let rrLocalSystem=null;   // the Local network whose page was opened; stays on the map (phones show the map without the panel) until something else is chosen
 let currentStation=null, selectedTrain=null, selectedRouteLine=null, rrRouteMinor=new Set(), selectedPath=[], selectedNames=[], routeColor=C.Max, manualTrace=false;   // selectedRouteLine: route details shows a whole line
-let zoom=1, panX=0, panY=0, fit=1, offX=0, offY=0, W=0, H=0;
+let zoom=1, panX=0, panY=0, fit=1, offX=0, offY=0, W=0, H=0, rrDrawnTheme=null;   // rrDrawnTheme: the data-theme the map was last drawn in
 const minX=Math.min(...P.map(p=>p[0])),maxX=Math.max(...P.map(p=>p[0]));
 const minY=Math.min(...P.map(p=>p[1])),maxY=Math.max(...P.map(p=>p[1]));
 const graphWidth=maxX-minX,graphHeight=maxY-minY;
@@ -400,7 +404,7 @@ let departures=[];
 let serviceFilter='all',rrStationNetwork=null,rrBoardShown=15,rrBoardKey='';
 const RR_BOARD_PAGE=15;
 function rrNetworkAt(station){const c=new Map();for(const t of TRAINS)if(t.type==='Regio'&&t.network&&t.route.some(r=>r[0]===station))c.set(t.network,(c.get(t.network)||0)+1);let best=null,n=0;for(const [k,v] of c)if(v>n){best=k;n=v}return best}
-new MutationObserver(()=>{if(typeof drawMap==='function'){drawMap();if(typeof drawRoute==='function'&&(selectedTrain||selectedJourney||selectedPath.length))drawRoute()}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+new MutationObserver(()=>{if(typeof drawMap==='function'&&document.documentElement.dataset.theme!==rrDrawnTheme){drawMap();if(typeof drawRoute==='function'&&(selectedTrain||selectedJourney||selectedPath.length))drawRoute()}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 const RR_MAINLINE_TYPES=new Set(['Max','VIA','InterCity','Nightline']);
 function rrMatchesFilter(t){
  if(serviceFilter==='all')return true;
@@ -936,7 +940,7 @@ function rrFirst(car){return car.role==='First'||car.role==='First sleeper'}
    single-deck or ENTIRELY duplex, never a mixed composition. Facilities, stops
    and service categories are unchanged. */
 const RR_SEGMENT_FREQUENCY=new Map();
-function rrSegmentKey(a,b){return [a,b].sort().join('\u0000')}
+function rrSegmentKey(a,b){return a<b?a+'\u0000'+b:b+'\u0000'+a}
 for(const train of TRAINS){
  for(let i=1;i<train.route.length;i++){
   const key=rrSegmentKey(train.route[i-1][0],train.route[i][0]);
@@ -1211,7 +1215,8 @@ function drawRoute(){
  routeWorld.append(gradients,...back,...coloured);
 }
 function screen(x,y){const sc=fit*zoom;return{x:x*sc+offX,y:y*sc+offY}}
-function resize(){W=container.clientWidth;H=container.clientHeight;if(!W||!H)return;map.setAttribute('viewBox',`0 0 ${W} ${H}`);fit=Math.max(0.001,Math.min((W-90)/graphWidth,(H-90)/graphHeight));updateWorld()}
+function resize(){const w=container.clientWidth,h=container.clientHeight;if(w&&h&&w===W&&h===H)return;   // same size: the map is already drawn for it
+ W=w;H=h;if(!W||!H)return;map.setAttribute('viewBox',`0 0 ${W} ${H}`);fit=Math.max(0.001,Math.min((W-90)/graphWidth,(H-90)/graphHeight));updateWorld()}
 // The initial fit is the minimum scale. Keep the railway in view at every zoom level.
 // When the network fits within the viewport, centre that axis instead of letting it drift.
 function clampPan(){
@@ -1239,6 +1244,13 @@ function updateWorld(){rrPlaceWorld();rrRedraw()}
 {const drawMap0=drawMap;drawMap=function(){drawMap0();rrApplySystemFocus()}}   // every redraw keeps the network focus
 // Point and segment collision checks in screen pixels.
 const ctx=document.createElement('canvas').getContext('2d');
+// A screen-space grid for the name placement (2026-11-22 load/zoom profile): each candidate spot asked every on-screen
+// segment, dot and placed name whether it was in the way. The grid hands a test only the items whose box shares a cell with
+// the queried box, so the same predicates give the same answers. Boxes are clamped to just beyond the map.
+function rrScreenGrid(){const G=48,cells=new Map(),lo=-G,hx=W+G,hy=H+G;
+ const span=(a,b,hi)=>[Math.floor(Math.max(lo,Math.min(a,b))/G),Math.floor(Math.min(hi,Math.max(a,b))/G)];
+ return{add(x0,y0,x1,y1,it){const [i0,i1]=span(x0,x1,hx),[j0,j1]=span(y0,y1,hy);for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=(i+2)*65536+j+2;let c=cells.get(k);if(!c)cells.set(k,c=[]);c.push(it)}},
+  some(x0,y0,x1,y1,fn){const [i0,i1]=span(x0,x1,hx),[j0,j1]=span(y0,y1,hy);for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const c=cells.get((i+2)*65536+j+2);if(c)for(const it of c)if(fn(it))return true}return false}}}
 function rectOverlap(a,b,g=5){return a.x-g<b.x+b.w && a.x+a.w+g>b.x && a.y-g<b.y+b.h && a.y+a.h+g>b.y}
 function inRect(x,y,r){return x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h}
 function lineRect(x1,y1,x2,y2,r){
@@ -1395,6 +1407,7 @@ function rrPickStationOnMap(name){
 }
 function drawMap(){
  if(!W||!H)return;
+ rrDrawnTheme=document.documentElement.dataset.theme;
  rrDrawnAt={x:offX,y:offY,sc:fit*zoom};layer.removeAttribute('transform');labels.removeAttribute('transform');
  drawLocalColours();
  const focusedStation=document.activeElement?.classList?.contains('mapnode')?document.activeElement.getAttribute('aria-label'):rrPendingMapFocus;
@@ -1508,6 +1521,9 @@ function drawMap(){
    if(Math.max(x1,x2)<-20||Math.min(x1,x2)>W+20||Math.max(y1,y2)<-20||Math.min(y1,y2)>H+20)continue;
    const L=Math.hypot(x2-x1,y2-y1)||1,o=(cols.length-1)/2*RR_LOCAL_GAP+1.5,nx=-(y2-y1)/L*o,ny=(x2-x1)/L*o;
    segments.push([x1+nx,y1+ny,x2+nx,y2+ny],[x1-nx,y1-ny,x2-nx,y2-ny])}}
+ const segGrid=rrScreenGrid(),dotGrid=rrScreenGrid(),placedGrid=rrScreenGrid();let maxHw=0;
+ for(const g of segments)segGrid.add(g[0],g[1],g[2],g[3],g);
+ for(const v of visible){dotGrid.add(v.sx,v.sy,v.sx,v.sy,v);maxHw=Math.max(maxHw,v.hw)}
  const RR_TRIP_ROOM=22,tripDots=rrTrip?selectedNames.map(n=>byVisible.get(n)).filter(Boolean):[];
  const rrTripCrowded=s=>tripDots.some(o=>o!==s&&Math.hypot(o.sx-s.sx,o.sy-s.sy)<RR_TRIP_ROOM);
  for(const name of priorities){
@@ -1519,6 +1535,7 @@ function drawMap(){
   const fontSize=minor?12.5:15.625,weight=important||mixedServiceInterchange?700:500,lh=minor?14.5:18.125;
   ctx.font=`${weight} ${fontSize}px 'RR Glyphs',Frutiger,Arial`;
   const splits=rrIsAirport(name)?splitName(name).map(ls=>[...ls.slice(0,-1),ls.at(-1)+RR_AIR]):splitName(name);
+  const widths=splits.map(lines=>Math.ceil(Math.max(...lines.map(l=>ctx.measureText(l).width)))+2);   // each split measured once
   const hint=LABEL_HINTS[name]||[0,-16,'middle'];
   // Prefer a side label. Left-side labels are right-aligned; right-side labels are left-aligned.
   const preferredSide=s.sx>W*.68?'W':s.sx<W*.32?'E':hint[2]==='end'?'W':hint[2]==='start'?'E':s.sx<W/2?'E':'W';
@@ -1544,8 +1561,8 @@ function drawMap(){
    if(chosen)break;
    for(const gap of (across?[2,5,9,14]:[7,10,14,19]).concat(overLines?[26,34,44]:[])){
     if(chosen)break;
-    for(const lines of splits){
-     const width=Math.ceil(Math.max(...lines.map(l=>ctx.measureText(l).width)))+2;
+    for(let si=0;si<splits.length;si++){
+     const lines=splits[si],width=widths[si];
      const height=lines.length*lh+1;
      let x,y,anchor;
      const isLeft=dir.startsWith('W'),isRight=dir.startsWith('E');
@@ -1561,18 +1578,18 @@ function drawMap(){
      if(x<12||y<12||x+width>W-12||y+height>H-12)continue;
      // a name that is not forced sits right beside its dot (the site audit allows 24 px to the drawn text; this box sits ~2 px wider): a far diagonal spot is no spot
      if(!mustName&&Math.hypot(Math.max(x-s.sx,0,s.sx-(x+width)),Math.max(y-s.sy,0,s.sy-(y+height)))>22)continue;
-     if(placed.some(p=>rectOverlap(r,p,5)))continue;
+     if(placedGrid.some(x-6,y-6,x+width+6,y+height+6,p=>rectOverlap(r,p,5)))continue;
      if(overlayRects.some(p=>rectOverlap(r,p,3)))continue;
-     if(visible.some(v=>v.name!==name&&(!overLines||LABELS.includes(v.name)||v.name===currentStation)&&v.sx>=x-9-v.hw&&v.sx<=x+width+9+v.hw&&v.sy>=y-9-v.hw&&v.sy<=y+height+9+v.hw))continue;   // a must-name label may cover minor halts' dots
+     if(dotGrid.some(x-10-maxHw,y-10-maxHw,x+width+10+maxHw,y+height+10+maxHw,v=>v.name!==name&&(!overLines||LABELS.includes(v.name)||v.name===currentStation)&&v.sx>=x-9-v.hw&&v.sx<=x+width+9+v.hw&&v.sy>=y-9-v.hw&&v.sy<=y+height+9+v.hw))continue;   // a must-name label may cover minor halts' dots
      const rr={x:x-2,y:y-2,w:width+4,h:height+4};
-     if(!overLines&&segments.some(([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
+     if(!overLines&&segGrid.some(rr.x,rr.y,rr.x+rr.w,rr.y+rr.h,([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
      chosen={...r,anchor,lines,lh,fontSize,overLines};break;
     }
    }
   }
   }
   if(!chosen)continue;
-  placed.push(chosen);
+  placed.push(chosen);placedGrid.add(chosen.x,chosen.y,chosen.x+chosen.w,chosen.y+chosen.h,chosen);
   const group=se('g',{class:'station-label',role:'button',tabindex:0,'aria-label':`Show departures at ${name}`});
   const textX=chosen.anchor==='end'?chosen.x+chosen.w:chosen.anchor==='middle'?chosen.x+chosen.w/2:chosen.x;
   const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,style:`font-size:${fontSize}px`,class:'label'+(important?' important':'')+(chosen.overLines?' over-lines':''),'pointer-events':'all'});
@@ -2307,15 +2324,16 @@ pathsByType();stationList();
  const scan=el=>{const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);for(let t=w.nextNode();t;t=w.nextNode())mark(t)};
  new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes){if(n.nodeType===3){if(!(n.parentNode instanceof SVGElement))mark(n)}else if(n.nodeType===1&&!(n instanceof SVGElement))scan(n)}}).observe(document.body,{childList:true,subtree:true});
  scan(document.body)}
-['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();resize();setCurrentStation(currentStation);
+['stationSelect','from','to'].forEach(setupSearchPicker);updateBoardTabs();setCurrentStation(currentStation);resize();   // one map draw at boot (resize draws it)
 // Recompute map-label collision positions once the hosted fonts are available.
 if (document.fonts && document.fonts.load) {
+  const rrFontsReady=['400 14px Frutiger','500 15.625px Frutiger','700 15.625px Frutiger'].every(f=>document.fonts.check(f))&&document.fonts.check("15.625px 'RR Glyphs'",'\u2708');
   Promise.all([
     document.fonts.load('400 14px Frutiger'),
     document.fonts.load('500 15.625px Frutiger'),
     document.fonts.load('700 15.625px Frutiger'),
     document.fonts.load("15.625px 'RR Glyphs'",'\u2708')
-  ]).then(()=>{if(W&&H)updateWorld()}).catch(()=>{});
+  ]).then(()=>{if(W&&H&&!rrFontsReady)updateWorld()}).catch(()=>{});
 }
 
 /* Appearance is a site preference; System tracks OS changes even after load. */
@@ -2342,7 +2360,7 @@ function rrSetAppearance(selected,persist=false){
  const themeMeta=document.querySelector('meta[name="theme-color"]');
  if(themeMeta)themeMeta.content=RR_UI_CSS_COLOR('--surface');
  if(persist){try{localStorage.setItem(rrAppearanceKey,choice)}catch(_){}}
- if(W&&H){drawRoute();drawMap()} // Refresh all map route strokes and station colours.
+ if(W&&H&&document.documentElement.dataset.theme!==rrDrawnTheme){drawRoute();drawMap()} // Refresh all map route strokes and station colours (only when the theme changed).
 }
 rrAppearanceToggle.addEventListener('click',()=>{
  rrCloseLanguage();
