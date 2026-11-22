@@ -74,6 +74,15 @@
   for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
   const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
+// station Connections (user 2026-11-21): every station with GIS connections shows them, each mode with its pictogram (metro: its
+// own logo once provided), no airport row repeating the station's name, and an airport station always has its airport row
+{const st0=currentStation;let nc=0;const withC=STATIONS.filter(x=>x.conn?.length);
+  for(const x of STATIONS)if(rrIsAirport(x.name)&&/Airport\b/.test(x.name)&&!(x.conn||[]).some(c=>c[0]==='airport'))bad('airport station without its airport connection',x.name);
+  for(const x of withC.filter((_,i)=>i%Math.max(1,Math.floor(withC.length/12))===0).slice(0,12)){fillStationInfo(x.name);const rows=[...detail.querySelectorAll('.station-conn')];nc++;
+   if(rows.length!==x.conn.length)bad('station connections missing from Services',x.name);
+   for(const r of rows){const m=r.dataset.mode;if(m!=='metro'&&!r.querySelector('.station-conn-icon use'))bad('connection without its pictogram',x.name+': '+m);
+    if(m==='airport'&&r.querySelector('.station-svc-name').textContent.includes(x.name))bad('airport row repeats the station name',x.name)}}
+  app.classList.remove('detail-open');setCurrentStation(st0);out.counts['station connections checked']=nc}
 // a station's facilities never use a train's words (user 2026-11-21: "station has no voiture-restaurant, that is on trains")
 {let nf=0;for(const l of [STATION_CORE,...Object.values(STATION_AMENITIES)])for(const f of l){nf++;if(['Dining','Quiet Zone','First Class','Bistro'].includes(f))bad('train-only facility listed for a station',f)}out.counts['station facility labels checked']=nf}
 // fast Local trains (user 2026-11-21, approved): same letter as the all-stations train, the word "Fast" on the board, by the
