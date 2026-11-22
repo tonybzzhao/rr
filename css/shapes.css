@@ -744,7 +744,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .rp-key-mark.rp-key-major{width:13px;height:13px;border-width:3px}
 /* Phone timetable: columns sized to their content (time 52, widest badge 72, platform 42) so destinations get the rest
    and long single-word names (Yulianshan) are not broken mid-word. */
-@media(max-width:750px){.boardhead,.trainrow{grid-template-columns:52px 72px minmax(0,1fr) 42px!important}}
+@media(max-width:750px){.boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 72px minmax(0,1fr) 42px!important}}
 /* A changed value (revised time, new platform) looks the same in every view: the new value in dark ink on the light-blue
    box (user 2026-11-20: the calling-at list still used the old navy, route departures an orange text without the box). */
 .time-delayed .retime-box,.stop-list.has-disruptions .stop-time .retime-box,.route-dep .time-delayed .retime-box{
@@ -932,3 +932,11 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .journey-head-top #journeyEdit{position:relative;top:1.5px;right:auto;margin:-6px 0;display:none}
 .jp-collapsed .journey-head-top #journeyEdit{display:inline-flex}
 #journeyEdit .rr-action-icon{width:24px;height:24px;transform:translate(-1px,.5px)}
+/* departure board columns fit their content (user 2026-11-22: "optimize timetable column spacing"): the time column is as wide as
+   a time (it was 58 px for a 40 px "00:00", a 26 px hole before the train badge; now 16 px), one even 8 px gap between columns at every width */
+:root{--rr-board-time:48px}   /* a revised time in its box is 47 px */
+.boardhead,.trainrow{column-gap:8px!important}
+/* the Fast badge line sits as far below the destination as the status line does (it touched the name: 1 px) */
+.trainrow .row-via{margin-top:4px}
+.trainrow .row-via:has(.rr-fast-tag){row-gap:4px}
+
