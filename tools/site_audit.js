@@ -256,6 +256,14 @@
     if(hd&&Math.abs(hd.getBoundingClientRect().left-b.left)>1)bad('board header Train not over the train badges',n);
     for(const [a,z,w] of [[d,v,'destination to Fast / via'],[v||d,st,'line above to status']])if(a&&z){const g=z.top-a.bottom;if(g<3||g>6)bad('board line gap '+w+' not 3-6 px',n+' '+Math.round(g)+' px')}}}
   setCurrentStation(st0||LABELS[0]);out.counts['board rows spacing checked']=nb}
+ // metro / underground connections show the underground pictogram (or the system's own logo) (user 2026-11-22)
+ {let nm=0;for(const x of STATIONS)for(const c of x.conn||[])if(c[0]==='metro'){nm++;const id=RR_METRO_LOGOS[c[1]]||'underground';if(!document.getElementById('rr-picto-'+id))bad('metro connection without its pictogram',c[1]);
+   if(!rrConnRow(c,x.name).includes('#rr-picto-'+id))bad('metro connection row not drawing its pictogram',x.name+': '+c[1])}out.counts['metro connections checked']=nm}
+ // a change of trains in a journey shows the change-2 pictogram (user 2026-11-22: "use change-2 for change-trains")
+ {const j=findJourneys(LABELS[0],LABELS[3],false).find(x=>x.change>0)||findJourneys(LABELS[1],LABELS[5],false).find(x=>x.change>0);
+  if(!document.getElementById('rr-ui-change-trains'))bad('change-trains pictogram missing','rr-ui-change-trains');
+  if(j){const v0=viewMode;setViewMode('journeys');chooseJourney(j);for(const ic of document.querySelectorAll('.jt-transfer .jt-change-icon use'))if(ic.getAttribute('href')!=='#rr-ui-change-trains')bad('journey change not drawn with the change-trains pictogram',ic.getAttribute('href'));setViewMode(v0)}
+  out.counts['change pictograms checked']=1}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
