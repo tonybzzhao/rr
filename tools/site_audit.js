@@ -309,6 +309,10 @@
  // board status says Expt, never Expected (user 2026-11-22: "always use Expt in timetable")
  {const st0=currentStation;let ne=0;setViewMode('departures');for(const n of LABELS.slice(0,10)){setCurrentStation(n);rrFitStatus(board);for(const t of board.querySelectorAll('.rowstatus .status-tag')){if(/^Expected\b/.test(t.textContent))bad('board status says Expected, not Expt',n+': '+t.textContent);if(/^Expt|^\+/.test(t.textContent))ne++}}
   setCurrentStation(st0||LABELS[0]);out.counts['board Expt statuses checked']=ne}
+ // metro connections carry the official names (user 2026-11-22, Metro_names_for_approval.csv): English = official name, French "Métro"
+ {const OFFICIAL=new Set(['Peiting URS','Metrail','Prinsburg Underground','Somerfield Underground','Yuchow Underground','Chungsia Metro','Windale Metro','Victoria Metro','Yenchia Metro','Touraine Metro','Havenbolme U-Bahn','Amptonside Metro']);let nm=0;
+  for(const x of STATIONS)for(const c of x.conn||[])if(c[0]==='metro'){nm++;if(!OFFICIAL.has(c[1]))bad('metro connection not under its official name',x.name+': '+c[1]);if(c[3]!=='Métro')bad('metro connection not "Métro" in French',x.name+': '+c[3])}
+  out.counts['metro names checked']=nm}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
