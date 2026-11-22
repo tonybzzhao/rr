@@ -629,7 +629,7 @@ button.train-number.train-route-link:hover,button.service.rr-train-link:hover{te
 .route-dep-plat .time-delayed,.trainrow .platform .rr-plat-delayed{justify-content:flex-end!important}
 /* timetable: the time column is too narrow for both, so the new time sits under the old one; its digits line up with the
    old time and with every other row's time (the box's own padding hangs out to the left) */
-.trainrow .row-time .time-delayed .retime-box{margin-left:-7px}
+.trainrow .row-time .time-delayed .retime-box{margin-left:-5px}
 .jt-plat .time-delayed{column-gap:4px!important}
 /* calling-at lists with a changed time: the time column makes room for old and new side by side (all rows alike) */
 .stop-list.has-disruptions .stop{grid-template-columns:22px 104px minmax(0,1fr)!important}
@@ -760,7 +760,7 @@ button.train-number.train-route-link:hover,button.service.rr-train-link:hover{te
 /* (was the old blue scheme's hover tint #EDF3FA: the same tone as the grey cards, so the box could not be seen - user
    2026-11-20 "is this base color legacy? shape not legible". White with an outline reads on white rows, grey cards and the
    selected row alike.) */
-.route-dep .time-delayed .retime-box{display:inline-flex!important;padding:2px 6px!important;font-size:inherit!important;margin-left:-6px}
+.route-dep .time-delayed .retime-box{display:inline-flex!important;padding:2px 4px!important;font-size:inherit!important;margin-left:-4px}
 .route-dep .time-delayed{flex-direction:row!important}
 /* The crossed-out old time / platform is one type tier below the new value beside it (user 2026-11-20); the type tiers
    for times had also caught the old time inside the strike-through, drawing it as large as the new one. */
@@ -1036,3 +1036,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 /* Every facility tile fills exactly its grid cell (2026-11-22: a negative margin pushed the highlighted tile 6 px past its column and out
    of line with the details card below); the details card spans the grid's full width, edge to edge with the tiles. */
 .station-picto-grid .fac-detail{margin-left:0;margin-right:0}
+/* revised-time box: 2 px tighter at the sides in every view (user 2026-11-22: "new time padding left and right slightly tighter"); the
+   board keeps the new time's digits under the old time's (margin-left = minus the side padding) */
+/* An open facility and its details card are two separate shapes (user 2026-11-22: "why white shapes sticked together? ugly"): the card
+   sits 8 px below the tile row instead of overlapping it by 4 px. */
+.station-picto-grid .fac-detail{margin-top:4px!important}
