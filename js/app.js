@@ -4,12 +4,14 @@ const GRAPH={"pts":[[937.23,1976.82],[929.89,1956.39],[939.41,1982.85],[1166.39,
 /* Regio and Local trains arrive as timetable patterns (stops, minutes from the start, start times); expand them into
    one train per departure. Labels: "RS 37" / "RX 37" for Regio, the line letter ("A1") for Local. */
 // Ring trains (user 2026-11-20): which way round, from the drawn route (screen y points down: a positive turn is clockwise).
-// Lettered cities: the ring is line O both ways (Tokyo / Glasgow); Havenbolme S-Bahn: S41 clockwise, S42 anticlockwise (Berlin).
+// Lettered cities use O in both directions. Havenbolme uses S11 clockwise and S12 anticlockwise.
 function rrRingWay(mp){const pts=GRAPH.paths?.[mp]?rrMapPath(mp).map(i=>GRAPH.pts[i]):[];if(pts.length<3)return null;
  const c=[pts.reduce((a,p)=>a+p[0],0)/pts.length,pts.reduce((a,p)=>a+p[1],0)/pts.length];let s_=0;
  for(let i=1;i<pts.length;i++)s_+=(pts[i-1][0]-c[0])*(pts[i][1]-c[1])-(pts[i-1][1]-c[1])*(pts[i][0]-c[0]);return s_>0?'cw':'ccw'}
-if(typeof RR_PATTERNS!=='undefined')for(const p of RR_PATTERNS){const ring=p.type==='Local'&&/^(Ring\d+|S4[12])$/.test(p.line)?rrRingWay(p.mp):null;
- if(ring&&p.net==='Havenbolme')p.line=ring==='cw'?'S41':'S42';
+if(typeof RR_PATTERNS!=='undefined')for(const p of RR_PATTERNS){
+ const isRing=p.type==='Local'&&(/^Ring\d+$/.test(p.line)||p.net==='Havenbolme'&&/^S1[12]$/.test(p.line));
+ const ring=isRing?rrRingWay(p.mp):null;
+ if(ring&&p.net==='Havenbolme')p.line=ring==='cw'?'S11':'S12';
  const label=ring&&p.net!=='Havenbolme'?'O':p.type==='Local'?(p.pat==='S'?p.line:p.line.replace(/\d+/g,'')):p.pat+' '+p.line,plat=String(p.dir),platforms=Object.fromEntries(p.stops.map(n=>[n,plat]));
  for(const s0 of p.starts){const hh=Math.floor(s0/60)%24,tm=m=>{const d=Math.floor(m/1440),x=m%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')+(d?' +'+d:'')},route=p.stops.map((n,i)=>[n,tm(s0+p.off[i])]);
   TRAINS.push({id:`${p.type==='Local'?p.line:label}·${p.code}-${p.dir}${String(hh).padStart(2,'0')}${p.type==='Local'?String(s0%60).padStart(2,'0'):''}`,label,dir:p.dir,hh,mp:p.mp,type:p.type,pattern:p.type==='Regio'?p.pat:undefined,fast:p.pat==='F'||undefined,line:p.line,network:p.net,origin:route[0][0],dest:route[route.length-1][0],route,plat,status:'On time',stock:p.stock,fac:p.fac,platforms,ring})}}
@@ -231,7 +233,8 @@ const app=$('app'), map=$('map'), board=$('board'), stationSelect=$('stationSele
 const layer=$('stationLayer'), labels=$('labelLayer'), routeWorld=$('routeWorld'), world=$('world');
 const detail=$('detailsBody'), container=$('mapContainer'), tooltip=$('tooltip');
 // Station names in the panel's first card open that station (a train stays one step back).
-const rrStnLink=n=>`<button type="button" class="station-link" data-station="${n}">${n}</button>`;
+const rrWrapStationName=n=>n==='Niederfriedrichshude'?'Nieder\u00adfriedrichs\u00adhude':n;
+const rrStnLink=n=>`<button type="button" class="station-link" data-station="${n}">${rrWrapStationName(n)}</button>`;
 detail.addEventListener('click',e=>{const b=e.target.closest('.station-link');if(!b)return;const n=b.dataset.station,back=selectedTrain?{train:selectedTrain,station:currentStation,boardMode:viewMode}:undefined;setCurrentStation(n);fillStationInfo(n,back)});
 const S=new Map(STATIONS.map(s=>[s.name,s]));
 let rrFocusSystem=null;   // the network whose page is open (Local or Regio): only it stands out on the map (user 2026-11-21)
@@ -673,11 +676,11 @@ function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;rrF
   deps=`<section class="rr-card"><h3 class="rr-card-title">Next departures from ${from}</h3>${[...groups].map(([dest,list])=>`<div class="route-dir"><div class="rr-card-sub">Towards ${rrStnText(dest)}</div>${list.map(t=>`<button type="button" class="route-dep" data-train="${t.id}"><span class="route-dep-time">${stopTimeMarkup(t,t.hereIndex)}</span>${rrBadge(t)}<span class="route-dep-main"><span class="route-dep-dest">${t.dest}</span><span class="route-dep-status">${statusTag(rrBoardStatus(t,false))}</span></span><span class="route-dep-plat" title="Platform">${rrBoardPlatform(t,from)}</span></button>`).join('')}</div>`).join('')||'<div class="rr-card-sub">No more departures today.</div>'}</section>`;
  }
  const many=lanes.length>1;
- const rows=all.map((n,i)=>`<div class="route-row${n===from?' is-here':''}${many&&lanes.every(k=>stopsOf[k].has(n))?' all-stop':''}">${lanes.map(k=>{const [a,b]=span[k];return `<span class="route-lane lane-${k}${stopsOf[k].has(n)?' stops':''}${i<a||i>b?' off':''}${i===a?' first':''}${i===b?' last':''}"></span>`}).join('')}<button type="button" class="route-stn" data-station="${n}">${n}</button></div>`).join('');
+ const rows=all.map((n,i)=>`<div class="route-row${n===from?' is-here':''}${many&&lanes.every(k=>stopsOf[k].has(n))?' all-stop':''}">${lanes.map(k=>{const [a,b]=span[k];return `<span class="route-lane lane-${k}${stopsOf[k].has(n)?' stops':''}${i<a||i>b?' off':''}${i===a?' first':''}${i===b?' last':''}"></span>`}).join('')}<button type="button" class="route-stn" data-station="${n}">${rrWrapStationName(n)}</button></div>`).join('');
  // RX and RS (user's choice 2026-11-20): one line, as on most line maps - where RX (and RS) stop: a big ring and the name in bold;
  // where only RS stops: a small dot and a plain name; the key names the stopping patterns by badge, without the route number. Same marks as the map (ring = RX stop, small dot = RS only).
  const pattern=type==='Regio'&&many&&stopsOf.RX&&stopsOf.RS;
- const pRows=pattern?all.map((n,i)=>{const major=stopsOf.RX.has(n);return `<div class="rp-row${n===from?' is-here':''}${i===0?' is-first':''}${i===all.length-1?' is-last':''}${major?' rp-major':''}"><span class="rp-line" aria-hidden="true"></span><button type="button" class="route-stn" data-station="${n}">${n}</button></div>`}).join(''):'';
+ const pRows=pattern?all.map((n,i)=>{const major=stopsOf.RX.has(n);return `<div class="rp-row${n===from?' is-here':''}${i===0?' is-first':''}${i===all.length-1?' is-last':''}${major?' rp-major':''}"><span class="rp-line" aria-hidden="true"></span><button type="button" class="route-stn" data-station="${n}">${rrWrapStationName(n)}</button></div>`}).join(''):'';
  const pKey=pattern?`<div class="route-legend rp-key"><span><span class="rp-key-mark rp-key-major" aria-hidden="true"></span>${rrBadge({...sample.RX,label:'RX'})}${rrBadge({...sample.RS,label:'RS'})}</span><span><span class="rp-key-mark" aria-hidden="true"></span>${rrBadge({...sample.RS,label:'RS'})}<span>only</span></span></div>`:'';
  // termini: the two ends of the line, each listing its terminus (one per branch when the line branches there)
  const inner=new Set(lanes.flatMap(k=>runs[k].slice(1,-1)));
@@ -715,7 +718,7 @@ function rrRingRoute(type,net,line,from=currentStation){
  // you came from, then up the left
  const major=n=>LABELS.includes(n)||/[MR]/.test(S.get(n)?.sys||'');
  const h=Math.ceil(order.length/2),right=order.slice(0,h),left=order.slice(h).reverse();
- const cell=(n,side)=>n?`<button type="button" class="route-stn ro-${side}${major(n)?' ro-major':''}${n===from?' is-here':''}" data-station="${n}">${n}</button>`:'<span></span>';
+ const cell=(n,side)=>n?`<button type="button" class="route-stn ro-${side}${major(n)?' ro-major':''}${n===from?' is-here':''}" data-station="${n}">${rrWrapStationName(n)}</button>`:'<span></span>';
  const mark=(n,side)=>n?`<span class="ro-mark ro-mark-${side}${major(n)?' ro-major':''}${n===from?' is-here':''}" aria-hidden="true"></span>`:'';
  const rows=right.map((n,i)=>`<div class="ro-row">${cell(left[i],'l')}<span class="ro-mid">${mark(left[i],'l')}${mark(n,'r')}</span>${cell(n,'r')}</div>`).join('');
  detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${badges}</div><div class="route-op">${rrSystemLink(type,net)}</div><div class="ring-facts">Ring line</div></div>${deps}<section class="rr-card" style="--route:${rrTrainCss(cw)}"><h3 class="rr-card-title">Route</h3><div class="ring-oval" style="--route:${rrTrainCss(cw)}" role="group" aria-label="Ring line: clockwise down the right side, anticlockwise up it">${rows}</div></section>`;
@@ -1643,7 +1646,7 @@ function rrFocusStation(name){const s=S.get(name);if(!s||!W||!H)return;
  const [px_,py_]=P[s.point]||[s.x,s.y];panX=W/2-px_*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-py_*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()}
 // A line's ends as on RER line maps: the ends of one side stacked, their branches forking into the line, the line, then the
 // other side's branches forking out to its ends. One end a side is a plain line between two names.
-function rrLineEnds(a,z,color,links=false){const nm=n=>links?rrStnLink(n):n,side=(e,k)=>`<ul class="le-side le-${k}">${e.map(n=>`<li>${nm(n)}</li>`).join('')}</ul>`;
+function rrLineEnds(a,z,color,links=false){const nm=n=>links?rrStnLink(n):rrWrapStationName(n),side=(e,k)=>`<ul class="le-side le-${k}">${e.map(n=>`<li>${nm(n)}</li>`).join('')}</ul>`;
  return `<div class="line-ends${links?' le-lg':''}" style="--le:${color}" role="group" aria-label="Runs between ${a.join(' or ')} and ${z.join(' or ')}">${side(a,'a')}<span class="le-trunk" aria-hidden="true"></span>${side(z,'z')}</div>`}
 function rrSystemLink(type,net){return (type==='Local'||type==='Regio')&&net?`<button type="button" class="rr-system-link" data-system="${net}" data-type="${type}" title="Network details">${rrServiceLabel(type,net)}</button>`:rrServiceLabel(type,net)}
 /* Local network page (passenger facing, no network statistics): each line with its ends (the letter only, as on the trains),
@@ -1652,11 +1655,16 @@ function rrSystemLink(type,net){return (type==='Local'||type==='Regio')&&net?`<b
    per line number (RX / RS are stopping patterns of one line), change stations for Mainline and Local. */
 function fillLocalSystem(net,from=currentStation,type='Local'){
  const trains=TRAINS.filter(t=>t.type===type&&t.network===net);if(!trains.length)return;
- const regio=type==='Regio',key=t=>regio?String(t.line):rrLocalLetter(t);
+ const regio=type==='Regio';
+ const key=t=>regio?String(t.line):t.ring&&net==='Havenbolme'?'S11':rrLocalLetter(t);
  const letters=new Map();for(const t of trains){const k=key(t);if(!letters.has(k))letters.set(k,[]);letters.get(k).push(t)}
  const order=[...letters.keys()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
  const stations=new Set(trains.flatMap(t=>t.route.map(r=>r[0])));
  const lines=order.map(k=>{const ts=regio?[...letters.get(k)].sort((x,y)=>(x.pattern==='RS'?0:1)-(y.pattern==='RS'?0:1)):letters.get(k),branches=[...new Set(ts.map(t=>regio?t.pattern:t.line))];
+  if(ts[0].ring){
+   const badges=net==='Havenbolme'?['cw','ccw'].map(direction=>ts.find(t=>t.ring===direction)).filter(Boolean):[ts[0]];
+   return `<button type="button" class="system-line" data-line="${badges[0].line}" title="Route details"><span class="system-line-badges">${badges.map(rrBadge).join('')}</span><span class="system-line-ends ring-facts">Ring line</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`;
+  }
   const runs=branches.map(b=>ts.filter(t=>(regio?t.pattern:t.line)===b&&t.dir===1).sort((x,y)=>y.route.length-x.route.length)[0]||ts.find(t=>t.line===b)).map(t=>t.route.map(r=>r[0]));
   // ends as on the route page: every branch faces the longest one's way; a branch ending part-way along another is not an end
   runs.sort((x,y)=>y.length-x.length);for(let i=1;i<runs.length;i++){const ix=runs[i].map(n=>runs[0].indexOf(n)).filter(j=>j>=0);if(ix.length>1&&ix[0]>ix.at(-1))runs[i]=[...runs[i]].reverse()}
@@ -1664,15 +1672,15 @@ function fillLocalSystem(net,from=currentStation,type='Local'){
   const a=side(r=>r[0]),z=side(r=>r.at(-1));
   if(regio){const pats=[...new Map(ts.map(t=>[t.pattern,t])).values()].sort((x,y)=>(x.pattern==='RX'?0:1)-(y.pattern==='RX'?0:1));
    return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badges">${pats.map(rrBadge).join('')}</span><span></span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}
-  if(ts[0].ring)return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span><span class="system-line-ends ring-facts">Ring line</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`;
   return `<button type="button" class="system-line" data-line="${ts[0].line}" title="Route details"><span class="system-line-badge">${rrBadge(ts[0])}</span>${rrLineEnds(a,z,rrTrainCss(ts[0]))}<svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`}).join('');
  const firsts=trains.map(t=>t.route[0][1]).sort((a,b)=>timeOrdinal(a)-timeOrdinal(b));
+ const serviceDay=rrDayIdx(firsts[0]);
  rrDetailsHeading('Network details','rr-ui-more');$('focusRoute').hidden=false;rrLocalSystem=regio?null:net;
  rrFocusSystem={type,net,names:stations,lines:regio?[...new Map(trains.filter(t=>t.dir===1).map(t=>[t.line+'|'+t.pattern,t])).values()].map(t=>[getTrainPath(t),rrMapColor(t)]):[]};
  detail.innerHTML=`<div class="train-hero system-hero" data-system="${net}" data-type="${type}"><div class="system-name">${rrServiceLabel(type,net)}</div></div>
- <section class="rr-card"><h3 class="rr-card-title">Lines</h3><div class="system-lines">${lines}</div></section>
+ <section class="rr-card"><h3 class="rr-card-title">Lines</h3><div class="system-lines${regio?'':' system-lines-local'}">${lines}</div></section>
  <!-- no change-station list: which trains call where is on each station's page (user 2026-11-21: "is this really useful?") -->
- <section class="rr-card"><h3 class="rr-card-title">Service hours</h3><dl class="info-grid"><div class="fact-row"><dt class="keylabel">First train</dt><dd class="infoval">${firsts[0]}</dd></div><div class="fact-row"><dt class="keylabel">Last train</dt><dd class="infoval">${firsts.at(-1)}</dd></div></dl></section>`;
+ <section class="rr-card"><h3 class="rr-card-title">Service hours</h3><dl class="info-grid"><div class="fact-row"><dt class="keylabel">First train</dt><dd class="infoval">${timeMarkup(firsts[0],serviceDay)}</dd></div><div class="fact-row"><dt class="keylabel">Last train</dt><dd class="infoval">${timeMarkup(firsts.at(-1),serviceDay)}</dd></div></dl></section>`;
  detail.querySelectorAll('.system-line').forEach(b=>b.addEventListener('click',()=>fillRouteInfo(type,net,b.dataset.line,from)));
  selectedJourney=null;selectedLegPaths=[];selectedTrain=null;selectedRouteLine=null;selectedPath=[];selectedNames=from&&stations.has(from)?[from]:[];manualTrace=false;rrRouteMinor=new Set();
  routeWorld.replaceChildren();drawBoard();
@@ -2675,11 +2683,16 @@ function rrApplyHash(){
  rrApplyingHash=true;
  try{
   if((kind==='departures'||kind==='arrivals')&&S.has(a)){viewMode=kind;setCurrentStation(a)}
-  else if(kind==='route'&&a&&b&&c){if(d&&S.has(d)){viewMode='departures';setCurrentStation(d)}fillRouteInfo(a,b,c,d||currentStation)}
+  else if(kind==='route'&&a&&b&&c){
+   if(d&&S.has(d)){viewMode='departures';setCurrentStation(d)}
+   const line=a==='Local'&&b==='Havenbolme'?c.replace(/^S4([12])$/,'S1$1'):c;
+   fillRouteInfo(a,b,line,d||currentStation)
+  }
   else if((kind==='local'||kind==='regio')&&TRAINS.some(t=>t.type===(kind==='regio'?'Regio':'Local')&&t.network===a)){if(b&&S.has(b)){viewMode='departures';setCurrentStation(b)}fillLocalSystem(a,b||currentStation,kind==='regio'?'Regio':'Local')}
   else if(kind==='station'&&S.has(a)){viewMode='departures';setCurrentStation(a);fillStationInfo(a)}
   else if(kind==='train'){
-   const t=TRAINS.find(x=>x.id===a);
+   const id=a?.replace(/^S4([12])(?=·HB-)/,'S1$1');
+   const t=TRAINS.find(x=>x.id===id);
    if(t){
     viewMode='departures';
     setCurrentStation(b&&S.has(b)&&t.route.some(r=>r[0]===b)?b:t.route[0][0]);
