@@ -74,6 +74,15 @@
   for(const a of ap.slice(0,4)){setCurrentStation(a);await scan('board '+a);const t=upcoming(a)[0];if(t){chooseTrain(t);detail.scrollTop=0;await scan('train at '+a)}}
   const ta=TRAINS.find(t=>rrIsAirport(t.dest));if(ta){setCurrentStation(ta.route[0][0]);chooseTrain(ta);detail.scrollTop=0;await scan('train to '+ta.dest)}
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
+// every Regio network has a network page like a Local one (user 2026-11-21), and the journey Reset leaves an empty planner on Journeys
+{let nn=0;const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio').map(t=>t.network))];
+  for(const n of nets){fillLocalSystem(n,currentStation,'Regio');nn++;if(!detail.querySelector('.system-hero[data-type="Regio"]')||!detail.querySelectorAll('.system-line').length)bad('Regio network without its network page',n);
+   if(!location.hash.startsWith('#regio/'))bad('Regio network page not at a #regio/ address',n+' '+location.hash);
+   for(const b of detail.querySelectorAll('.system-line')){const arrow=b.querySelector('.rr-arrow-icon')?.getBoundingClientRect(),ends=b.querySelector('.line-ends')?.getBoundingClientRect();if(arrow&&ends&&ends.right>arrow.left+1){bad('line ends run into the arrow',n+': '+b.innerText.replace(/\s+/g,' '));break}}}
+  app.classList.remove('detail-open');clear();out.counts['Regio network pages checked']=nn;
+  setViewMode('journeys');rrSelectValue($('from'),LABELS[0]);rrSelectValue($('to'),LABELS[1]);$('clear').click();
+  if(viewMode!=='journeys'||$('from').value||$('to').value)bad('journey Reset did not leave an empty planner on Journeys',viewMode+' '+$('from').value+' '+$('to').value);
+  setViewMode('departures')}
 // station Connections (user 2026-11-21): every station with GIS connections shows them, each mode with its pictogram (metro: its
 // own logo once provided), no airport row repeating the station's name, and an airport station always has its airport row
 {const st0=currentStation;let nc=0;const withC=STATIONS.filter(x=>x.conn?.length);
@@ -81,7 +90,7 @@
   for(const x of withC.filter((_,i)=>i%Math.max(1,Math.floor(withC.length/12))===0).slice(0,12)){fillStationInfo(x.name);const rows=[...detail.querySelectorAll('.station-conn')];nc++;
    if(rows.length!==x.conn.length)bad('station connections missing from Services',x.name);
    for(const r of rows){const m=r.dataset.mode;if(m!=='metro'&&!r.querySelector('.station-conn-icon use'))bad('connection without its pictogram',x.name+': '+m);
-    if(m==='airport'&&r.querySelector('.station-svc-name').textContent.includes(x.name))bad('airport row repeats the station name',x.name)}}
+    if(m==='airport'&&!/ \([A-Z]{3}\)$/.test(r.querySelector('.station-svc-name').textContent.trim()))bad('airport row without its official name and (IATA) code',x.name)}}
   app.classList.remove('detail-open');setCurrentStation(st0);out.counts['station connections checked']=nc}
 // a station's facilities never use a train's words (user 2026-11-21: "station has no voiture-restaurant, that is on trains")
 {let nf=0;for(const l of [STATION_CORE,...Object.values(STATION_AMENITIES)])for(const f of l){nf++;if(['Dining','Quiet Zone','First Class','Bistro'].includes(f))bad('train-only facility listed for a station',f)}out.counts['station facility labels checked']=nf}
