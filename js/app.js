@@ -2143,7 +2143,7 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   if(!last){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
-   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-change-trains"></use></svg>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min</span></div></li>`;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-change-trains"></use></svg><span aria-hidden="true">Change</span><span class="rr-sr-only">Change at ${station}</span></strong><span class="transfer-detail">${next.dep-leg.arr} min</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
@@ -2475,6 +2475,7 @@ function rrFrenchText(source){
   .replace(/\b1 change\b/g,'1 correspondance')
   .replace(/^Train (.+?) from (.+)$/,(_,n,st)=>'Train '+n+' au départ de '+st)
   .replace(/\bChange at ([^·]+?)(?=\s*·|$)/g,(_,name)=>'Correspondance à '+name.trim())
+  .replace(/^Change$/,'Correspondance')
   .replace(/^towards$/,'direction')
   .replace(/^(\d+) stops$/,'$1 arrêts').replace(/^1 stop$/,'1 arrêt').replace(/^Non-stop$/,'Sans arrêt')
   .replace(/\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday), (\d\d\/\d\d\/\d{4})/g,(_,d,n)=>RR_DAYS_FR[RR_DAYS.indexOf(d)]+' '+n)
