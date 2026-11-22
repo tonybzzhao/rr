@@ -85,6 +85,8 @@
   setViewMode('journeys');rrSelectValue($('from'),LABELS[0]);rrSelectValue($('to'),LABELS[1]);$('clear').click();
   if(viewMode!=='journeys'||$('from').value||$('to').value)bad('journey Reset did not leave an empty planner on Journeys',viewMode+' '+$('from').value+' '+$('to').value);
   setViewMode('departures')}
+// every main / central station has Regio trains (user 2026-11-21: "why regio won't serve a central station???")
+{let nm=0;for(const x of STATIONS)if(LABELS.includes(x.name)||/(Central|Centrale|Hbf|Main)$/.test(x.name)){nm++;if(!/R/.test(x.sys||''))bad('main station without Regio trains',x.name)}out.counts['main stations with Regio checked']=nm}
 // station Connections (user 2026-11-21): every station with GIS connections shows them, each mode with its pictogram (metro: its
 // own logo once provided), no airport row repeating the station's name, and an airport station always has its airport row
 {const st0=currentStation;let nc=0;const withC=STATIONS.filter(x=>x.conn?.length);

@@ -922,3 +922,5 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .app.system-focus #stationLayer g.off-system{opacity:.18}
 .app.system-focus #labelLayer .station-label.off-system{display:none}
 .system-overlay-line{fill:none;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+/* a fact list inside a card is flat: no second inset panel, so no double indent or extra gap (user 2026-11-21: Service hours) */
+.details-body .rr-card>.info-grid{padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important}
