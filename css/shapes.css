@@ -984,9 +984,9 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 #localTrack,#regioTrack,#hslTrack,#mlTrack,#mlShared,#hslShared,#regioShared,#localShared{display:none!important}
 .rail.unified{stroke:var(--rail-neutral);stroke-width:2.6}
 .rail.sys{display:none;stroke-width:2.8}
-.app:not(.journey-mode)[data-sys-focus="mainline"] .rail.sys-mainline{display:inline;stroke:var(--rail-strong)}
-.app:not(.journey-mode)[data-sys-focus="regio"] .rail.sys-regio{display:inline;stroke:var(--rail-regio-strong)}
-.app:not(.journey-mode)[data-sys-focus="local"] .rail.sys-local{display:inline;stroke:var(--rail-local-strong)}
+.app:not(.journey-mode)[data-sys-focus="mainline"] .rail.sys-mainline{display:inline;stroke:var(--rail)}
+.app:not(.journey-mode)[data-sys-focus="regio"] .rail.sys-regio{display:inline;stroke:var(--rail-regio)}
+.app:not(.journey-mode)[data-sys-focus="local"] .rail.sys-local{display:inline;stroke:var(--rail-local)}
 .app:not(.journey-mode)[data-sys-focus="mainline"] .rail.unified,.app:not(.journey-mode)[data-sys-focus="regio"] .rail.unified,.app:not(.journey-mode)[data-sys-focus="local"] .rail.unified{opacity:.3}
 .app.system-focus .rail.sys,.app.trip-focus .rail.sys{display:none!important}
 /* the legend explains network colours, so it shows only with a network filter */
@@ -994,7 +994,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
    have thickness difference. retain legend format") */
 .app:not([data-sys-focus="mainline"]) .map-legend,.app.journey-mode .map-legend,.app.system-focus .map-legend{display:none!important}
 .rail.sys-mainline{stroke-width:2.2}.rail.sys-mainline.sys-hs{stroke-width:4}
-.keymark.ml-hs{border-top-color:var(--rail-strong);border-top-width:4px}.keymark.ml-only{border-top-color:var(--rail-strong);border-top-width:2.2px}
+.keymark.ml-hs{border-top-color:var(--rail);border-top-width:4px}.keymark.ml-only{border-top-color:var(--rail);border-top-width:2.2px}
 
 .app.system-focus .rail.unified{opacity:.18!important}   /* a focused network stands out over a well-faded base */
 #journeyPanel:focus{outline:none}   /* focused only as the Edit landing spot on touch screens */

@@ -599,5 +599,16 @@
   for(const x of ['06:16','23:47','00:10 +1']){ntz++;if(rrDailyTime(x).includes('day-offset')||plain(rrDailyTime(x))!==x.slice(0,5))bad('day mark on a daily time',x)}
  const pageText=document.body.innerText;ntz++;if(/Radeland time|Heure de Radeland|UTC\s*[−±+-]\s*\d/i.test(pageText))bad('time zone stated on the site','user: show Radeland time without saying so');
   out.counts['Radeland times checked']=ntz}
+ // Network filter colours (user 2026-11-22: "use previous colors. single system station ring are still that color"): a filtered
+ // network's track and the Mainline legend use the same colour as that network's single-network station rings.
+ {const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim(),f0=app.dataset.sysFocus;let nc=0;
+  for(const [f,id,v] of [['mainline','sysMainline','--rail'],['regio','sysRegio','--rail-regio'],['local','sysLocal','--rail-local']]){
+   app.dataset.sysFocus=f;const el=document.getElementById(id),want=RR_UI_CSS_COLOR(v),got=getComputedStyle(el).stroke;nc++;
+   const norm=c=>{const d=document.createElement('i');d.style.color=c;document.body.appendChild(d);const r=getComputedStyle(d).color;d.remove();return r};
+   if(norm(got)!==norm(want))bad('filter track colour differs from its station rings',f+': '+got+' vs '+want)}
+  app.dataset.sysFocus='mainline';for(const k of document.querySelectorAll('.keymark.ml-hs,.keymark.ml-only')){nc++;
+   const d=document.createElement('i');d.style.color=RR_UI_CSS_COLOR('--rail');document.body.appendChild(d);const w=getComputedStyle(d).color;d.remove();
+   if(getComputedStyle(k).borderTopColor!==w)bad('Mainline legend colour differs from its station rings',k.className)}
+  if(f0===undefined)delete app.dataset.sysFocus;else app.dataset.sysFocus=f0;out.counts['filter track colours checked']=nc}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
