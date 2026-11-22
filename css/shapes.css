@@ -538,7 +538,7 @@ body,.app{background:var(--rr-canvas)}
 .route-row.is-first .route-lane::before{top:50%}.route-row.is-last .route-lane::before{bottom:50%}
 .route-lane.stops::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;box-sizing:border-box;border:3px solid var(--route);background:var(--rr-canvas)}
 .route-lane.lane-RX.stops::after{background:var(--route)}
-.route-stn{border:0;background:none;padding:4px 0 4px 6px;font:inherit;font-size:13px;color:var(--ink-strong);text-align:left;cursor:pointer}
+.route-stn{border:0;background:none;padding:4px 0 4px 6px;font:inherit;font-size:13px;color:var(--ink-strong);text-align:left;cursor:pointer;min-width:0;hyphens:auto;overflow-wrap:break-word}
 .route-stn:hover{text-decoration:underline}
 .station-link{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:inherit;cursor:pointer}
 .station-link:hover{text-decoration:underline}
@@ -646,6 +646,10 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .system-line,.system-stn{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;align-items:center;column-gap:10px;min-height:48px;padding:8px 2px;border-top:1px solid var(--stroke-soft)}
 .system-line:first-child,.system-stn:first-child{border-top:0}
 .system-line{grid-template-columns:auto minmax(0,1fr) 14px;column-gap:8px}
+.system-lines-local{display:grid;grid-template-columns:auto minmax(0,1fr) 14px;column-gap:8px}
+.system-lines-local .system-line{grid-column:1/-1;grid-template-columns:subgrid}
+.system-lines-local .system-line-badges{flex-wrap:nowrap}
+.system-line-ends.ring-facts{justify-content:center;text-align:center}
 .system-line .rr-arrow-icon{width:14px;height:14px;fill:currentColor;color:var(--ink-soft)}
 .system-stn{grid-template-columns:minmax(0,1fr) auto}
 .system-stn-name{font-size:13px;font-weight:500;color:var(--ink-strong)}
@@ -654,7 +658,8 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .system-line:focus-visible,.system-stn:focus-visible{outline:2px solid var(--ui);outline-offset:-2px}
 /* A line's ends, RER style: each side's ends stacked, their branches fork into the line (rrLineEnds). */
 .line-ends{display:grid;grid-template-columns:minmax(min-content,1fr) 14px minmax(min-content,1fr);align-items:center;min-width:0}
-.le-side{list-style:none;margin:0;padding:0;min-width:0}
+.system-lines-local .line-ends{grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr)}
+.le-side{list-style:none;margin:0;padding:0;min-width:0;hyphens:auto;overflow-wrap:break-word}
 .le-side li{position:relative;padding:3px 0;font-size:13px;font-weight:500;line-height:1.25;color:var(--ink-strong)}
 .le-a li{text-align:right;padding-right:13px}
 .le-z li{text-align:left;padding-left:13px}
@@ -811,7 +816,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .ring-oval{position:relative;display:grid;padding:16px 0}
 .ring-oval::before{content:"";position:absolute;left:calc(50% - 22px);width:44px;top:10px;bottom:10px;box-sizing:border-box;border:3px solid var(--route);border-radius:22px}
 .ro-row{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr);align-items:center;min-height:32px}
-.ro-row .route-stn{padding:4px 0;line-height:1.2;overflow-wrap:break-word;min-width:0}
+.ro-row .route-stn{padding:4px 0;line-height:1.2}
 .ro-row .route-stn.ro-l{text-align:right;padding-right:10px}
 .ro-row .route-stn.ro-r{text-align:left;padding-left:10px}
 .ro-row .route-stn.ro-major,.ro-row .route-stn.is-here{font-weight:var(--fw-bold)!important}
