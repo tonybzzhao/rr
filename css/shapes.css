@@ -931,3 +931,10 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .system-overlay-line{fill:none;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
 /* a fact list inside a card is flat: no second inset panel, so no double indent or extra gap (user 2026-11-21: Service hours) */
 .details-body .rr-card>.info-grid{padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important}
+/* the Fast tag keeps its caption size inside text that forces body size on spans (journey 'direction ...': user 2026-11-21 saw it
+   too big and off-centre); centred on the text it follows */
+.jt-towards .rr-fast-tag,.service-dest .rr-fast-tag,.row-via .rr-fast-tag{font-size:var(--fs-caption)!important;height:16px;padding:0 5px;vertical-align:2px;line-height:16px}
+.service-dest .rr-fast-tag{vertical-align:middle}
+.jt-towards:has(.rr-fast-tag){display:flex;flex-wrap:wrap;align-items:center;column-gap:4px;row-gap:3px}
+.jt-towards .rr-fast-tag{margin-left:0!important}
+

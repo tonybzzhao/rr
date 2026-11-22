@@ -2423,7 +2423,7 @@ const rrFrenchExact=Object.freeze({
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
  'Close train details':'Fermer les détails du train',
  'Collapse departures':'Réduire le panneau','Expand departures':'Déployer le panneau',
- 'Search station':'Rechercher une gare','Connections':'Correspondances','Buses':'Bus','Taxis':'Taxis','Bus station':'Gare routière','Change for Mainline and Local':'Correspondances Magistrale et Local','Fast':'Direct','Browse stations':'Parcourir les gares',
+ 'Search station':'Rechercher une gare','Connections':'Correspondances','Buses':'Bus','Taxis':'Taxis','Bus station':'Gare routière','Change for Mainline and Local':'Correspondances Magistrale et Local','Fast':'Rapide','Browse stations':'Parcourir les gares',
  'Current station':'Gare sélectionnée','From station':'Gare de départ',
  'To station':'Gare d’arrivée',
  'Swap From and To stations':'Inverser le départ et l’arrivée',
