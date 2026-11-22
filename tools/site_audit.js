@@ -11,6 +11,7 @@
    - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
    - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
    - journey results: no train formation; every train badge opens that train departing from the leg's boarding station;
+   - every time in Radeland time (now, today, train times, opening hours, first / last trains), no zone stated anywhere;
    - journeys (findJourneys + getSegmentPath) for a wide sample of station pairs, incl. whole-city choices: each leg on its
      train's route from its boarding point to its alighting point, every call on the way on it, changes at the same place.
    Run in the page:  await (await fetch('tools/site_audit.js')).text().then(eval)  -> {ok, counts, examples}
@@ -577,5 +578,26 @@
   for(const [lab,z] of [['middle zoom',Math.sqrt(rrMaxZoom())],['deepest zoom',rrMaxZoom()]]){zoomAt(z/zoom);rrRedraw();see(lab)}
   app.classList.remove('detail-open');await settle();app.classList.add('detail-open');await settle();see('deepest zoom, panel closed and reopened');
   clear();app.classList.remove('detail-open');setCurrentStation(null);await settle();zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();out.counts['details-open map views checked']=nd}
+ // Radeland time (user 2026-11-22: "show in radeland time zone"): every time shown and typed is Radeland time, whatever the
+ // visitor's zone. "now" is the real clock in Radeland time (UTC−1, summer UTC±0), worked out here from UTC; the app reads the
+ // visitor's offset only to build that clock; a train's times show exactly as in the timetable, with a day mark only past
+ // midnight from the train's own first call; daily items (opening hours, first / last trains) never carry a day mark; the
+ // site never states the zone (user: "show radeland time do not specify it on website").
+ {let ntz=0;const u=new Date(),want=((u.getUTCHours()*60+u.getUTCMinutes()+rrRadelandOffset())%1440+1440)%1440,got=rrNowMinutes();ntz++;
+  if(Math.min(Math.abs(got-want),1440-Math.abs(got-want))>1)bad('"now" is not Radeland time','app '+rrMinutesToInput(got)+', Radeland '+rrMinutesToInput(want));
+  const rd=new Date(u.getTime()+rrRadelandOffset()*60000),rk=rd.getUTCFullYear()+'-'+String(rd.getUTCMonth()+1).padStart(2,'0')+'-'+String(rd.getUTCDate()).padStart(2,'0');
+  if(rrIsoDate(rrDay(0))!==rk)bad('today is not Radeland\'s date',rrIsoDate(rrDay(0))+' vs '+rk);
+  const src=await (await fetch('js/app.js',{cache:'no-store'})).text(),tzUses=(src.match(/getTimezoneOffset/g)||[]).length;
+  if(tzUses!==1)bad('visitor time zone used outside the Radeland clock',tzUses+' uses of getTimezoneOffset');
+  const plain=h=>h.replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  for(const t of TRAINS){const base=rrDayIdx(t.route[0][1]);for(const [st,tm] of t.route){ntz++;const m=String(tm).match(/^(\d\d:\d\d)(?:\s*\+(\d+))?$/);if(!m)continue;
+   const d=(+(m[2]||0))-base,exp=m[1]+(d?' '+(d>0?'+':'−')+Math.abs(d):'');
+   if(plain(timeMarkup(tm,base))!==exp){bad('train time not shown as in the Radeland timetable',rrTrainLabel(t)+' '+st+': '+tm+' shown '+plain(timeMarkup(tm,base)));break}}}
+  for(const s of STATIONS){const h=rrStationHours(s.name);if(!h)continue;ntz++;const html=rrStationHoursLine(s.name);
+   if(/day-offset|[−+]\d/.test(plain(html))||html.includes('day-offset'))bad('day mark on opening hours',s.name+': '+plain(html));
+   if(!h.allDay&&!plain(html).includes(rrMinutesToInput(timeOrdinal(h.open))+' – '+rrMinutesToInput(timeOrdinal(h.close))))bad('opening hours not in Radeland time',s.name+': '+plain(html))}
+  for(const x of ['06:16','23:47','00:10 +1']){ntz++;if(rrDailyTime(x).includes('day-offset')||plain(rrDailyTime(x))!==x.slice(0,5))bad('day mark on a daily time',x)}
+ const pageText=document.body.innerText;ntz++;if(/Radeland time|Heure de Radeland|UTC\s*[−±+-]\s*\d/i.test(pageText))bad('time zone stated on the site','user: show Radeland time without saying so');
+  out.counts['Radeland times checked']=ntz}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
