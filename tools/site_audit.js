@@ -227,6 +227,18 @@
   {const g=document.querySelector('#stationPanel .search-picker-main').getBoundingClientRect().top-$('stationHeading').getBoundingClientRect().bottom;if(g<10||g>16)bad('home heading not spaced from the search box (10-16 px)',Math.round(g)+' px')}
   setViewMode('journeys');if(vis('#stationHeading')||vis('#stationInfoLeft')||vis('.board-controls'))bad('station block shown while Journeys is open','');if(!vis('#journeyPanel')&&!vis('.journey-results-head'))bad('journey planner missing while Journeys is open','');setViewMode('departures');
   setCurrentStation(st0||LABELS[0]);out.counts['left panel states checked']=3}
+ // the journey Edit button is the station Reset button's twin (user 2026-11-21: "same format and size as Stations reset"): same box size,
+ // same place from its card's top right corner, its icon drawn as large
+ {const st0=currentStation,R=e=>e.getBoundingClientRect(),glyph=btn=>{const sv=btn.querySelector('svg'),id=sv.querySelector('use').getAttribute('href').slice(1),b=document.getElementById(id).querySelector('path').getBBox();return Math.max(b.width,b.height)/32*R(sv).width};
+  setViewMode('departures');setCurrentStation(LABELS[0]);const sc=R(document.querySelector('.side-controls')),sr=R($('stationReset')),sg=glyph($('stationReset'));
+  setViewMode('journeys');rrSelectValue($('from'),LABELS[0]);rrSelectValue($('to'),LABELS[1]);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();$('trace').click();
+  const eb=$('journeyEdit');
+  if(!eb||!eb.getClientRects().length)bad('journey Edit button not shown after a search','');
+  else{const jc=R(document.querySelector('.journey-results-head')),er=R(eb),ofs=(a,b)=>Math.abs(a-b)>1;
+   if(ofs(er.width,sr.width)||ofs(er.height,sr.height))bad('journey Edit button not the size of the station Reset button',Math.round(er.width)+' vs '+Math.round(sr.width)+' px');
+   if(ofs(er.top-jc.top,sr.top-sc.top)||ofs(jc.right-er.right,sc.right-sr.right))bad('journey Edit button not placed like the station Reset button',Math.round(er.top-jc.top)+' / '+Math.round(sr.top-sc.top)+' px from the top');
+   if(ofs(glyph(eb),sg))bad('journey Edit icon not drawn as large as the Reset icon',glyph(eb).toFixed(1)+' vs '+sg.toFixed(1)+' px')}
+  setViewMode('departures');setCurrentStation(st0||LABELS[0]);out.counts['card buttons checked']=2}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);

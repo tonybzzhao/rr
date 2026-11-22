@@ -938,3 +938,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .jt-towards:has(.rr-fast-tag){display:flex;flex-wrap:wrap;align-items:center;column-gap:4px;row-gap:3px}
 .jt-towards .rr-fast-tag{margin-left:0!important}
 
+/* journey Edit: the same button as the station Reset (user 2026-11-21: "same format and size as Stations reset"): 32 px box at the same
+   place from the card's top right corner (centred on the 25 px caption row it sat 1.5 px higher than Reset) */
+.journey-head-top .jp-edit.station-reset{position:relative!important;top:1.5px;right:auto;left:auto}
+/* the pencil is drawn smaller and off-centre in its 32-unit box (7.4-27.1 vs the reset arrow's 4-28): scale it to the arrow's painted size, centred */
+.journey-head-top .jp-edit .rr-action-icon{width:24px!important;height:24px!important;transform:translate(-1px,.5px)}
