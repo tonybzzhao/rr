@@ -1073,3 +1073,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .app *{hyphens:manual!important;-webkit-hyphens:manual!important}
 .app .rr-hyphen{hyphens:auto!important;-webkit-hyphens:auto!important;overflow-wrap:break-word}
 .rr-hyphen-probe{overflow-wrap:normal!important;word-break:normal!important;hyphens:manual!important;-webkit-hyphens:manual!important}
+/* back buttons (back to train / back to journey; user 2026-11-22 "slightly more prominent", "blue is not neutral!"): neutral grey
+   tint instead of the white card; hover keeps the tint and adds a grey outline */
+.details-body .back-to-train{background:var(--stroke-soft)!important}
+.details-body .back-to-train:hover{background:var(--stroke-soft)!important;box-shadow:var(--rr-card-shadow),inset 0 0 0 1px var(--stroke-strong)}
