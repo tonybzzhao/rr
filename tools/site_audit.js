@@ -245,6 +245,16 @@
    for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(_){continue}for(const r of rs){if(!r.selectorText||!/journeyEdit|jp-edit/.test(r.selectorText))continue;
     for(const pr of r.style)if(!okProp.test(pr))bad('a rule styles the journey Edit button beyond showing / placing it',r.selectorText+' { '+pr+' }')}}}
   setViewMode('departures');setCurrentStation(st0||LABELS[0]);out.counts['card buttons checked']=2}
+ // departure board spacing (user 2026-11-22: "optimize timetable column spacing; ... spacing between destination and fast badge"):
+ // the time fits its column with at most 16 px to the train badge, the header's Train sits over the badges, and the lines under the
+ // destination (Fast / via, status) all keep the same 3-6 px gap
+ {const st0=currentStation;let nb=0;setViewMode('departures');for(const n of LABELS.slice(0,6)){setCurrentStation(n);const hd=document.querySelector('.boardhead span:nth-child(2)');
+   for(const r of [...document.querySelectorAll('#board .trainrow')].slice(0,12)){nb++;const R_=s=>r.querySelector(s)?.getBoundingClientRect(),t=R_('.time-primary'),b=R_('.service'),d=R_('.dest'),v=R_('.row-via'),st=R_('.rowstatus');
+    if(!t||!b||!d)continue;const rt=r.querySelector('.row-time');if(rt.scrollWidth>rt.clientWidth+1)bad('board time wider than its column',n);
+    const tr=Math.max(...[...rt.querySelectorAll('*')].map(e=>e.getBoundingClientRect().right));if(b.left-tr>16)bad('board gap from time to train badge over 16 px',n+' '+Math.round(b.left-tr)+' px');
+    if(hd&&Math.abs(hd.getBoundingClientRect().left-b.left)>1)bad('board header Train not over the train badges',n);
+    for(const [a,z,w] of [[d,v,'destination to Fast / via'],[v||d,st,'line above to status']])if(a&&z){const g=z.top-a.bottom;if(g<3||g>6)bad('board line gap '+w+' not 3-6 px',n+' '+Math.round(g)+' px')}}}
+  setCurrentStation(st0||LABELS[0]);out.counts['board rows spacing checked']=nb}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);

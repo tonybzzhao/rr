@@ -58,9 +58,9 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--ui);outline-of
 .eyebrow{font-size:12px;color:var(--muted-slate);font-weight:500;margin-bottom:8px}
 .side-controls h1{font-size:21px;font-weight:700;margin:0 0 16px;letter-spacing:-.02em;line-height:1.08}
 #stationSelect{height:35px;width:100%;border:1px solid var(--stroke-strong);padding:0 9px;border-radius:0;background:var(--surface);color:var(--ink);white-space:nowrap;text-overflow:ellipsis}
-.boardhead{display:grid;grid-template-columns:47px 73px 1fr 26px;gap:8px;border-bottom:1px solid var(--hair);padding:13px 16px 9px;color:var(--muted);font-size:11px;font-weight:500}
+.boardhead{display:grid;grid-template-columns:var(--rr-board-time) 73px 1fr 26px;gap:8px;border-bottom:1px solid var(--hair);padding:13px 16px 9px;color:var(--muted);font-size:11px;font-weight:500}
 .board{overflow:auto;flex:1}
-.trainrow{display:grid;grid-template-columns:47px 73px 1fr 26px;gap:8px;padding:12px 16px 13px;background:var(--surface);border:0;border-bottom:1px solid var(--stroke-soft);text-align:left;width:100%;min-width:0;align-items:start;color:var(--ink);-webkit-appearance:none;appearance:none}
+.trainrow{display:grid;grid-template-columns:var(--rr-board-time) 73px 1fr 26px;gap:8px;padding:12px 16px 13px;background:var(--surface);border:0;border-bottom:1px solid var(--stroke-soft);text-align:left;width:100%;min-width:0;align-items:start;color:var(--ink);-webkit-appearance:none;appearance:none}
 .trainrow:hover{background:var(--hover)}
 .trainrow.selected{background:var(--selected);box-shadow:inset 3px 0 0 var(--service-color)}
 .row-time{font-size:16px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.4}
@@ -348,7 +348,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
  color:var(--on-accent)!important;font-size:11px;font-weight:700;line-height:1.25;
  letter-spacing:0;white-space:nowrap;font-variant-numeric:tabular-nums;
 }
-.boardhead,.trainrow{grid-template-columns:42px 73px minmax(0,1fr) 50px;column-gap:7px}
+.boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 73px minmax(0,1fr) 50px;column-gap:7px}
 .boardhead{padding-left:13px;padding-right:13px;font-size:11px}
 .trainrow{padding-left:13px;padding-right:13px}
 .boardhead span:last-child{justify-self:end;white-space:nowrap}
@@ -372,7 +372,7 @@ button{transition:background-color .12s ease,border-color .12s ease}
 .back-to-train:hover{background:var(--hover-blue);border-color:var(--accent-stroke)}
 .back-to-train span{font-size:16px;line-height:1}
 @media(min-width:751px) and (max-width:1260px){
- .boardhead,.trainrow{grid-template-columns:40px 67px minmax(0,1fr) 46px;column-gap:5px;padding-left:9px;padding-right:9px}
+ .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 67px minmax(0,1fr) 46px;column-gap:5px;padding-left:9px;padding-right:9px}
  .service{font-size:10px;padding-left:4px;padding-right:4px}
  .boardhead{font-size:10px}
  .train-hero .service-dest{font-size:21px}
@@ -380,14 +380,14 @@ button{transition:background-color .12s ease,border-color .12s ease}
  .depart-time{font-size:28px}
 }
 @media(max-width:750px){
- .boardhead,.trainrow{grid-template-columns:42px 73px minmax(0,1fr) 50px;column-gap:7px;padding-left:12px;padding-right:12px}
+ .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 73px minmax(0,1fr) 50px;column-gap:7px;padding-left:12px;padding-right:12px}
  .train-hero .service-dest{font-size:21px}
 }
 
 
 /* Narrow tablet departure board: two readable rows, no intersecting columns. */
 @media(min-width:751px) and (max-width:990px){
- .boardhead,.trainrow{grid-template-columns:40px minmax(0,1fr) 52px;column-gap:7px}
+ .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) minmax(0,1fr) 52px;column-gap:7px}
  .boardhead{grid-template-areas:"time train plat"}
  .boardhead span:nth-child(1){grid-area:time}
  .boardhead span:nth-child(2){grid-area:train}
@@ -676,7 +676,7 @@ body{font-size:14px}
  .app.folded .shortmark{display:none}
 }
 @media (max-width:370px){
- .boardhead,.trainrow{grid-template-columns:39px 64px minmax(0,1fr) 46px;column-gap:6px;padding-left:9px;padding-right:9px}
+ .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 64px minmax(0,1fr) 46px;column-gap:6px;padding-left:9px;padding-right:9px}
 }
 
 
@@ -1014,7 +1014,7 @@ body{font-size:14px}
   max-width:none;
 }
 /* Allow room for full-size revised time and balanced pill padding. */
-.boardhead,.trainrow{grid-template-columns:58px 73px minmax(0,1fr) 26px}
+.boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 73px minmax(0,1fr) 26px}
 .row-time .time-delayed .retime-box{
   font-size:1em;
   line-height:1.2;
@@ -1041,10 +1041,10 @@ body{font-size:14px}
   padding:4px 8px;
 }
 @media(min-width:751px) and (max-width:990px){
-  .boardhead,.trainrow{grid-template-columns:58px minmax(0,1fr) 52px}
+  .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) minmax(0,1fr) 52px}
 }
 @media(max-width:750px){
-  .boardhead,.trainrow{grid-template-columns:58px 73px minmax(0,1fr) 50px}
+  .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) 73px minmax(0,1fr) 50px}
 }
 
 
@@ -1075,7 +1075,7 @@ body{font-size:14px}
 /* Tablet sidebars are intentionally narrower: destination sits in the
    corresponding second row, with its heading visible instead of omitted. */
 @media (min-width:751px) and (max-width:1260px){
-  .boardhead,.trainrow{grid-template-columns:58px minmax(0,1fr) 46px;
+  .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) minmax(0,1fr) 46px;
     column-gap:8px;row-gap:5px;padding-inline:13px}
   .boardhead{grid-template-areas:'time train plat' 'dest dest dest'}
   .boardhead span:nth-child(1){grid-area:time}
@@ -1091,7 +1091,7 @@ body{font-size:14px}
   .trainrow .rowstatus{margin-top:4px}
 }
 @media (min-width:751px) and (max-width:990px){
-  .boardhead,.trainrow{grid-template-columns:58px minmax(0,1fr) 44px;
+  .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) minmax(0,1fr) 44px;
     column-gap:8px;padding-inline:10px}
   .boardhead span:nth-child(3){display:block}
   .trainrow>.service{font-size:12px}
@@ -1116,7 +1116,7 @@ body{font-size:14px}
 /* Narrowest phone: preserve full-size values by stacking the Destination
    header and cell rather than squeezing four fields into overlapping columns. */
 @media (max-width:350px){
-  .boardhead,.trainrow{grid-template-columns:60px minmax(0,1fr) 52px;
+  .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) minmax(0,1fr) 52px;
     column-gap:9px;row-gap:4px;padding-inline:12px}
   .boardhead{grid-template-areas:'time train plat' 'dest dest dest'}
   .boardhead span:nth-child(1){grid-area:time}
