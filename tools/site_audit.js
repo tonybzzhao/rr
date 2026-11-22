@@ -293,9 +293,12 @@
    setViewMode('departures');setCurrentStation(n);clear();serviceFilter='regio';rrRegioFilterKey='';drawMap();nr++;
    const want=[...new Set(TRAINS.filter(t=>t.type==='Regio'&&t.route.some(r=>r[0]===n)).map(t=>t.network))].sort().join('+');
    if(want&&(!rrFocusSystem||rrFocusSystem.net!==want))bad('Regio filter does not highlight the regions serving the station',n+': '+(rrFocusSystem?.net||'none')+' vs '+want)
+   const ringCol=v=>{const d=document.createElement('i');d.style.color=RR_UI_CSS_COLOR(v);document.body.appendChild(d);const r=getComputedStyle(d).color;d.remove();return r};
+   const ovl=v=>{const w=ringCol(v);for(const e of document.querySelectorAll('#systemOverlay .system-overlay-line'))if(getComputedStyle(e).stroke!==w)return bad('filter highlight colour differs from its station rings',n+' '+v+': '+getComputedStyle(e).stroke+' vs '+w)};
+   if(want)ovl('--rail-regio');
    // Local filter (user 2026-11-22): zoomed out only the station's Local network(s) in red; zoomed in their lines colour-coded, no other network
    const wl=[...new Set(TRAINS.filter(t=>t.type==='Local'&&t.route.some(r=>r[0]===n)).map(t=>t.network))].sort().join('+');
-   if(wl&&W&&H){/* the map must be on screen (on a phone it opens with the Map button) */const z0=zoom;clear();setViewMode('departures');setCurrentStation(n);serviceFilter='local';app.dataset.sysFocus='local';rrRegioFilterKey='';zoom=1;updateWorld();drawMap();if(!rrFocusSystem||rrFocusSystem.net!==wl||!rrFocusSystem.lines.length)bad('Local filter zoomed out does not highlight the station network in red',n+': '+(rrFocusSystem?.net||'none'));
+   if(wl&&W&&H){/* the map must be on screen (on a phone it opens with the Map button) */const z0=zoom;clear();setViewMode('departures');setCurrentStation(n);serviceFilter='local';app.dataset.sysFocus='local';rrRegioFilterKey='';zoom=1;updateWorld();drawMap();if(!rrFocusSystem||rrFocusSystem.net!==wl||!rrFocusSystem.lines.length)bad('Local filter zoomed out does not highlight the station network in red',n+': '+(rrFocusSystem?.net||'none'));ovl('--rail-local');
     zoom=RR_LOCAL_COLOUR_ZOOM+1;updateWorld();drawMap();const k=$('localColours').dataset.key||'';if(!k.startsWith('*'+wl+'|'))bad('Local filter zoomed in colours other networks',n+': '+k);zoom=z0;updateWorld()}}
   serviceFilter=f0;rrRegioFilterKey='';setCurrentStation(st0||LABELS[0]);drawMap();out.counts['Regio filter focus checked']=nr}
  // stations show opening hours (user 2026-11-22), and Local route pages first and last trains each way
