@@ -301,10 +301,11 @@
     if(bs.some(b=>{const r=b.getBoundingClientRect();return r.right>tr.right+0.5||r.left<tr.left-0.5}))bad('line tile badge outside its tile',net+' '+x.dataset.line)}}
   out.counts['Regio line tiles checked']=nt}
  // stations show opening hours (user 2026-11-22), and Local route pages first and last trains each way
- {let nh=0;for(const n of LABELS.slice(0,8)){fillStationInfo(n);const c=document.querySelector('#detailsBody .station-hours');nh++;
+ {let nh=0;for(const n of LABELS.slice(0,8)){fillStationInfo(n);const c=document.querySelector('#detailsBody .station-hero .station-hours');nh++;if(document.querySelector('#detailsBody section.station-hours'))bad('opening hours still a separate card',n);
    if(!c)bad('station without opening hours',n);else if(!/Open 24 hours|Ouvert 24|\d\d:\d\d.*–.*\d\d:\d\d/.test(c.textContent))bad('station opening hours unreadable',n+': '+c.textContent.trim().slice(0,60))}
   const loc=TRAINS.find(t=>t.type==='Local'&&!t.ring);if(loc){fillRouteInfo('Local',loc.network,loc.line,loc.route[0][0]);const fl=document.querySelectorAll('#detailsBody .route-firstlast');
-   if(fl.length<1)bad('Local route page without first and last trains',loc.network+' '+loc.line);for(const r of fl)if(!/First.*Last|Premier.*Dernier/.test(r.textContent))bad('first / last train row unreadable',r.textContent.trim().slice(0,60))}
+   if(fl.length<1)bad('Local route page without first and last trains',loc.network+' '+loc.line);for(const r of fl){const td=r.querySelectorAll('td');if(td.length!==3||![1,2].every(i=>/^\d\d:\d\d$/.test(td[i].textContent.trim())))bad('first / last train row not Towards | First | Last',r.textContent.trim().slice(0,60))}
+   if(document.querySelector('#detailsBody .rr-firstlast .day-offset'))bad('day mark on a first / last train time','')}
   out.counts['station hours / first-last checked']=nh}
  // French names of the Regio stopping patterns (user 2026-11-22): RS Sprinter régional, RX Express régional, AX Express aéroport
  {for(const [en,fr] of [['Regional Sprinter','Sprinter régional'],['Regional Express','Express régional'],['Airport Express','Express aéroport']])if(rrFrenchExact[en]!==fr)bad('French name of '+en+' is not '+fr,rrFrenchExact[en]);
