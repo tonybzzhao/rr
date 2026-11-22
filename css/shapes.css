@@ -946,3 +946,9 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .trainrow .row-via{margin-top:4px}
 .trainrow .row-via:has(.rr-fast-tag){row-gap:4px}
 
+/* text for screen readers only (the journey's change row: the station is named on the rows around it, user 2026-11-22) */
+.rr-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* Fast / Rapide badge one type step larger (user 2026-11-22: "fast/rapide badge a little small"): 12 px on boards, journeys and
+   lists; beside the 21 px destination on the train page, 14 px */
+.jt-towards .rr-fast-tag,.service-dest .rr-fast-tag,.row-via .rr-fast-tag,.rr-fast-tag{font-size:var(--fs-small)!important;height:18px;padding:0 6px;line-height:18px}
+.service-dest .rr-fast-tag{font-size:var(--fs-body)!important;height:22px;padding:0 7px;line-height:22px;border-radius:5px;margin-left:8px;position:relative;top:-1.5px}

@@ -262,8 +262,18 @@
  // a change of trains in a journey shows the change-2 pictogram (user 2026-11-22: "use change-2 for change-trains")
  {const j=findJourneys(LABELS[0],LABELS[3],false).find(x=>x.change>0)||findJourneys(LABELS[1],LABELS[5],false).find(x=>x.change>0);
   if(!document.getElementById('rr-ui-change-trains'))bad('change-trains pictogram missing','rr-ui-change-trains');
-  if(j){const v0=viewMode;setViewMode('journeys');chooseJourney(j);for(const ic of document.querySelectorAll('.jt-transfer .jt-change-icon use'))if(ic.getAttribute('href')!=='#rr-ui-change-trains')bad('journey change not drawn with the change-trains pictogram',ic.getAttribute('href'));setViewMode(v0)}
+  if(j){const v0=viewMode;setViewMode('journeys');chooseJourney(j);for(const bx of document.querySelectorAll('.jt-transfer-box strong')){const v=[...bx.childNodes].filter(n=>!(n.classList&&n.classList.contains('rr-sr-only'))).map(n=>n.textContent).join('').trim();if(!/^(Change|Correspondance)$/.test(v))bad('journey change row repeats the station (user 2026-11-22: "do we need to repeat station name?")',v)}
+   for(const ic of document.querySelectorAll('.jt-transfer .jt-change-icon use'))if(ic.getAttribute('href')!=='#rr-ui-change-trains')bad('journey change not drawn with the change-trains pictogram',ic.getAttribute('href'));setViewMode(v0)}
   out.counts['change pictograms checked']=1}
+ // the Fast / Rapide badge: 12 px in lists, 14 px beside the train page's destination, centred on it (user 2026-11-22: "a little small")
+ {const st0=currentStation;setViewMode('departures');let nf=0;for(const n of LABELS){setCurrentStation(n);const row=[...document.querySelectorAll('#board .trainrow')].find(r=>r.querySelector('.rr-fast-tag'));if(!row)continue;
+   const bt=row.querySelector('.rr-fast-tag');if(parseFloat(getComputedStyle(bt).fontSize)<12)bad('Fast badge under 12 px on the board',n);
+   const t=upcoming(n).find(x=>x.fast||rrDestText(x,false).includes('Fast'))||upcoming(n).find(x=>row.textContent.includes(x.route.at(-1)[0]));
+   row.click();const d=document.querySelector('.service-dest'),tg=d?.querySelector('.rr-fast-tag');if(!tg){bad('train page without its Fast badge',n);break}
+   const nm=d.querySelector('.station-link')||d.firstElementChild,a=tg.getBoundingClientRect(),b=nm.getBoundingClientRect();nf++;
+   if(parseFloat(getComputedStyle(tg).fontSize)!==14)bad('Fast badge on the train page not 14 px',getComputedStyle(tg).fontSize);
+   if(Math.abs((a.top+a.height/2)-(b.top+b.height/2))>1)bad('Fast badge not centred on the destination',n);break}
+  setCurrentStation(st0||LABELS[0]);out.counts['Fast badges checked']=nf}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
