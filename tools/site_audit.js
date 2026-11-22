@@ -272,7 +272,7 @@
    row.click();const d=document.querySelector('.service-dest'),tg=d?.querySelector('.rr-fast-tag');if(!tg){bad('train page without its Fast badge',n);break}
    const nm=d.querySelector('.station-link')||d.firstElementChild,a=tg.getBoundingClientRect(),b=nm.getBoundingClientRect();nf++;
    if(parseFloat(getComputedStyle(tg).fontSize)!==14)bad('Fast badge on the train page not 14 px',getComputedStyle(tg).fontSize);
-   if(Math.abs((a.top+a.height/2)-(b.top+b.height/2))>1)bad('Fast badge not centred on the destination',n);break}
+   if(a.top>=b.bottom-1){/* a long destination: the badge wraps to the next line, flush with the name */if(Math.abs(a.left-d.getBoundingClientRect().left)>1)bad('wrapped Fast badge not flush left under the destination',n)}else if(Math.abs((a.top+a.height/2)-(b.top+b.height/2))>1)bad('Fast badge not centred on the destination',n);break}
   setCurrentStation(st0||LABELS[0]);out.counts['Fast badges checked']=nf}
  // Airport Express (user 2026-11-22): badge "AX" with no number, filled like RX, type "Airport Express", an AX4 / AX8 formation with
  // luggage space in every car, and every service runs between an airport and its city (one end an airport)
@@ -613,5 +613,13 @@
    const d=document.createElement('i');d.style.color=RR_UI_CSS_COLOR('--rail');document.body.appendChild(d);const w=getComputedStyle(d).color;d.remove();
    if(getComputedStyle(k).borderTopColor!==w)bad('Mainline legend colour differs from its station rings',k.className)}
   if(f0===undefined)delete app.dataset.sysFocus;else app.dataset.sysFocus=f0;out.counts['filter track colours checked']=nc}
+ // Current station on the coloured Local map (user 2026-11-22): where stations are capsules across a bundle of lines, the current
+ // station is a filled capsule with a halo, not a dot.
+ if(W&&H){const st0=currentStation,z0={zoom,panX,panY},f0=serviceFilter;let nk=0;
+  const cand=STATIONS.find(s=>s.name==='Amptonside Central')||null;
+  if(cand){clear();setViewMode('departures');setCurrentStation(cand.name);serviceFilter='local';app.dataset.sysFocus='local';rrRegioFilterKey='';rrFocusStation(cand.name);zoom=Math.max(zoom,RR_LOCAL_COLOUR_ZOOM+2);updateWorld();drawMap();
+   const lm=app.classList.contains('local-colours')?rrLocalStationMarks().get(cand.point):null,g=layer.querySelector(`g[data-station="${CSS.escape(cand.name)}"]`);nk++;
+   if(lm&&!(lm.n<=1&&lm.cols.size===1&&cand.sys==='L')&&g&&(!g.querySelector('rect.local-mark.current')||!g.querySelector('rect.local-mark-halo')))bad('current station not a capsule with a halo on the coloured Local map',cand.name)}
+  serviceFilter=f0;rrRegioFilterKey='';zoom=z0.zoom;panX=z0.panX;panY=z0.panY;updateWorld();setCurrentStation(st0||LABELS[0]);drawMap();out.counts['current-station capsules checked']=nk}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
