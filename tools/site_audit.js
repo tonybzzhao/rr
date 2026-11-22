@@ -313,6 +313,9 @@
  {const OFFICIAL=new Set(['Peiting URS','Metrail','Prinsburg Underground','Somerfield Underground','Yuchow Underground','Chungsia Metro','Windale Metro','Victoria Metro','Yenchia Metro','Touraine Metro','Havenbolme U-Bahn','Amptonside Metro']);let nm=0;
   for(const x of STATIONS)for(const c of x.conn||[])if(c[0]==='metro'){nm++;if(!OFFICIAL.has(c[1]))bad('metro connection not under its official name',x.name+': '+c[1]);if(c[3]!=='Métro')bad('metro connection not "Métro" in French',x.name+': '+c[3])}
   out.counts['metro names checked']=nm}
+ // a Connections row never repeats the plane after the airport name: its pictogram says it (user 2026-11-22: "why tf icon in connections")
+ {let nc=0;for(const x of STATIONS.filter(x=>(x.conn||[]).some(c=>c[0]==='airport')).slice(0,20)){fillStationInfo(x.name);for(const r of document.querySelectorAll('#detailsBody .station-conn')){nc++;if(r.textContent.includes('✈'))bad('plane glyph in a Connections row',x.name+': '+r.textContent.trim())}}
+  out.counts['connection rows without plane checked']=nc}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
