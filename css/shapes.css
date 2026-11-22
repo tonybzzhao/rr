@@ -997,3 +997,4 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .keymark.ml-hs{border-top-color:var(--rail-strong);border-top-width:4px}.keymark.ml-only{border-top-color:var(--rail-strong);border-top-width:2.2px}
 
 .app.system-focus .rail.unified{opacity:.18!important}   /* a focused network stands out over a well-faded base */
+#journeyPanel:focus{outline:none}   /* focused only as the Edit landing spot on touch screens */

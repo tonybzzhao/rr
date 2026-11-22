@@ -380,7 +380,7 @@
     const tg=detail.querySelectorAll('.jt-calls-toggle')[0];if(tg&&tg.getAttribute('aria-expanded')!=='true')tg.click();   // a leg's stops left open come back open
     tryLink(heads[i],leg,'leg '+a+' - '+b,j);
     const tg2=detail.querySelectorAll('.jt-calls-toggle')[0];if(tg&&selectedJourney&&tg2?.getAttribute('aria-expanded')!=='true')bad('Back to journey shut the stops the visitor had opened',a+' - '+b)})}
-  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey train links checked']=nl;out.counts['back to journey checked']=nb;if(!nl)bad('no journey train links checked','')}
+  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey train links checked']=nl;out.counts['back to journey checked']=nb;if(!nl)bad('journey train links: none found to check','')}
  // journey leg alerts (user 2026-11-22): no full-width message box; a small badge with the alert icon right after the status tag
  // (same height, 4-8 px apart, centres level) whose accessible name is the message; focus or tap shows it, Escape hides it
  {const st0=currentStation;let na=0;const R=e=>e.getBoundingClientRect(),shown=e=>getComputedStyle(e).display!=='none';
@@ -403,7 +403,24 @@
     btn.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));if(shown(pop))bad('Escape does not close the journey alert message',rrTrainLabel(leg.train));
     btn.blur();btn.click();if(!shown(pop))bad('tapping the journey alert badge does not show the message',rrTrainLabel(leg.train));
     document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));btn.blur();if(shown(pop))bad('journey alert message stays open after tapping elsewhere',rrTrainLabel(leg.train))})}
-  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey leg alerts checked']=na;if(!na)bad('no journey leg alerts checked','')}
+  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey leg alerts checked']=na;if(!na)bad('journey leg alerts: none found to check','')}
+ // editing a journey search (user 2026-11-22): the form replaces the results summary (no summary card while editing, on any width);
+ // on a touch screen Edit focuses no text field (no keyboard / selection handles until a field is tapped); Find trains folds back to the summary
+ {const st0=currentStation;let ne=0;const frame=()=>new Promise(r=>{requestAnimationFrame(()=>r());setTimeout(r,120)}),head=document.querySelector('.journey-results-head'),vis=e=>!!e&&!e.hidden&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;
+  const t=TRAINS.find(x=>x.route.length>2&&S.has(x.route[0][0])&&S.has(x.route[2][0]));
+  for(const coarse of t?[false,true]:[]){window.rrForceCoarsePointer=coarse;
+   setViewMode('journeys');rrSelectValue($('from'),t.route[0][0]);rrSelectValue($('to'),t.route[2][0]);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();$('trace').click();await frame();
+   if(!vis(head))bad('no journey summary after Find trains','');
+   $('journeyEdit').click();await frame();await frame();ne++;
+   if(vis(head))bad('journey summary card still shown while editing the search',coarse?'touch':'mouse');
+   if(!vis($('journeyPanel')))bad('Edit did not open the journey form',coarse?'touch':'mouse');
+   const f=document.activeElement;
+   if(coarse&&f&&f.matches('input,select,textarea'))bad('Edit focused a form field on a touch screen',f.id||f.name||f.tagName);
+   if(!coarse&&!$('journeyPanel').contains(f))bad('Edit did not move focus into the journey form','mouse');
+   $('trace').click();await frame();
+   if(!vis(head)||vis($('journeyPanel')))bad('Find trains did not fold the form back to the summary',coarse?'touch':'mouse');
+   document.activeElement?.blur?.()}
+  delete window.rrForceCoarsePointer;setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey edit states checked']=ne;if(!ne)bad('journey edit states: none found to check','')}
  // the timetable: another list (departures <-> arrivals, another filter) starts at the top; choosing the chosen tab keeps the place
  {const st0=currentStation;setViewMode('departures');setCurrentStation(LABELS.find(n=>S.has(n)));board.scrollTop=300;const y0=board.scrollTop;
   $('departuresTab').click();if(y0>0&&board.scrollTop!==y0)bad('choosing the chosen tab moved the timetable','');

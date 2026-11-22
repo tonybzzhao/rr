@@ -2118,14 +2118,17 @@ function rrJourneyPlanned(j){j.liveLegs=j.liveLegs||j.legs;const planned=rrJourn
  j.legs=planned?j.liveLegs.map(l=>({...l,train:{...l.train,status:'On time',tomorrow:true}})):j.liveLegs;return j}
 document.querySelector('.journey-results-head')?.addEventListener('click',e=>{if($('sidebarContent').classList.contains('jp-collapsed')&&!e.target.closest('#journeyEdit'))$('journeyEdit').click()});
 $('journeyWhenTime')?.addEventListener('click',e=>{try{e.currentTarget.showPicker?.()}catch(_){}});
-$('journeyEdit')?.addEventListener('click',()=>{journeyEditing=true;$('sidebarContent').classList.remove('jp-collapsed');$('sidebarContent').scrollTop=0;requestAnimationFrame(()=>document.querySelector('#journeyPanel input,#journeyPanel select,#journeyPanel button')?.focus())});
+// a touch screen gets no focused field after Edit (no keyboard or selection handles until a field is tapped); the audit sets rrForceCoarsePointer
+const rrCoarsePointer=()=>window.rrForceCoarsePointer??matchMedia('(pointer: coarse)').matches;
+$('journeyEdit')?.addEventListener('click',()=>{journeyEditing=true;$('sidebarContent').classList.remove('jp-collapsed');document.querySelector('.journey-results-head').hidden=true;$('sidebarContent').scrollTop=0;
+ requestAnimationFrame(()=>{const panel=$('journeyPanel');if(rrCoarsePointer()){panel.tabIndex=-1;panel.focus({preventScroll:true})}else panel.querySelector('input,select,button')?.focus()})});
 function renderJourneyResults(){
  // The form is a draft. Results always reflect the last Find trains action.
  const query=appliedJourneyQuery;
  const from=query?.from??$('from').value,to=query?.to??$('to').value;
  $('journeyFromName').textContent=from;$('journeyToName').textContent=to;
  const searched=!!query&&!!from&&!!to&&from!==to;
- document.querySelector('.journey-results-head').hidden=!searched;   // the summary appears once a search has run
+ document.querySelector('.journey-results-head').hidden=!searched||journeyEditing;   // the summary appears once a search has run; while editing the form replaces it
  // once a search has run the form folds away so the results get the column; Change opens it again
  $('sidebarContent').classList.toggle('jp-collapsed',searched&&!journeyEditing);
  board.replaceChildren();
