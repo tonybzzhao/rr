@@ -448,11 +448,11 @@
   if(f.value!==b||t.value!==a||$('fromInput').value!==b||$('toInput').value!==a)bad('swap button does not exchange From and To',f.value+' / '+t.value);
   rrSelectValue(f,f0);rrSelectValue(t,t0);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();out.counts['swap button checked']=1}
  // ring trains have no destination: boards, train details and journey cards show their direction, never 'To <station>'
- {let nr=0;const done=new Set(),st0=currentStation;for(const t of TRAINS){if(!t.ring)continue;nr++;const want=t.ring==='cw'?'Clockwise':'Anticlockwise';
-   if(rrDestText(t,false)!==want||rrDestText(t,true)!==want)bad('ring train shows no direction',rrTrainLabel(t)+' '+t.id);
+ {let nr=0;const done=new Set(),st0=currentStation;for(const t of TRAINS){if(!t.ring)continue;nr++;const want=null;
+   for(const ar of [false,true]){const dt=rrDestText(t,ar);if(!(/^via \S/.test(dt)||dt===rrRingName(t.ring))||(dt.match(/\bvia\b/g)||[]).length>1){bad('ring train shows no direction',rrTrainLabel(t)+' '+t.id+': '+dt);break}}
    const k=rrTrainLabel(t)+t.ring;if(done.has(k))continue;done.add(k);setCurrentStation(t.route[1][0]);chooseTrain(t);
    const lab=detail.querySelector('.destination-label')?.textContent,d=detail.querySelector('.service-dest')?.textContent.trim();
-   if(lab!=='Ring line'||d!==want)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)
+   const tg=detail.querySelector('.service-dest .rr-ring-tag');if(lab!=='Ring line'||!/^via \S/.test(d||'')||!tg||(d.match(/\bvia\b/g)||[]).length>1)bad('ring train details show a destination',rrTrainLabel(t)+': '+lab+' '+d)
    if([...detail.querySelectorAll('.keylabel')].some(e=>e.textContent==='Origin'))bad('ring train details show an origin',rrTrainLabel(t))}
   if(st0)setCurrentStation(st0);out.counts['ring trains checked']=nr}
  // times never run backwards: scheduled and revised (delayed) times along every train, and every journey's legs and changes
@@ -730,5 +730,17 @@
   const cs=getComputedStyle(b);if(parseFloat(cs.paddingLeft)!==5||parseFloat(cs.paddingRight)!==5)bad('revised-time box side padding not 5 px',cs.paddingLeft+'/'+cs.paddingRight);
   const old=b.closest('.time-delayed').querySelector('.scheduled-time');if(old){const r=document.createRange();r.selectNodeContents(b);const nl=[...r.getClientRects()].map(q=>q.left).filter(Boolean),ol=old.getBoundingClientRect().left;if(nl.length&&Math.abs(b.getBoundingClientRect().left+5-ol)>1)bad('new time digits not under the old time',n+': '+Math.round(b.getBoundingClientRect().left+5-ol)+' px')}break}
   setCurrentStation(st0||LABELS[0]);out.counts['revised-time boxes checked']=nr}
+ // ring lines (user 2026-11-22, option D): a ring train is shown as "via <next major station>" with an Inner / Outer circle badge
+ // (icon + name, like Fast; French "Intérieure / Extérieure"); "clockwise" / "Sens horaire" is never the passenger label
+ {const st0=currentStation,loc0=rrActiveLocale;let nr=0;const rings=TRAINS.filter(t=>t.ring);
+  for(const n of [...new Set(rings.map(t=>t.route[1]?.[0]).filter(Boolean))].slice(0,4)){setViewMode('departures');setCurrentStation(n);
+   for(const row of document.querySelectorAll('#board .trainrow')){const tag=row.querySelector('.rr-ring-tag');if(!tag)continue;nr++;
+    const dest=row.querySelector('.dest').textContent.trim();if(!/^via \S/.test(dest))bad('ring train not shown as via its next major station',n+': '+dest);if((row.textContent.match(/\bvia\b/g)||[]).length>1)bad('ring train row says via twice',n+': '+row.textContent.trim());
+    if(!tag.querySelector('use[href^="#rr-ui-"]')||!/^(Inner|Outer) circle$/.test(tag.textContent.trim()))bad('ring badge without its icon or name',n+': '+tag.textContent);
+    const dh=row.querySelector('.row-via .rr-fast-tag:not(.rr-ring-tag)');if(dh&&dh.getBoundingClientRect().height!==tag.getBoundingClientRect().height)bad('ring badge not the Fast badge size',n)}}
+  rrApplyLocale('fr');for(const n of [...new Set(rings.map(t=>t.route[1]?.[0]).filter(Boolean))].slice(0,1)){setCurrentStation(n);rrLocalizeSubtree(document.body);const tag=document.querySelector('#board .rr-ring-tag');
+   if(tag&&!/^(Intérieure|Extérieure)$/.test(tag.textContent.trim()))bad('French ring badge not Intérieure / Extérieure',tag.textContent)}rrApplyLocale(loc0);
+  if(/\b(Clockwise|Anticlockwise)\b/.test(document.getElementById('board').textContent))bad('clockwise used as a passenger label','board');
+  setCurrentStation(st0||LABELS[0]);out.counts['ring trains checked']=nr}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()

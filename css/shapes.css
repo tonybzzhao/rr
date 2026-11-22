@@ -1041,3 +1041,13 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 /* An open facility and its details card are two separate shapes (user 2026-11-22: "why white shapes sticked together? ugly"): the card
    sits 8 px below the tile row instead of overlapping it by 4 px. */
 .station-picto-grid .fac-detail{margin-top:4px!important}
+/* Ring direction badge (user 2026-11-22: "inner outer badge like Fast. [icon] Inner/Outer circle"): the Fast badge's box with the
+   ring's direction icon before the name, the icon one cap-height tall and in the badge's ink. */
+.rr-ring-tag{gap:3px;white-space:nowrap}
+.rr-ring-tag .rr-ring-icon{width:1.05em;height:1.05em;flex:none;margin:0;color:currentColor}
+.row-via:has(.rr-ring-tag){display:flex;align-items:center;flex-wrap:wrap;row-gap:4px}
+.row-via .rr-ring-tag{margin-left:0;margin-right:6px}
+.jt-towards:has(.rr-ring-tag){display:flex;flex-wrap:wrap;align-items:center;column-gap:6px;row-gap:3px}
+.jt-towards .rr-ring-tag{margin-left:0!important}
+.service-dest.ring-dest{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:4px}
+.service-dest.ring-dest .rr-ring-tag{margin-left:0;top:0}
