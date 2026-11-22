@@ -294,7 +294,7 @@
    if(want&&(!rrFocusSystem||rrFocusSystem.net!==want))bad('Regio filter does not highlight the regions serving the station',n+': '+(rrFocusSystem?.net||'none')+' vs '+want)
    // Local filter (user 2026-11-22): zoomed out only the station's Local network(s) in red; zoomed in their lines colour-coded, no other network
    const wl=[...new Set(TRAINS.filter(t=>t.type==='Local'&&t.route.some(r=>r[0]===n)).map(t=>t.network))].sort().join('+');
-   if(wl&&W&&H){const z0=zoom;   // the map must be on screen (on a phone it opens with the Map button)serviceFilter='local';rrRegioFilterKey='';zoom=1;updateWorld();drawMap();if(!rrFocusSystem||rrFocusSystem.net!==wl||!rrFocusSystem.lines.length)bad('Local filter zoomed out does not highlight the station network in red',n+': '+(rrFocusSystem?.net||'none'));
+   if(wl&&W&&H){/* the map must be on screen (on a phone it opens with the Map button) */const z0=zoom;clear();setViewMode('departures');setCurrentStation(n);serviceFilter='local';app.dataset.sysFocus='local';rrRegioFilterKey='';zoom=1;updateWorld();drawMap();if(!rrFocusSystem||rrFocusSystem.net!==wl||!rrFocusSystem.lines.length)bad('Local filter zoomed out does not highlight the station network in red',n+': '+(rrFocusSystem?.net||'none'));
     zoom=RR_LOCAL_COLOUR_ZOOM+1;updateWorld();drawMap();const k=$('localColours').dataset.key||'';if(!k.startsWith('*'+wl+'|'))bad('Local filter zoomed in colours other networks',n+': '+k);zoom=z0;updateWorld()}}
   serviceFilter=f0;rrRegioFilterKey='';setCurrentStation(st0||LABELS[0]);drawMap();out.counts['Regio filter focus checked']=nr}
  // stations show opening hours (user 2026-11-22), and Local route pages first and last trains each way
@@ -333,6 +333,12 @@
    for(const g of document.querySelectorAll('#stationLayer g[data-station]')){const s=S.get(g.dataset.station);if(s&&RR_TIER_ZOOM[rrZoomTier(s)]>z+1e-9){bad('station shown before its zoom tier',s.name+' at zoom '+z);break}}}
   zoom=1;updateWorld();const minor=STATIONS.find(s=>rrZoomTier(s)===3);setCurrentStation(minor.name);drawMap();if(!document.querySelector(`#stationLayer g[data-station="${CSS.escape(minor.name)}"]`)&&(()=>{const q=screen(...(P[minor.point]||[minor.x,minor.y]));return q.x>=0&&q.y>=0&&q.x<=W&&q.y<=H})())bad('selected station hidden when zoomed out',minor.name);
   zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();setCurrentStation(st0||LABELS[0]);drawMap();out.counts['zoom tiers checked']=nz}
+ // under All, a one-network station's ring is the neutral line colour; interchanges keep theirs (user 2026-11-22)
+ {const v0={zoom,panX,panY},f0=serviceFilter,st0=currentStation,c0=LABELS[0];clear();setViewMode('departures');setCurrentStation(c0);serviceFilter='all';app.dataset.sysFocus='all';zoom=RR_TIER_ZOOM[3];updateWorld();if(W&&H){const q=P[S.get(c0).point],sc_=screen(q[0],q[1]);panX+=W/2-sc_.x;panY+=H/2-sc_.y;updateWorld()}drawMap();
+  const neu=RR_UI_CSS_COLOR('--rail-neutral'),mut=RR_UI_CSS_COLOR('--muted-slate');let nn=0;
+  for(const g of [...document.querySelectorAll('#stationLayer g[data-station]')].slice(0,60)){const s=S.get(g.dataset.station),c=g.querySelector('circle');if(!s||!c||g.querySelector('.local-mark')||s.name===currentStation||LABELS.includes(s.name))continue;nn++;
+   const want=s.sys.length>1?mut:neu;if(c.getAttribute('stroke')!==want){bad('station ring not '+(s.sys.length>1?'the interchange colour':'neutral')+' under All',s.name+' '+c.getAttribute('stroke'));break}}
+  serviceFilter=f0;app.dataset.sysFocus=f0;zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();setCurrentStation(st0||LABELS[0]);drawMap();if(W&&H&&!nn)bad('no station rings to check under All','');out.counts['station rings checked']=nn}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);

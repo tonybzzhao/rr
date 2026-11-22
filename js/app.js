@@ -1501,7 +1501,9 @@ function drawMap(){
    const t=important?9:7.5,len=(mark.n-1)*RR_LOCAL_GAP+t;   // across every line of the bundle
    g.append(se('rect',{x:-t/2,y:-len/2,width:t,height:len,rx:t/2,transform:`translate(${x} ${y}) rotate(${mark.ang*180/Math.PI})`,fill:RR_UI_CSS_COLOR('--surface'),stroke:RR_UI_CSS_COLOR('--ink'),'stroke-width':important?2:1.5,'pointer-events':'none',class:'local-mark'}));
   }else{
-   const ring=s.sys.length>1?RR_UI_CSS_COLOR('--muted-slate'):s.sys==='R'?RR_UI_CSS_COLOR('--rail-regio'):s.sys==='L'?RR_UI_CSS_COLOR('--rail-local'):RR_UI_CSS_COLOR('--rail');
+   // under All the lines are one neutral system, so a one-network station's ring is the neutral line colour too; interchanges keep
+   // theirs; a network filter keeps each network's colour (user 2026-11-22)
+   const ring=s.sys.length>1?RR_UI_CSS_COLOR('--muted-slate'):focus==='all'?RR_UI_CSS_COLOR('--rail-neutral'):s.sys==='R'?RR_UI_CSS_COLOR('--rail-regio'):s.sys==='L'?RR_UI_CSS_COLOR('--rail-local'):RR_UI_CSS_COLOR('--rail');
    const r=important?5:s.sys.length>1?3.9:s.regio?2.7:3.4;
    g.append(se('circle',{cx:x,cy:y,r,fill:RR_UI_CSS_COLOR('--surface'),stroke:ring,'stroke-width':important?2.2:s.regio?1.4:1.7,'pointer-events':'none'}));
   }
