@@ -2246,7 +2246,6 @@ body{font-size:14px}
 .rr-alert-notice{--rr-alert-color:var(--status-info);--rr-alert-bg:var(--status-info-bg)}
 .rr-alert-cancel{--rr-alert-color:var(--status-cancelled);--rr-alert-bg:var(--status-cancelled-bg)}
 .rr-alert-banner{display:flex;align-items:flex-start;gap:8px;margin:0 0 16px;padding:10px 12px;border-left:3px solid var(--rr-alert-color);border-radius:3px;background:var(--rr-alert-bg);color:var(--ink-strong);font-size:13px;line-height:1.4}
-.rr-alert-leg{margin:8px 0 2px;font-size:12px}
 
 .keymark.regio{border-top-color:var(--rail-regio);border-top-width:2.8px}
 

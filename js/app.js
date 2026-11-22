@@ -229,15 +229,18 @@ function rrBadge(t,from=null){const cls=`service${rrOutline(t)?' rr-ic-outline':
  // with a boarding station (journey results) the badge is the train's link: that train's page as departing from there (user 2026-11-22)
  return from?`<button type="button" class="${cls} rr-train-link" style="${style}" data-train="${t.id}" data-from="${encodeURIComponent(from)}" aria-label="Train ${rrTrainLabel(t)} from ${from}" title="Train ${rrTrainLabel(t)} from ${from}">${rrTrainLabel(t)}</button>`:`<span class="${cls}" style="${style}">${rrTrainLabel(t)}</span>`}
 // a train as its station's board opens it: departing from that station (else arriving there)
-function rrOpenTrainAt(id,station){
+function rrOpenTrainAt(id,station,ret=null){
  const t=TRAINS.find(x=>x.id===id);if(!t)return null;
  const st=station&&S.has(station)&&t.route.some(r=>r[0]===station)?station:t.route[0][0];
  viewMode='departures';setCurrentStation(st);
  let row=upcoming(st).find(x=>x.id===id);
  if(!row){viewMode='arrivals';setCurrentStation(st);row=arriving(st).find(x=>x.id===id)}
- if(row)chooseTrain(row);
+ if(row)chooseTrain(row,true,ret);
  return row||null}
-function rrWireTrainLinks(root){root.querySelectorAll('.rr-train-link').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();rrOpenTrainAt(b.dataset.train,decodeURIComponent(b.dataset.from));rrSyncHash()}))}
+function rrWireTrainLinks(root,journey){root.querySelectorAll('.rr-train-link').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();
+ const open=selectedJourney?.key===journey.key&&detail.querySelector('.jt-timeline');   // the journey's details are open: keep their state
+ const ret={journey,boardScroll:board.scrollTop,calls:open?[...detail.querySelectorAll('.jt-calls-toggle')].map(x=>x.getAttribute('aria-expanded')==='true'):null,scroll:open?detail.scrollTop:null};
+ rrOpenTrainAt(b.dataset.train,decodeURIComponent(b.dataset.from),ret);rrSyncHash()}))}
 function isHighSpeed(train){return train.type==='Max'||train.type==='VIA'}
 const P=GRAPH.pts, E=GRAPH.edges;
 const $=id=>document.getElementById(id);
@@ -247,7 +250,7 @@ const detail=$('detailsBody'), container=$('mapContainer'), tooltip=$('tooltip')
 // Station names in the panel's first card open that station (a train stays one step back).
 const rrWrapStationName=n=>n==='Niederfriedrichshude'?'Nieder\u00adfriedrichs\u00adhude':n;
 const rrStnLink=n=>`<button type="button" class="station-link" data-station="${n}">${rrWrapStationName(n)}</button>`;
-detail.addEventListener('click',e=>{const b=e.target.closest('.station-link');if(!b)return;const n=b.dataset.station,back=selectedTrain?{train:selectedTrain,station:currentStation,boardMode:viewMode}:undefined;setCurrentStation(n);fillStationInfo(n,back)});
+detail.addEventListener('click',e=>{const b=e.target.closest('.station-link');if(!b)return;const n=b.dataset.station,back=selectedTrain?{train:selectedTrain,station:currentStation,boardMode:viewMode,journeyReturn:rrTrainReturn}:undefined;setCurrentStation(n);fillStationInfo(n,back)});
 const S=new Map(STATIONS.map(s=>[s.name,s]));
 let rrFocusSystem=null;   // the network whose page is open (Local or Regio): only it stands out on the map (user 2026-11-21)
 let rrLocalSystem=null;   // the Local network whose page was opened; stays on the map (phones show the map without the panel) until something else is chosen
@@ -741,12 +744,19 @@ function rrRingRoute(type,net,line,from=currentStation){
  drawBoard();drawRoute();drawMap();
  detail.scrollTop=0;app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()});rrSyncHash();
 }
+function rrBackToJourneyMarkup(){return `<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`}
+// back to a journey as it was left: chosen, its legs' stops open or shut, its scroll places
+function rrReturnToJourney(ret){
+ viewMode='journeys';updateBoardTabs();chooseJourney(ret.journey);
+ detail.querySelectorAll('.jt-calls-toggle').forEach((b,i)=>{if(ret.calls?.[i])b.click()});
+ if(ret.scroll!=null)detail.scrollTop=ret.scroll;if(ret.boardScroll!=null)board.scrollTop=ret.boardScroll;
+ rrSyncHash()}
 function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=null){rrLocalSystem=null;rrFocusSystem=null;
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
  const hours=STATION_HOURS[rrStationTier(name)],help=STATION_HELP.filter(f=>hours[f]),fault=rrStationFault(name);
- const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?`<button type="button" class="back-to-train" id="backToJourney"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to journey</span></button>`:'';
+ const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?rrBackToJourneyMarkup():'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
  detail.innerHTML=`${backButton}<div class="train-hero station-hero" data-station="${name}"><div class="station-name-band">${name}</div><div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
  ${rrServicesCard(svc,name)}
@@ -765,10 +775,10 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
    setCurrentStation(returnTrain.station);
    const stationTrains=viewMode==='arrivals'?arriving(returnTrain.station):upcoming(returnTrain.station);
    const restored=stationTrains.find(candidate=>candidate.id===returnTrain.train.id)||returnTrain.train;
-   chooseTrain(restored,true);
+   chooseTrain(restored,true,returnTrain.journeyReturn);   // a train opened from a journey keeps its Back to journey
   });
  }
- if(returnJourney){$('backToJourney').addEventListener('click',()=>{viewMode='journeys';updateBoardTabs();chooseJourney(returnJourney)})}
+ if(returnJourney){$('backToJourney').addEventListener('click',()=>rrReturnToJourney({journey:returnJourney}))}
  detail.scrollTop=0;
  app.classList.add('detail-open');
  requestAnimationFrame(resize);
@@ -873,6 +883,18 @@ function rrAlertFlag(t){
  const a=rrVisibleAlert(t);if(!a||rrAlertTier(a)==='info')return '';
  return `<svg class="rr-alert-flag rr-alert-${a.kind}" viewBox="0 0 32 32" role="img" aria-label="${a.works?'Engineering works':'Service alert'}" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg>`;
 }
+// journey legs: a small badge with the alert icon after the status; hover, focus or tap shows the message (user 2026-11-22).
+// The message is the badge's accessible name (aria-labelledby), so screen readers and the French text node both follow it.
+function rrAlertTip(t,id){
+ const a=rrVisibleAlert(t);if(!a)return '';
+ return `<span class="rr-alert-tip rr-alert-${a.kind}"><button type="button" class="rr-alert-badge" aria-labelledby="${id}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg></button><span class="rr-alert-pop" role="tooltip" id="${id}">${a.en}</span></span>`;
+}
+function rrWireAlertTips(root){root.querySelectorAll('.rr-alert-tip').forEach(tip=>{const b=tip.querySelector('.rr-alert-badge');
+ b.addEventListener('click',e=>{e.stopPropagation();tip.classList.remove('is-dismissed');tip.classList.toggle('is-open')});   // tap on a phone
+ tip.addEventListener('keydown',e=>{if(e.key==='Escape'){tip.classList.remove('is-open');tip.classList.add('is-dismissed')}});
+ tip.addEventListener('mouseleave',()=>tip.classList.remove('is-dismissed'));
+ tip.addEventListener('focusout',()=>{tip.classList.remove('is-open','is-dismissed')})})}
+document.addEventListener('pointerdown',e=>{for(const tip of document.querySelectorAll('.rr-alert-tip.is-open'))if(!tip.contains(e.target))tip.classList.remove('is-open')});
 function rrAlertMarkup(t,cls='rr-alert-banner'){
  const a=rrVisibleAlert(t);if(!a)return '';
  return `<span class="${cls} rr-alert-${a.kind}"><svg class="rr-alert-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><use href="#${rrAlertIconId(a)}"></use></svg><span class="rr-alert-text">${a.en}</span></span>`;
@@ -1071,13 +1093,15 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-more');$('focusR
  // Many passed stops fold between the origin and the stop before this one (same toggle as a journey leg's stops).
  const fold=here>=5?here-2:0;
  const stops=t.route.map(([name,time],i)=>`${fold&&i===1?`<div class="stop travelled stop-fold"><div class="stop-marker"></div><div class="stop-time"></div><button type="button" class="jt-calls-toggle stop-fold-btn" aria-expanded="${rrFoldOpen.has(t.id)}" data-count="${fold}"><span>${rrFoldOpen.has(t.id)?'Hide earlier stops':fold+' earlier stops'}</span><span class="jt-chevron" aria-hidden="true"></span></button></div>`:''}<div class="stop${i===here?' current':''}${i<here?' travelled':''}${fold&&i>=1&&i<=fold?' stop-folded':''}"><div class="stop-marker"><span class="stop-icon"></span></div><div class="stop-time">${stopTimeMarkup(t,i)}</div><button class="stop-name stop-station" type="button" data-stop-index="${i}" title="View station information">${name}</button></div>`).join('');
- detail.innerHTML=`<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div>${t.ring?`<div class="destination-label">Ring line</div><div class="service-dest ring-dest">${rrRingIcon(t)}<span>${rrDestText(t)}</span></div>`:`<div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}${rrFastTag(t)}</div>`}</div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${rrCrowd(t,here)?`<div class="fact-row"><dt class="keylabel">Crowding</dt><dd class="infoval">${rrCrowdMarkup(t,here,true)}</dd></div>`:''}${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrSystemLink(t.type,t.network)}</dd></div>${t.ring?'':`<div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div>`}</dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
+ detail.innerHTML=`${rrTrainReturn?.trainId===t.id?rrBackToJourneyMarkup():''}<div class="train-hero" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}"><div class="train-hero-top"><div class="service-title">${t.type==='Regio'||t.type==='Local'?`<button type="button" class="train-number train-route-link${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="${rrInk(t).slice(1)}" title="Route details">${rrTrainLabel(t)}</button>`:`<div class="train-number${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}">${rrTrainLabel(t)}</div>`}</div><div class="train-departure"><div class="depart-time">${stopTimeMarkup(t,here)}</div><div class="depart-label">${isArrival?'Arrival':'Departure'}</div><div class="depart-date">${rrLocalDayOff(t.boardRel||0)>0?'Tomorrow':'Today'} · ${rrFmtDate(rrDay(rrLocalDayOff(t.boardRel||0)),false)}</div></div></div>${t.ring?`<div class="destination-label">Ring line</div><div class="service-dest ring-dest">${rrRingIcon(t)}<span>${rrDestText(t)}</span></div>`:`<div class="destination-label">${isArrival?'From':'To'}</div><div class="service-dest">${rrStnLink(isArrival?t.origin:t.dest)}${rrFastTag(t)}</div>`}</div>${rrAlertMarkup(t,'rr-alert-banner')}<dl class="info-grid" aria-label="Train information"><div class="fact-row"><dt class="keylabel">Platform</dt><dd class="infoval">${rrBoardPlatform(t,currentStation)}</dd></div><div class="fact-row"><dt class="keylabel">Status</dt><dd class="infoval">${statusTag(stopStatus(t,here))}</dd></div>${rrCrowd(t,here)?`<div class="fact-row"><dt class="keylabel">Crowding</dt><dd class="infoval">${rrCrowdMarkup(t,here,true)}</dd></div>`:''}${t.type==='Regio'?`<div class="fact-row"><dt class="keylabel">Type</dt><dd class="infoval">${t.pattern==='RX'?'Regional Express':'Regional Sprinter'}</dd></div>`:''}<div class="fact-row"><dt class="keylabel">Operator</dt><dd class="infoval">${rrSystemLink(t.type,t.network)}</dd></div>${t.ring?'':`<div class="fact-row"><dt class="keylabel">Origin</dt><dd class="infoval">${rrStnLink(t.origin)}</dd></div>`}</dl><div class="stops-heading">Calling at</div><div class="stop-list${here>0?' is-en-route':''}${rrFoldOpen.has(t.id)?' show-passed':''}${delayMinutes(t.status)?' has-disruptions':''}" style="--route:${rrTrainCss(t)};--route-travelled:var(--passed)">${stops}</div>${rrCoachFormation(t)}`;
+ if(rrTrainReturn?.trainId===t.id){const ret=rrTrainReturn;$('backToJourney').addEventListener('click',()=>rrReturnToJourney(ret))}
  requestAnimationFrame(rrEnsureCoachVisible);
  detail.querySelector('.train-route-link')?.addEventListener('click',()=>fillRouteInfo(t.type,t.network,t.line,currentStation));
  detail.querySelector('.stop-fold-btn')?.addEventListener('click',e=>{const b=e.currentTarget,open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',open);b.firstElementChild.textContent=open?'Hide earlier stops':b.dataset.count+' earlier stops';open?rrFoldOpen.add(t.id):rrFoldOpen.delete(t.id);b.closest('.stop-list').classList.toggle('show-passed',open)});
- detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
+ detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode,journeyReturn:rrTrainReturn};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
-function chooseTrain(t,openDrawer=true){rrLocalSystem=null;rrFocusSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=rrLineColor(t)||C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
+let rrTrainReturn=null;   // the journey a train page was opened from (its train number in a journey result), for Back to journey
+function chooseTrain(t,openDrawer=true,ret=null){rrTrainReturn=ret&&{...ret,trainId:t.id};rrLocalSystem=null;rrFocusSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=rrLineColor(t)||C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
 function clear(){rrLocalSystem=null;rrFocusSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=null;selectedPath=[];selectedNames=currentStation?[currentStation]:[];manualTrace=false;routeWorld.replaceChildren();drawBoard();$('focusRoute').hidden=true;detail.innerHTML=`<div class="empty">Select ${viewMode==='arrivals'?'an arrival':'a departure'}.</div>`;app.classList.remove('detail-open');requestAnimationFrame(resize);drawMap()}
 // Shared schematic edges get smooth, adjacent half-width colour bands using
 // a single perpendicular gradient stroke; transfer-ring halves match these bands.
@@ -2048,7 +2072,7 @@ function renderJourneyResults(){
   const jb=rrJourneyBase(j),depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx,jb),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx,jb);
   // the open button covers the card (::after); the train badges are buttons of their own above it (a button holds no button)
   el.innerHTML=`<button type="button" class="journey-row-open"><span class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></span></button><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
-  el.querySelector('.journey-row-open').addEventListener('click',()=>selectedJourney?.key===j.key?clear():chooseJourney(j));rrWireTrainLinks(el);board.append(el);
+  el.querySelector('.journey-row-open').addEventListener('click',()=>selectedJourney?.key===j.key?clear():chooseJourney(j));rrWireTrainLinks(el,j);board.append(el);
  }
  if(!arriveBy&&journeyShown<list.length){const more=document.createElement('button');more.type='button';more.className='journey-more';more.textContent='Show more journeys';more.addEventListener('click',()=>{journeyShown+=12;renderJourneyResults()});board.append(more)}
 }
@@ -2128,7 +2152,7 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   rows+=`<li class="jt-leg" style="${accent}"><ol class="jt-leg-list">`;
   rows+=rrJourneyNode(t,leg.fromIdx,leg.from,'board',index?'dot':'none','solid',index);
   rows+=`<li class="jt-row jt-ride"><div class="jt-time"></div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"></div><div class="jt-card">
-   <h3 class="jt-card-head">${rrBadge(t,leg.from)}<span class="jt-service">${rrServiceLabel(t.type,t.network)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
+   <h3 class="jt-card-head">${rrBadge(t,leg.from)}<span class="jt-service">${rrServiceLabel(t.type,t.network)}</span><span class="jt-status">${statusTag(stopStatus(t,leg.fromIdx))}${rrAlertTip(t,'jt-alert-'+index)}</span></h3>
    <div class="jt-towards">${t.ring?`${rrRingIcon(t)}<span>${rrDestText(t)}</span>`:`<span class="jt-towards-label">towards</span> <span>${t.dest}</span>${rrFastTag(t)}`}</div>
    <div class="jt-meta"><span>${fmtDuration(leg.arr-leg.dep)}</span><span class="jt-sep" aria-hidden="true">·</span>${calls.length?`<button type="button" class="jt-calls-toggle" aria-expanded="false" aria-controls="${callsId}"><span>${stopsLabel}</span><span class="jt-chevron" aria-hidden="true"></span></button>`:`<span>${stopsLabel}</span>`}</div>
   </div></li>`;
@@ -2153,7 +2177,7 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   btn.setAttribute('aria-expanded',String(open));
   document.getElementById(btn.getAttribute('aria-controls')).hidden=!open;
  }));
- rrWireTrainLinks(detail);
+ rrWireTrainLinks(detail,j);rrWireAlertTips(detail);
  detail.querySelectorAll('.stop-station').forEach(btn=>btn.addEventListener('click',()=>{
   const name=decodeURIComponent(btn.dataset.name),returned=j;
   setCurrentStation(name);fillStationInfo(name,null,returned);

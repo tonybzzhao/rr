@@ -285,16 +285,21 @@
     const strokes=[...g.querySelectorAll('circle,path')].map(e=>e.getAttribute('stroke')).filter(x=>x&&x!=='none');if(strokes.some(c=>c!==ink))bad('journey change ring not neutral',j.legs[i].to+': '+strokes.join(' '))}}
   if(st0)setCurrentStation(st0);out.counts['journey change rings checked']=nc}
  // journey results (user 2026-11-22): no train formation in the cards or the legs; every train badge is a button (not inside another
- // button) that opens that train's page departing from the leg's boarding station, and does not choose / fold the journey card
+ // button) that opens that train's page departing from the leg's boarding station, and does not choose / fold the journey card;
+ // that train page has Back to journey, which brings the same journey back (chosen, its legs' stops open as left)
  {const st0=currentStation;let nl=0;const pairs=[[LABELS[0],LABELS[5]],['Peiting Central','Songchiao Airport'],[LABELS[2],LABELS[9]],[LABELS[1],LABELS[7]]];
   const noForm=(root,where)=>{if(root.querySelector('.rr-formation,.jt-coach,.rr-car')||/\b(Train formation|coaches)\b/.test(root.textContent))bad('train formation shown in journey results',where)};
-  const tryLink=(b,leg,where)=>{nl++;
+  let nb=0;const tryLink=(b,leg,where,j)=>{nl++;
    if(b.tagName!=='BUTTON'||!b.classList.contains('rr-train-link')||b.parentElement.closest('button')){bad('journey train badge not its own button',where+': '+b.outerHTML.slice(0,80));return}
    if(decodeURIComponent(b.dataset.from)!==leg.from||b.dataset.train!==leg.train.id)bad('journey train badge links to another train or station',where+': '+b.dataset.train+' @ '+decodeURIComponent(b.dataset.from));
    if(!/^Train .+ from .+/.test(b.getAttribute('aria-label')||''))bad('journey train badge without its "Train … from …" label',where);
    b.click();
    if(selectedTrain?.id!==leg.train.id||currentStation!==leg.from||!detail.querySelector('.train-hero')||selectedJourney)bad('journey train badge does not open that train at its boarding station',where+': '+rrTrainLabel(leg.train)+' @ '+leg.from+' -> '+(selectedTrain?.id||'none')+' @ '+currentStation);
-   else if(!location.hash.startsWith('#train/'))bad('journey train badge leaves the address off the train page',where+': '+location.hash)};
+   else if(!location.hash.startsWith('#train/'))bad('journey train badge leaves the address off the train page',where+': '+location.hash);
+   const back=detail.querySelector('#backToJourney.back-to-train');
+   if(!back){bad('train opened from a journey without Back to journey',where+': '+rrTrainLabel(leg.train));return}
+   back.click();nb++;
+   if(viewMode!=='journeys'||selectedJourney?.key!==j.key||!detail.querySelector('.jt-timeline'))bad('Back to journey does not bring the journey back',where+': '+(selectedJourney?.key||'none')+' '+viewMode)};
   const sig=r=>[...r.querySelectorAll('.service')].map(x=>(x.dataset.train||'?')+'@'+decodeURIComponent(x.dataset.from||'')).join('|');
   for(const [a,b] of pairs){if(!(S.has(a)||RR_CITIES.has(a))||!(S.has(b)||RR_CITIES.has(b)))continue;
    rrSelectValue($('from'),a);rrSelectValue($('to'),b);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();searchJourneys();
@@ -304,10 +309,36 @@
    const j=journeyResults.find(x=>x.legs.map(l=>l.train.id+'@'+l.from).join('|')===key);
    if(!j){bad('journey card badges do not match its journey (train @ boarding station)',a+' - '+b+': '+key);continue}
    if(!card.querySelector('button.journey-row-open'))bad('journey card without its open button',a+' - '+b);
-   j.legs.forEach((leg,i)=>{searchJourneys();const c=[...board.querySelectorAll('.journey-row')].find(r=>sig(r)===key);if(c)tryLink(c.querySelectorAll('.service')[i],leg,'card '+a+' - '+b)});
+   j.legs.forEach((leg,i)=>{searchJourneys();const c=[...board.querySelectorAll('.journey-row')].find(r=>sig(r)===key);if(c)tryLink(c.querySelectorAll('.service')[i],leg,'card '+a+' - '+b,j)});
    j.legs.forEach((leg,i)=>{setViewMode('journeys');chooseJourney(j);if(i===0)noForm(detail,'journey legs '+a+' - '+b);const heads=detail.querySelectorAll('.jt-card-head .service');
-    if(heads.length!==j.legs.length){bad('journey leg without its train badge',a+' - '+b);return}tryLink(heads[i],leg,'leg '+a+' - '+b)})}
-  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey train links checked']=nl;if(!nl)bad('no journey train links checked','')}
+    if(heads.length!==j.legs.length){bad('journey leg without its train badge',a+' - '+b);return}
+    const tg=detail.querySelectorAll('.jt-calls-toggle')[0];if(tg&&tg.getAttribute('aria-expanded')!=='true')tg.click();   // a leg's stops left open come back open
+    tryLink(heads[i],leg,'leg '+a+' - '+b,j);
+    const tg2=detail.querySelectorAll('.jt-calls-toggle')[0];if(tg&&selectedJourney&&tg2?.getAttribute('aria-expanded')!=='true')bad('Back to journey shut the stops the visitor had opened',a+' - '+b)})}
+  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey train links checked']=nl;out.counts['back to journey checked']=nb;if(!nl)bad('no journey train links checked','')}
+ // journey leg alerts (user 2026-11-22): no full-width message box; a small badge with the alert icon right after the status tag
+ // (same height, 4-8 px apart, centres level) whose accessible name is the message; focus or tap shows it, Escape hides it
+ {const st0=currentStation;let na=0;const R=e=>e.getBoundingClientRect(),shown=e=>getComputedStyle(e).display!=='none';
+  const withAlert=TRAINS.filter(t=>rrVisibleAlert(t)&&t.route.length>2);let nj=0;
+  for(const t of withAlert){if(nj>=8)break;const js=findJourneys(t.route[0][0],t.route[1][0],false),j=js.find(x=>x.legs.some(l=>l.train.id===t.id));if(!j)continue;nj++;
+   setViewMode('journeys');chooseJourney(j);
+   if(detail.querySelector('.jt-timeline .rr-alert-banner'))bad('full-width alert box in a journey leg',rrTrainLabel(t));
+   j.legs.forEach((leg,i)=>{const a=rrVisibleAlert(leg.train);const head=detail.querySelectorAll('.jt-card-head')[i];if(!head)return;const tip=head.querySelector('.rr-alert-tip');
+    if(!a){if(tip)bad('alert badge on a leg without an alert',rrTrainLabel(leg.train));return}
+    na++;const tag=head.querySelector('.jt-status>.status-tag'),btn=tip?.querySelector('button.rr-alert-badge'),pop=tip?.querySelector('.rr-alert-pop');
+    if(!tip||!btn||!pop||!tag||tag.nextElementSibling!==tip){bad('journey leg alert not a badge right after the status',rrTrainLabel(leg.train));return}
+    const name=(btn.getAttribute('aria-labelledby')||'').split(' ').map(id=>document.getElementById(id)?.textContent||'').join(' ').trim();
+    if(!name||(rrActiveLocale!=='fr'&&name!==a.en))bad('journey alert badge without the message as its name',rrTrainLabel(leg.train)+': "'+name+'"');
+    const rt=R(tag),rb=R(btn),gap=rb.left-rt.right;
+    if(rb.top>=rt.bottom||rt.top>=rb.bottom){}else{if(Math.abs(rb.height-rt.height)>1)bad('journey alert badge not as tall as the status tag',Math.round(rb.height)+' vs '+Math.round(rt.height)+' px');
+     if(gap<4||gap>8)bad('journey alert badge not 4-8 px after the status tag',Math.round(gap)+' px');
+     if(Math.abs((rb.top+rb.bottom)/2-(rt.top+rt.bottom)/2)>1)bad('journey alert badge not centred with the status tag',rrTrainLabel(leg.train))}
+    if(shown(pop))bad('journey alert message shown before hover / focus / tap',rrTrainLabel(leg.train));
+    btn.focus();if(!shown(pop))bad('journey alert message not shown on focus',rrTrainLabel(leg.train));
+    btn.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));if(shown(pop))bad('Escape does not close the journey alert message',rrTrainLabel(leg.train));
+    btn.blur();btn.click();if(!shown(pop))bad('tapping the journey alert badge does not show the message',rrTrainLabel(leg.train));
+    document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));btn.blur();if(shown(pop))bad('journey alert message stays open after tapping elsewhere',rrTrainLabel(leg.train))})}
+  setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey leg alerts checked']=na;if(!na)bad('no journey leg alerts checked','')}
  // the timetable: another list (departures <-> arrivals, another filter) starts at the top; choosing the chosen tab keeps the place
  {const st0=currentStation;setViewMode('departures');setCurrentStation(LABELS.find(n=>S.has(n)));board.scrollTop=300;const y0=board.scrollTop;
   $('departuresTab').click();if(y0>0&&board.scrollTop!==y0)bad('choosing the chosen tab moved the timetable','');
