@@ -960,3 +960,9 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
    lists; beside the 21 px destination on the train page, 14 px */
 .jt-towards .rr-fast-tag,.service-dest .rr-fast-tag,.row-via .rr-fast-tag,.rr-fast-tag{font-size:var(--fs-small)!important;height:18px;padding:0 6px;line-height:18px}
 .service-dest .rr-fast-tag{font-size:var(--fs-body)!important;height:22px;padding:0 7px;line-height:22px;border-radius:5px;margin-left:8px;position:relative;top:-1.5px}
+/* Regio network page: each line a compact tile, its RX and RS badges side by side on one row, tiles flowing several to a row
+   (user 2026-11-22: the badges had wrapped under each other in a squeezed column - "why you mess this up" / "more compact way") */
+.system-lines-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.system-lines-tiles .system-line-wide{grid-column:span 2}   /* 3-digit lines: two badges do not fit one column */
+.system-lines-tiles .system-line-tile{display:flex;justify-content:center;width:auto;min-height:0;padding:5px 4px;border:1px solid var(--stroke-soft)!important;border-radius:var(--rr-radius-control)}
+.system-lines-tiles .system-line-tile .system-line-badges{flex-wrap:nowrap;flex:none;min-width:max-content;gap:4px}   /* min-width:0 let the row shrink to one badge: RS fell under RX */
