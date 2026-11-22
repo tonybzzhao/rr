@@ -1005,3 +1005,28 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
    margin; on one line it stays centred on the name. */
 .service-dest:has(.rr-fast-tag){display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:4px}
 .service-dest:has(.rr-fast-tag) .rr-fast-tag{margin-left:0;top:0}
+/* Facility tiles as rows (user 2026-11-22: "change to horizontally"): icon on the left, name beside it on the right, so long names
+   ("Enregistrement en ville") read on one or two lines inside the tile instead of running past it. */
+.rr-card .station-picto-grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))!important;gap:8px 10px!important}
+.station-picto-grid .facility{flex-direction:row!important;align-items:center;justify-content:flex-start;gap:10px;text-align:left;width:auto;min-width:0}
+.station-picto-grid .facility.has-hours{padding:4px 6px!important;margin:0 -6px}
+.station-picto-grid .facility>span:not(.fac-icon){min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.station-picto-grid .fac-icon{flex:none}
+/* The status light sits at the row's right end, vertically centred, so the lights form one column down the list (open / closed /
+   fault read at a glance) instead of clipping the icon's corner. */
+.station-picto-grid .facility{position:relative}
+.station-picto-grid .facility:has(.fac-dot){padding-right:22px!important}
+.station-picto-grid .fac-icon{position:static}
+.station-picto-grid .fac-dot{left:auto;right:6px;top:50%;transform:translateY(-50%);box-shadow:none}
+/* Uniform rows (user 2026-11-22: "uniform line spacing"): every facility row, with or without hours, has the same box - a 29 px icon
+   cell, the same padding and one row height - and the same gap between rows. */
+.station-picto-grid .facility{box-sizing:border-box;min-height:calc(2 * 1.3 * var(--fs-small) + 8px);padding:4px 6px!important;margin:0 -6px!important;line-height:1.2}
+.station-picto-grid .facility .fac-icon,.station-picto-grid .facility>svg{width:29px;height:29px;display:flex;align-items:center;justify-content:center;flex:none}
+.rr-card .station-picto-grid{row-gap:4px!important}
+/* Dividers between categories, not inside them (user 2026-11-22): in the Services and Facilities cards the rows of one category
+   (Mainline, Regio, Local, Connections; Help and services, Standard, Additional) have no lines between them; one line separates a
+   category from the next, above its heading. */
+.details-body .station-services .station-svc,.station-svc{border-top:0!important}
+.rr-card :is(.station-services,.station-picto-grid)+.rr-card-sub{border-top:1px solid var(--stroke);padding-top:14px!important;margin-top:14px!important}
+
+.station-picto-grid .facility>span:not(.fac-icon){line-height:1.3}   /* two lines of name fit the row: rows stay one height when a name wraps */
