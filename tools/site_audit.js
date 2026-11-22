@@ -661,5 +661,26 @@
   setCurrentStation(st0||LABELS[0]);out.counts['City check-in stations checked']=nc}
  // no vending machines in station facilities (user 2026-11-22: "remove vending machine from facilities")
  {let nv=0;for(const x of STATIONS){nv++;if(stationFacilities(x.name).includes('Vending machines')){bad('vending machines listed in station facilities',x.name);break}}out.counts['vending-free facilities checked']=nv}
+ // facility tile labels fit inside their tile, in English and French (2026-11-22: "Enregistrement en ville" ran past the tile)
+ {const st0=currentStation,loc0=rrActiveLocale;let nl=0;
+  for(const loc of ['en','fr']){rrApplyLocale(loc);for(const n of [...new Set([...NATIONAL_HUBS,...MAJOR_STATIONS])].slice(0,40)){fillStationInfo(n);rrLocalizeSubtree(detail);
+   for(const b of detail.querySelectorAll('.station-picto-grid .facility')){const sp=b.querySelector('span:not(.fac-icon)');if(!sp)continue;nl++;const bb=b.getBoundingClientRect(),r=document.createRange();r.selectNodeContents(sp);
+    for(const q of r.getClientRects())if(q.left<bb.left-0.5||q.right>bb.right+0.5){bad('facility label wider than its tile',loc+' '+n+': '+sp.textContent);break}}}}
+  rrApplyLocale(loc0);setCurrentStation(st0||LABELS[0]);out.counts['facility labels checked']=nl}
+ // facility list (user 2026-11-22: "change to horizontally", "clever way to put light indicator", "uniform line spacing"): rows with
+ // the icon left and name right, every row the same height and gap, the status lights in one column at the row's right end
+ {const st0=currentStation;let nr=0;for(const n of ['Peiting Central','Mapleriver Central',LABELS[10]].filter(n=>S.has(n))){fillStationInfo(n);app.classList.add('detail-open');
+  const it=[...detail.querySelectorAll('.station-picto-grid .facility')];if(!it.length)continue;nr+=it.length;const hs=new Set(it.map(e=>Math.round(e.getBoundingClientRect().height)));
+  if(hs.size>1)bad('facility rows of different heights',n+': '+[...hs].join('/'));
+  for(const e of it){const ic=e.querySelector('svg')?.getBoundingClientRect(),lb=e.querySelector(':scope>span:not(.fac-icon)')?.getBoundingClientRect();if(ic&&lb&&lb.left<ic.right){bad('facility name not beside its icon',n+': '+e.textContent);break}}
+  const dots=[...detail.querySelectorAll('.station-picto-grid .fac-dot')].map(d=>{const r=d.getBoundingClientRect(),b=d.closest('.facility').getBoundingClientRect();return [Math.round(b.right-r.right),Math.round((r.top+r.height/2)-(b.top+b.height/2))]});
+  if(new Set(dots.map(d=>d[0])).size>1||dots.some(d=>Math.abs(d[1])>1))bad('status lights not in one column at the row ends',n)}
+  setCurrentStation(st0||LABELS[0]);out.counts['facility rows checked']=nr}
+ // dividers between categories, not inside (user 2026-11-22): Services and Facilities rows carry no lines; each category heading
+ // after the first has one line above it
+ {const st0=currentStation;let nd=0;for(const n of ['Peiting Central','Mapleriver Central'].filter(n=>S.has(n))){fillStationInfo(n);
+  for(const r of detail.querySelectorAll('.station-svc,.station-picto-grid .facility')){nd++;const cs=getComputedStyle(r);if(parseFloat(cs.borderTopWidth)>0||parseFloat(cs.borderBottomWidth)>0){bad('divider inside a category',n+': '+r.textContent.trim().slice(0,30));break}}
+  for(const card of detail.querySelectorAll('.rr-card')){const hs=[...card.querySelectorAll(':scope>.rr-card-sub')];hs.forEach((h,i)=>{nd++;const w=parseFloat(getComputedStyle(h).borderTopWidth);if(i===0&&w>0)bad('divider above the first category',n+': '+h.textContent);if(i>0&&!(w>0))bad('no divider between categories',n+': '+h.textContent)})}}
+  setCurrentStation(st0||LABELS[0]);out.counts['category dividers checked']=nd}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
