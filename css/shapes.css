@@ -998,3 +998,6 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 
 .app.system-focus .rail.unified{opacity:.18!important}   /* a focused network stands out over a well-faded base */
 #journeyPanel:focus{outline:none}   /* focused only as the Edit landing spot on touch screens */
+/* the board filter shows only the kinds of train serving the station; the chips share the row equally (user 2026-11-22) */
+.service-filter{grid-template-columns:repeat(var(--rr-chips,4),minmax(0,1fr))!important}
+.service-chip[hidden]{display:none!important}
