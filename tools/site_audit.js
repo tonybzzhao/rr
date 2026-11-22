@@ -323,6 +323,12 @@
    for(const x of ['mlTrack','regioTrack','localTrack','hslTrack','mlShared','regioShared','localShared'])if(vis(x))bad('typed track layer shown',x);
    if(f==='all'&&vis('allTrack')&&getComputedStyle($('allTrack')).stroke!==getComputedStyle(document.documentElement).getPropertyValue('--rail-neutral').trim()&&!/rgb/.test(getComputedStyle($('allTrack')).stroke))bad('unified track not neutral','')}
   serviceFilter=f0;app.dataset.sysFocus=f0;rrRegioFilterKey='';setCurrentStation(st0||LABELS[0]);drawMap();out.counts['unified track checked']=4}
+ // zoom tiers (user 2026-11-22): zoomed out only major stations; each tier appears at its zoom; the selected station always shows
+ {const v0={zoom,panX,panY},st0=currentStation;clear();setCurrentStation(null);let nz=0;
+  for(const z of [1,RR_TIER_ZOOM[1],RR_TIER_ZOOM[2],RR_TIER_ZOOM[3]]){zoom=z;updateWorld();drawMap();nz++;
+   for(const g of document.querySelectorAll('#stationLayer g[data-station]')){const s=S.get(g.dataset.station);if(s&&RR_TIER_ZOOM[rrZoomTier(s)]>z+1e-9){bad('station shown before its zoom tier',s.name+' at zoom '+z);break}}}
+  zoom=1;updateWorld();const minor=STATIONS.find(s=>rrZoomTier(s)===3);setCurrentStation(minor.name);drawMap();if(!document.querySelector(`#stationLayer g[data-station="${CSS.escape(minor.name)}"]`)&&(()=>{const q=screen(...(P[minor.point]||[minor.x,minor.y]));return q.x>=0&&q.y>=0&&q.x<=W&&q.y<=H})())bad('selected station hidden when zoomed out',minor.name);
+  zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();setCurrentStation(st0||LABELS[0]);drawMap();out.counts['zoom tiers checked']=nz}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);

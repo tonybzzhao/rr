@@ -1426,6 +1426,8 @@ function rrPickStationOnMap(name){
  setCurrentStation(name);
  if(app.classList.contains('phone-map')&&matchMedia('(max-width:750px)').matches)rrSetPhoneView(false);
 }
+const RR_TIER_ZOOM=[0,2.5,5,9];   // zoom at which each tier appears: major, Mainline, interchange, other
+function rrZoomTier(s){const y=s.sys||'';return LABELS.includes(s.name)?0:y.includes('M')?1:y.length>1?2:3}
 function drawMap(){
  if(!W||!H)return;
  rrDrawnTheme=document.documentElement.dataset.theme;
@@ -1449,7 +1451,10 @@ function drawMap(){
  const rrDotFree=(x,y)=>{const gx=Math.floor(x/RR_DOT_GAP),gy=Math.floor(y/RR_DOT_GAP);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const [px,py] of rrDotGrid.get((gx+i)+','+(gy+j))||[])if(Math.hypot(px-x,py-y)<RR_DOT_GAP)return false;return true};
  const rrDotTake=(x,y)=>{const k=Math.floor(x/RR_DOT_GAP)+','+Math.floor(y/RR_DOT_GAP);if(!rrDotGrid.has(k))rrDotGrid.set(k,[]);rrDotGrid.get(k).push([x,y])};
  for(const s of RR_DOT_ORDER){
-  if(s.regio&&zoom<2.2&&!selectedSet.has(s.name)&&s.name!==currentStation)continue; // Regio halts appear when zoomed in
+  // stations appear in tiers as you zoom in, like a road map (user 2026-11-22: "zoomed out map with a lot of station markers is very
+  // ugly. think of a beautiful way to manage zooming. remain selected station highlight"): major stations always; Mainline stations,
+  // then interchanges, then every other stop as the map grows. The selected / current station and a trip's stops always show.
+  if(!selectedSet.has(s.name)&&s.name!==currentStation&&zoom<RR_TIER_ZOOM[rrZoomTier(s)])continue;
   const tripRole=rrTrip?(rrTrip.calls.has(s.name)||s.name===currentStation?'call':rrTrip.through.has(s.name)?'through':LABELS.includes(s.name)?'hub':null):null;
   if(rrTrip&&(!tripRole||tripRole==='through'))continue;   // a selected trip hides unrelated stations and those it only passes through                       // a selected trip hides stations it has nothing to do with
   const [px_,py_]=P[s.point]||[s.x,s.y],{x,y}=screen(px_,py_);   // the exact point the line passes through (s.x, s.y are rounded: markers sat up to 3 px beside their line)
