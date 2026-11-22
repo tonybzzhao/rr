@@ -699,6 +699,7 @@
     for(const g of detail.querySelectorAll('.station-picto-grid')){const gr=g.getBoundingClientRect(),cols=getComputedStyle(g).gridTemplateColumns.split(' ').map(parseFloat),gap=parseFloat(getComputedStyle(g).columnGap)||0;
      for(const f of g.querySelectorAll(':scope>.facility')){const r=f.getBoundingClientRect();let x=gr.left+parseFloat(getComputedStyle(g).paddingLeft),ok=false;for(const w of cols){if(r.left>=x-0.5&&r.right<=x+w+0.5){ok=true;break}x+=w+gap}nb++;
       if(!ok){bad('facility tile outside its grid cell',n+': '+f.textContent.trim());break}}
+     {const d0=g.querySelector('.fac-detail'),op=g.querySelector('.facility[aria-expanded="true"]');if(d0&&op){const gapY=d0.getBoundingClientRect().top-op.getBoundingClientRect().bottom;nb++;if(gapY<6)bad('open facility and its details card touch',n+': '+Math.round(gapY)+' px apart')}}
      const d=g.querySelector('.fac-detail');if(d){const dr=d.getBoundingClientRect(),il=gr.left+parseFloat(getComputedStyle(g).paddingLeft),ir=gr.right-parseFloat(getComputedStyle(g).paddingRight);nb++;
       if(Math.abs(dr.left-il)>0.5||Math.abs(dr.right-ir)>0.5)bad('facility details card not edge to edge with the grid',n+': '+Math.round(dr.left-il)+'/'+Math.round(ir-dr.right))}}}
    detail.querySelectorAll('.fac-detail').forEach(x=>x.remove());}
@@ -724,5 +725,10 @@
   setViewMode('journeys');await frame();sweep('journeys');
   for(const [t,lab] of hits)bad('American English on the site',lab+': '+t);
   rrApplyLocale(loc0);clear();setViewMode(vm0==='journeys'?'departures':vm0);serviceFilter=f0;setCurrentStation(st0||LABELS[0]);out.counts['British English pages checked']=1}
+ // revised-time box (user 2026-11-22): side padding 5 px on the board (one rule for every view), and its digits sit under the old time's
+ {let nr=0;const st0=currentStation;setViewMode('departures');for(const n of LABELS){setCurrentStation(n);const b=document.querySelector('#board .trainrow .row-time .time-delayed .retime-box');if(!b)continue;nr++;
+  const cs=getComputedStyle(b);if(parseFloat(cs.paddingLeft)!==5||parseFloat(cs.paddingRight)!==5)bad('revised-time box side padding not 5 px',cs.paddingLeft+'/'+cs.paddingRight);
+  const old=b.closest('.time-delayed').querySelector('.scheduled-time');if(old){const r=document.createRange();r.selectNodeContents(b);const nl=[...r.getClientRects()].map(q=>q.left).filter(Boolean),ol=old.getBoundingClientRect().left;if(nl.length&&Math.abs(b.getBoundingClientRect().left+5-ol)>1)bad('new time digits not under the old time',n+': '+Math.round(b.getBoundingClientRect().left+5-ol)+' px')}break}
+  setCurrentStation(st0||LABELS[0]);out.counts['revised-time boxes checked']=nr}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()

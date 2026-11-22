@@ -1009,7 +1009,7 @@ body{font-size:14px}
 .time-delayed .retime-box{
   box-sizing:border-box;
   border-radius:4px;
-  padding:3px 7px;
+  padding:3px 5px;
   width:max-content;
   max-width:none;
 }
@@ -1018,27 +1018,27 @@ body{font-size:14px}
 .row-time .time-delayed .retime-box{
   font-size:1em;
   line-height:1.2;
-  padding:3px 7px;
+  padding:3px 5px;
 }
 .stop-list.has-disruptions .stop-time .retime-box{
   font-size:1em;
   line-height:1.2;
-  padding:3px 7px;
+  padding:3px 5px;
 }
 .train-hero .depart-time .time-delayed .retime-box{
   font-size:1em;
   line-height:1.12;
-  padding:5px 9px;
+  padding:5px 7px;
 }
 .journey-clock .time-delayed .retime-box{
   font-size:1em;
   line-height:1.13;
-  padding:3px 7px;
+  padding:3px 5px;
 }
 .journey-summary-time strong .time-delayed .retime-box{
   font-size:1em;
   line-height:1.1;
-  padding:4px 8px;
+  padding:4px 6px;
 }
 @media(min-width:751px) and (max-width:990px){
   .boardhead,.trainrow{grid-template-columns:var(--rr-board-time) minmax(0,1fr) 52px}
