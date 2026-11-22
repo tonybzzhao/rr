@@ -642,13 +642,13 @@ function rrServiceRow(s){
  const head=(s.type==='Local'||s.type==='Regio')&&s.network?`<button type="button" class="station-svc-name station-svc-link rr-system-link" data-system="${s.network}" data-type="${s.type}" title="Network details">${rrServiceLabel(s.type,s.network)}</button>`:name;
  return `<details class="station-svc"><summary>${head}<span class="jt-chevron" aria-hidden="true"></span></summary><div class="station-svc-lines">${lines}</div></details>`}
 // Connections to local transport (GIS station_connections, exported as STATIONS[].conn = [[mode, name, detail]]; user 2026-11-21):
-// pictograms from the user's set; a metro / underground / urban rail system shows its own logo once the user provides it
-// (RR_METRO_LOGOS: system name -> symbol id), until then its name only. An airport shows its official name and IATA code
+// pictograms from the user's set; a metro / underground / urban rail system shows the underground pictogram (user 2026-11-22),
+// or its own logo once the user provides one (RR_METRO_LOGOS: system name -> symbol id). An airport shows its official name and IATA code
 // (user 2026-11-21: "official name of airport + (3-letter IATA code)"; Airport_names_for_approval.csv in the GIS folder).
 const RR_CONN_FR=new Map(STATIONS.flatMap(x=>(x.conn||[]).filter(c=>c[3]).map(c=>[c[1],c[3]])));   // English name -> French (English names first; user 2026-11-21)
 const RR_CONN_PICTO={airport:'airport',tram:'tram',bus:'bus',coach:'coach',ferry:'ferry',taxi:'taxi'},RR_METRO_LOGOS={};
 function rrConnRow([mode,name,detail],station){
- const id=mode==='metro'?RR_METRO_LOGOS[name]:RR_CONN_PICTO[mode],air=mode==='airport';   // airport: official name (IATA code in detail)
+ const id=mode==='metro'?RR_METRO_LOGOS[name]||'underground':RR_CONN_PICTO[mode],air=mode==='airport';   // airport: official name (IATA code in detail)
  const icon=`<span class="station-conn-icon" aria-hidden="true">${id?`<svg viewBox="0 0 32 32"><use href="#rr-picto-${id}"></use></svg>`:''}</span>`;
  return `<div class="station-svc station-conn" data-mode="${mode}"><div class="station-conn-row">${icon}<span class="station-svc-name"><span>${name}</span>${air&&detail?` (${detail})`:''}</span>${detail&&!air?`<span class="station-conn-detail">${detail}</span>`:''}</div></div>`}
 function rrServicesCard(svc,station){
@@ -2143,7 +2143,7 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   if(!last){
    const next=j.legs[index+1],station=leg.to;
    const arrivalPlatform=rrPlatformAt(t,station)||'—',departurePlatform=rrPlatformAt(next.train,station)||'—';
-   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-interchange"></use></svg>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min</span></div></li>`;
+   rows+=`<li class="jt-row jt-transfer"><div class="jt-time"></div><div class="jt-spine jt-in-dot jt-out-dot" aria-hidden="true"></div><div class="jt-transfer-box"><strong><svg class="rr-action-icon jt-change-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-ui-change-trains"></use></svg>Change at ${station}</strong><span class="transfer-detail">${next.dep-leg.arr} min</span></div></li>`;
   }
  });
  const depFirst=j.legs[0],arrLast=j.legs[j.legs.length-1];
