@@ -910,3 +910,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .row-via:has(.rr-fast-tag){display:flex;align-items:center;flex-wrap:wrap;row-gap:2px}
 /* Journeys: a heading like the home's "Choose a station" above From / To (user 2026-11-21) */
 #journeyHeading{margin:0 0 12px!important}
+/* station Connections (user 2026-11-21): pictogram, name, detail on one row, like the service rows above */
+.station-conn-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;column-gap:10px;min-height:44px}
+.station-conn-icon{width:24px;height:24px;display:inline-flex;color:var(--ink-strong)}
+.station-conn-icon svg{width:24px;height:24px}
+.station-conn-detail{font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate);white-space:nowrap}

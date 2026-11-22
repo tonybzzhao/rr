@@ -12,6 +12,7 @@ ICONS = {   # source file -> symbol id
     'first-aid': 'first-aid', 'mother-baby': 'baby-room', 'pharmacy': 'pharmacy', 'photobooth': 'photo-booth', 'seating': 'seating',
     'vending-machine': 'vending', 'water-fountain': 'water-fountain', 'AED': 'aed', 'animal-relief': 'animal-relief',
     'drop-off': 'drop-off', 'ticket-machine': 'ticket-machine',
+    '101 - Bus': 'bus', '102 - Tram': 'tram', '104 - Taxi': 'taxi', '134 - Ferry': 'ferry', 'Coach': 'coach',   # station connections (2026-11-21)
 }
 KEEP_COLOUR = {'help-point', 'first-aid', 'aed'}
 INK = re.compile(r'#(000000|000|ffffff|fffffe|fff)\b', re.I)
