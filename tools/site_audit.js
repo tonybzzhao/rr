@@ -287,6 +287,22 @@
    if(RR_FORMATIONS[fk]?.cars.some(c=>!c.features.includes('luggage')))bad('AX car without luggage space',t.id)}
   if(new Set(TRAINS.filter(t=>t.pattern==='AX').map(t=>t.id)).size!==nx)bad('AX train ids not unique','');
   if(!nx)bad('no Airport Express trains','');if(serviceName('Regio','Airport Express')!=='RR Airport Express')bad('AX service name','');out.counts['AX trains checked']=nx}
+ // Regio network page (user 2026-11-22: badges had stacked - a train-link button nested in the line button): each line one tile with
+ // its RX and RS badges side by side, no button inside a button, no tile overflowing; no network "Service hours" card ("no use")
+ {let nt=0;const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio').map(t=>t.network))];for(const net of nets){fillLocalSystem(net,currentStation,'Regio');
+   if(/Service hours|Horaires de service/.test($('detailsBody').textContent))bad('network page still shows Service hours',net);
+   if(document.querySelector('#detailsBody button button, #detailsBody button .rr-train-link'))bad('button nested in a network line button',net);
+   for(const x of document.querySelectorAll('.system-line-tile')){nt++;const tr=x.getBoundingClientRect(),bs=[...x.querySelectorAll('.service')];
+    const want=(x.getAttribute('aria-label')||'').split(':')[1]?.split(',').length||1;if(bs.length!==want)bad('line tile missing a badge',net+' '+x.dataset.line);
+    if(new Set(bs.map(b=>Math.round(b.getBoundingClientRect().top))).size>1)bad('line tile badges not on one row',net+' '+x.dataset.line);
+    if(bs.some(b=>{const r=b.getBoundingClientRect();return r.right>tr.right+0.5||r.left<tr.left-0.5}))bad('line tile badge outside its tile',net+' '+x.dataset.line)}}
+  out.counts['Regio line tiles checked']=nt}
+ // stations show opening hours (user 2026-11-22), and Local route pages first and last trains each way
+ {let nh=0;for(const n of LABELS.slice(0,8)){fillStationInfo(n);const c=document.querySelector('#detailsBody .station-hours');nh++;
+   if(!c)bad('station without opening hours',n);else if(!/Open 24 hours|Ouvert 24|\d\d:\d\d.*–.*\d\d:\d\d/.test(c.textContent))bad('station opening hours unreadable',n+': '+c.textContent.trim().slice(0,60))}
+  const loc=TRAINS.find(t=>t.type==='Local'&&!t.ring);if(loc){fillRouteInfo('Local',loc.network,loc.line,loc.route[0][0]);const fl=document.querySelectorAll('#detailsBody .route-firstlast');
+   if(fl.length<1)bad('Local route page without first and last trains',loc.network+' '+loc.line);for(const r of fl)if(!/First.*Last|Premier.*Dernier/.test(r.textContent))bad('first / last train row unreadable',r.textContent.trim().slice(0,60))}
+  out.counts['station hours / first-last checked']=nh}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
   for(const n of Object.values(byTier)){fillStationInfo(n);for(const t of detail.querySelectorAll('.station-picto-grid .facility')){nf++;const u=t.querySelector('use');const id=u?.getAttribute('href')?.slice(1);
