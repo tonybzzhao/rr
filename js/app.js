@@ -1707,9 +1707,9 @@ function rrRegioFilterSystem(){
  if(!type||viewMode==='journeys'||!currentStation||selectedPath.length||rrLocalSystem)return null;
  const close=type==='Local'&&zoom>=RR_LOCAL_COLOUR_ZOOM,key=type+'|'+currentStation+'|'+close;
  if(rrRegioFilterKey!==key){rrRegioFilterKey=key;
-  const nets=rrFilterNets(type),ts=TRAINS.filter(t=>t.type===type&&nets.includes(t.network)),red=getComputedStyle(document.documentElement).getPropertyValue('--rail-local-strong').trim();
+  const nets=rrFilterNets(type),ts=TRAINS.filter(t=>t.type===type&&nets.includes(t.network)),col=RR_UI_CSS_COLOR(type==='Local'?'--rail-local':'--rail-regio');   /* the same colour as single-network station rings (user 2026-11-22) */
   rrRegioFilterFocus=nets.length?{type,net:nets.join('+')+(close?'@close':''),nets,filter:true,names:new Set(ts.flatMap(t=>t.route.map(r=>r[0]))),
-   lines:close?[]:[...new Map(ts.filter(t=>t.dir===1||t.ring).map(t=>[t.network+'|'+t.line+'|'+(t.pattern||'')+'|'+(t.ring||''),t])).values()].map(t=>[getTrainPath(t),type==='Local'?red:rrMapColor(t)])}:null}
+   lines:close?[]:[...new Map(ts.filter(t=>t.dir===1||t.ring).map(t=>[t.network+'|'+t.line+'|'+(t.pattern||'')+'|'+(t.ring||''),t])).values()].map(t=>[getTrainPath(t),col])}:null}
  return rrRegioFilterFocus}
 function rrApplySystemFocus(){if(!rrFocusSystem||rrFocusSystem.filter)rrFocusSystem=rrRegioFilterSystem();const f=rrFocusSystem;app.classList.toggle('system-focus',!!f);
  let g=$('systemOverlay');if(!g){g=document.createElementNS('http://www.w3.org/2000/svg','g');g.id='systemOverlay';g.setAttribute('aria-hidden','true');routeWorld.before(g)}
@@ -2134,7 +2134,7 @@ $('journeyWhenTime')?.addEventListener('click',e=>{try{e.currentTarget.showPicke
 // a touch screen gets no focused field after Edit (no keyboard or selection handles until a field is tapped); the audit sets rrForceCoarsePointer
 const rrCoarsePointer=()=>window.rrForceCoarsePointer??matchMedia('(pointer: coarse)').matches;
 $('journeyEdit')?.addEventListener('click',()=>{journeyEditing=true;$('sidebarContent').classList.remove('jp-collapsed');document.querySelector('.journey-results-head').hidden=true;$('sidebarContent').scrollTop=0;
- requestAnimationFrame(()=>{const panel=$('journeyPanel');if(rrCoarsePointer()){panel.tabIndex=-1;panel.focus({preventScroll:true})}else panel.querySelector('input,select,button')?.focus()})});
+ {/* focus now, not on the next frame: a frame can be late or never come in a background tab */const panel=$('journeyPanel');if(rrCoarsePointer()){panel.tabIndex=-1;panel.focus({preventScroll:true})}else panel.querySelector('input,select,button')?.focus()}});
 function renderJourneyResults(){
  // The form is a draft. Results always reflect the last Find trains action.
  const query=appliedJourneyQuery;
