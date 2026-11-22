@@ -505,7 +505,9 @@ body,.app{background:var(--rr-canvas)}
 .details-body .stop.current .stop-icon{background:var(--route)!important}
 .fac-dot.fault{background:var(--status-expected)}
 .fac-status.fault{color:var(--status-expected)}
-.rr-plat-delayed{justify-content:flex-end}
+/* Offset changed platforms by the badge padding so the final digit stays in the platform column. */
+.rr-plat-delayed{justify-content:flex-end;position:relative;inset-inline-start:7px}
+.route-dep-plat .rr-plat-delayed{inset-inline-start:6px}
 
 /* Dotted lines (walks, waits, folded stops) use dots exactly as wide as the solid 3px line */
 .jt-in-dot::before,.jt-out-dot::after{background:radial-gradient(circle,var(--jt-dot-color) 1.5px,transparent 1.6px) center top/3px 6px repeat-y!important}
@@ -625,7 +627,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
  column-gap:6px!important;row-gap:2px!important;vertical-align:middle}
 .time-delayed .scheduled-time{margin-left:0!important}
 .train-hero .depart-time .time-delayed,.journey-summary-time .journey-arrival .time-delayed,.depart-time .time-delayed,
-.route-dep-plat .time-delayed{justify-content:flex-end!important}
+.route-dep-plat .time-delayed,.trainrow .platform .rr-plat-delayed{justify-content:flex-end!important}
 /* timetable: the time column is too narrow for both, so the new time sits under the old one; its digits line up with the
    old time and with every other row's time (the box's own padding hangs out to the left) */
 .trainrow .row-time .time-delayed .retime-box{margin-left:-7px}
