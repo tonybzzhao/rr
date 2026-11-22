@@ -750,5 +750,12 @@
    if(last?.classList.contains('stop-continues')&&W){const ic=last.querySelector('svg').getBoundingClientRect(),r=document.createRange();r.selectNodeContents(last.querySelector('.stop-cont-text'));const l1=r.getClientRects()[0];if(ic.height&&l1&&Math.abs((ic.top+ic.height/2)-(l1.top+l1.height/2))>1)bad('loop icon not level with its text',Math.round((ic.top+ic.height/2)-(l1.top+l1.height/2))+' px')}
    if(rrFrenchText('Continues round the inner circle')!=='Continue sur la boucle intérieure')bad('loop continuation not in French','')}
   setCurrentStation(st0||LABELS[0]);out.counts['ring loops checked']=nk}
+ // one line, one type size (2026-11-22: "via" larger than the station names after it): in every heading-like line - train page
+ // destination, station name, route / system hero, board destination - every piece of text has the same font size and weight
+ {const st0=currentStation;let nt=0;const runs=el=>{const out=[],tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while(n=tw.nextNode()){if(!n.nodeValue.trim())continue;const p=n.parentElement;if(p.closest('.rr-fast-tag,.rr-ring-tag,.status-tag,svg'))continue;const cs=getComputedStyle(p);out.push(cs.fontSize+'/'+cs.fontWeight)}return out};
+  const look=(sel,lab)=>{for(const el of document.querySelectorAll(sel)){const r=runs(el);if(!r.length)continue;nt++;if(new Set(r).size>1){bad('mixed type sizes in one line',lab+': '+el.textContent.trim().slice(0,40)+' '+[...new Set(r)].join(' vs '));return}}};
+  for(const t of [TRAINS.find(x=>x.ring),TRAINS.find(x=>x.fast),TRAINS.find(x=>x.type==='InterCity')].filter(Boolean)){setCurrentStation(t.route[1]?.[0]||t.route[0][0]);chooseTrain(t);look('.train-hero .service-dest','train page')}
+  setViewMode('departures');setCurrentStation('Peiting Central');look('#board .trainrow .dest','board');fillStationInfo('Peiting Central');look('.station-name-band','station');
+  setCurrentStation(st0||LABELS[0]);out.counts['heading lines checked']=nt}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
