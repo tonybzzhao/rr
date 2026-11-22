@@ -414,7 +414,7 @@
   setViewMode('departures');if(st0)setCurrentStation(st0);out.counts['journey leg alerts checked']=na;if(!na)bad('journey leg alerts: none found to check','')}
  // editing a journey search (user 2026-11-22): the form replaces the results summary (no summary card while editing, on any width);
  // on a touch screen Edit focuses no text field (no keyboard / selection handles until a field is tapped); Find trains folds back to the summary
- {const st0=currentStation;let ne=0;const frame=()=>new Promise(r=>{requestAnimationFrame(()=>r());setTimeout(r,120)}),head=document.querySelector('.journey-results-head'),vis=e=>!!e&&!e.hidden&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;
+ {const st0=currentStation;let ne=0;const frame=()=>new Promise(r=>{requestAnimationFrame(()=>r());setTimeout(r,600)})   /* the next frame; a background tab runs frames late (120 ms was too short: Edit's focus had not run yet) */,head=document.querySelector('.journey-results-head'),vis=e=>!!e&&!e.hidden&&getComputedStyle(e).display!=='none'&&e.getClientRects().length>0;
   const t=TRAINS.find(x=>x.route.length>2&&S.has(x.route[0][0])&&S.has(x.route[2][0]));
   for(const coarse of t?[false,true]:[]){window.rrForceCoarsePointer=coarse;
    setViewMode('journeys');rrSelectValue($('from'),t.route[0][0]);rrSelectValue($('to'),t.route[2][0]);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();$('trace').click();await frame();
@@ -564,5 +564,18 @@
   for(const z of [1,2.5,4]){zoom=z;panX=panY=0;updateWorld();const t=[];for(let i=0;i<3;i++){t0=performance.now();drawMap();t.push(performance.now()-t0)}t.sort((x,y)=>x-y);
    out.mapDrawMs['zoom '+z]=+t[1].toFixed(1);if(t[1]>RR_DRAW_BUDGET)bad('map redraw over its '+RR_DRAW_BUDGET+' ms budget','zoom '+z+': '+t[1].toFixed(0)+' ms')}
   zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(phone)rrSetPhoneView(false,false);out.counts['map redraw timings checked']=3}
+ // Details panel open (2026-11-22 bug: the map went blank - no track, no markers - zoomed in with Station information open): the
+ // panel narrows the map after the station is focused; the map must keep the station and its track in view at a middle and the
+ // deepest zoom, and again after the panel closes and reopens. Desktop only (on a phone the map is its own screen).
+ if(!phone&&container.clientWidth){const st=S.get('Peiting Central')?'Peiting Central':LABELS[0],v0={zoom,panX,panY};let nd=0;
+  const settle=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(r,450))));   // the panel's grid transition, then the resize
+  const see=lab=>{const [px,py]=P[S.get(st).point],{x,y}=screen(px,py);nd++;
+   if(!app.classList.contains('detail-open'))return bad('details panel not open for the map check',lab);
+   if(x<0||y<0||x>W||y>H||!layer.querySelector(`g[data-station="${CSS.escape(st)}"]`))bad('details panel open: current station not on the map',lab+' at zoom '+zoom.toFixed(1)+' ('+Math.round(x)+','+Math.round(y)+' in '+W+'x'+H+')');
+   if(![...world.querySelectorAll('path.rail')].some(e=>{const cs=getComputedStyle(e);return cs.display!=='none'&&cs.stroke!=='none'&&e.isPointInStroke(new DOMPoint(px,py))}))bad('details panel open: no track drawn at the current station',lab)};
+  clear();app.classList.remove('detail-open');await settle();setCurrentStation(st);rrFocusStation(st);fillStationInfo(st);await settle();
+  for(const [lab,z] of [['middle zoom',Math.sqrt(rrMaxZoom())],['deepest zoom',rrMaxZoom()]]){zoomAt(z/zoom);rrRedraw();see(lab)}
+  app.classList.remove('detail-open');await settle();app.classList.add('detail-open');await settle();see('deepest zoom, panel closed and reopened');
+  clear();app.classList.remove('detail-open');setCurrentStation(null);await settle();zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();out.counts['details-open map views checked']=nd}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()

@@ -1247,7 +1247,13 @@ function drawRoute(){
 }
 function screen(x,y){const sc=fit*zoom;return{x:x*sc+offX,y:y*sc+offY}}
 function resize(){const w=container.clientWidth,h=container.clientHeight;if(w&&h&&w===W&&h===H)return;   // same size: the map is already drawn for it
- W=w;H=h;if(!W||!H)return;map.setAttribute('viewBox',`0 0 ${W} ${H}`);fit=Math.max(0.001,Math.min((W-90)/graphWidth,(H-90)/graphHeight));updateWorld()}
+ /* A new map size (the details panel opening or closing narrows the map, often after a station / route was focused) keeps the
+    view: the same world point stays at the centre at the same scale. zoom and pan are relative to fit and the old size, so
+    keeping them as they were moved the focused station thousands of px off the map at deep zoom (2026-11-22). */
+ const old=W&&H&&zoom>1.000001?{sc:fit*zoom,cx:(W/2-offX)/(fit*zoom),cy:(H/2-offY)/(fit*zoom)}:null;
+ W=w;H=h;if(!W||!H)return;map.setAttribute('viewBox',`0 0 ${W} ${H}`);fit=Math.max(0.001,Math.min((W-90)/graphWidth,(H-90)/graphHeight));
+ if(old){zoom=Math.max(1,Math.min(rrMaxZoom(),old.sc/fit));const sc=fit*zoom;panX=W/2-old.cx*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-old.cy*sc-((H-graphHeight*sc)/2-minY*sc)}
+ updateWorld()}
 // The initial fit is the minimum scale. Keep the railway in view at every zoom level.
 // When the network fits within the viewport, centre that axis instead of letting it drift.
 function clampPan(){
