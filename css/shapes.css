@@ -367,14 +367,8 @@ body,.app{background:var(--rr-canvas)}
    search button (the Find trains glyph), to edit the search. */
 .app.journey-mode .jp-collapsed #journeyPanel,.app.journey-mode .jp-collapsed .side-controls{display:none!important}   /* only while Journeys is open: back on Stations the station block shows */
 .journey-head-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.jp-edit{display:none;flex:0 0 auto;height:36px;margin:-6px 0;padding:0 14px 0 10px;gap:6px;border:0;border-radius:var(--rr-radius-control);align-items:center;justify-content:center;
-  background:var(--rr-canvas);color:var(--ink-strong);font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background-color .15s}
 /* the sidebar's secondary button (Reset, Swap, Now): canvas-grey fill, no border, 10px radius, icon + label */
-.jp-edit .rr-action-icon{width:20px;height:20px;color:var(--ink-strong)}
-.jp-collapsed .jp-edit{display:inline-flex}
 .jp-collapsed .journey-results-head{cursor:pointer;transition:box-shadow .15s}
-.jp-collapsed .journey-results-head:hover .jp-edit,.jp-edit:hover{background:var(--hair)}
-.jp-edit:focus-visible{outline:2px solid var(--ui,currentColor);outline-offset:2px}
 .journey-results-head .journey-pair{display:grid!important;grid-template-columns:14px 1fr;column-gap:10px;row-gap:10px;align-items:center;position:relative;font-size:16px}
 .journey-results-head .journey-pair .rr-arrow{display:none}
 .journey-results-head .journey-pair strong{grid-column:2;font-weight:700;color:var(--ink-strong);line-height:1.25}
@@ -715,7 +709,7 @@ button.train-number.train-route-link:hover{text-decoration:underline}
 .boardhead span,.depart-date{font-size:var(--fs-caption)!important}
 .route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span,
 .service-chip,.depart-label,.destination-label,.rr-card-sub,.jt-service .rr-service-identity>span,
-.details-actions .station-info-button span,.jp-edit span,.eyebrow,.rr-station-fac-text,.stop-fold-btn,.stop-fold-btn span,.jt-calls-toggle,.jt-calls-toggle span,.jt-plat,.jt-plat .pl-short,.jt-plat .pl-long,
+.details-actions .station-info-button span,.eyebrow,.rr-station-fac-text,.stop-fold-btn,.stop-fold-btn span,.jt-calls-toggle,.jt-calls-toggle span,.jt-plat,.jt-plat .pl-short,.jt-plat .pl-long,
 .journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-size:var(--fs-small)!important}
 .journey-via,.journey-summary-time small,.jt-meta span,.jt-coach-section{font-weight:var(--fw-regular)!important}
 .route-legend span,.route-legend-map,.station-svc-foot,.station-picto-grid .facility span,.journey-count span:not(.jr-time){font-weight:var(--fw-regular)!important}
@@ -902,13 +896,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .board-controls .station-tabs .board-tab:not(.active):hover{background:transparent!important;color:var(--ink-strong)!important}
 .board-controls .station-tabs .board-tab.active{background:var(--ui)!important;color:var(--ui-on)!important;font-weight:var(--fw-bold)!important}
 .board-controls .station-tabs .board-tab{transition:none!important}   /* switch at once like Depart after / Arrive by: no fade with the text already switched */
-/* journey Edit: an icon button like the station reset (user 2026-11-21) */
-.journey-head-top .jp-edit.station-reset{position:static!important;width:32px;height:32px;padding:0!important;min-width:0!important;background:transparent!important;border:0!important}
 /* station card: less space above the name (user 2026-11-21) */
 .side-controls{padding-top:14px!important}
-/* journey Edit shows once the search is folded away (user 2026-11-21: it had vanished, hidden by the home rule for the station reset) */
-.journey-head-top .jp-edit.station-reset{display:none!important}
-.jp-collapsed .journey-head-top .jp-edit.station-reset{display:inline-flex!important}
 /* station card: a divider between the name row and Station information, like the journey card's (user 2026-11-21) */
 #stationInfoLeft{border-top:1px solid var(--stroke-soft);padding-top:9px!important;margin-top:12px!important;margin-bottom:-4px!important}   /* lower part a little shorter (user 2026-11-21) */
 /* fast Local trains (user 2026-11-21): the word "Fast" by the destination, no new code; run-through stations greyed in the calling list */
@@ -937,9 +926,9 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .service-dest .rr-fast-tag{vertical-align:middle}
 .jt-towards:has(.rr-fast-tag){display:flex;flex-wrap:wrap;align-items:center;column-gap:4px;row-gap:3px}
 .jt-towards .rr-fast-tag{margin-left:0!important}
-
-/* journey Edit: the same button as the station Reset (user 2026-11-21: "same format and size as Stations reset"): 32 px box at the same
-   place from the card's top right corner (centred on the 25 px caption row it sat 1.5 px higher than Reset) */
-.journey-head-top .jp-edit.station-reset{position:relative!important;top:1.5px;right:auto;left:auto}
-/* the pencil is drawn smaller and off-centre in its 32-unit box (7.4-27.1 vs the reset arrow's 4-28): scale it to the arrow's painted size, centred */
-.journey-head-top .jp-edit .rr-action-icon{width:24px!important;height:24px!important;transform:translate(-1px,.5px)}
+/* journey Edit IS the station Reset button (user 2026-11-22: "treat edit button like reset button"): it carries only the station-reset
+   class, so size, colour, hover and focus all come from Reset's rules. Its own rules may only show it (once the search is folded
+   away), place it like Reset from its card's top right corner, and scale the pencil (drawn smaller in its box) to the arrow's size. */
+.journey-head-top #journeyEdit{position:relative;top:1.5px;right:auto;margin:-6px 0;display:none}
+.jp-collapsed .journey-head-top #journeyEdit{display:inline-flex}
+#journeyEdit .rr-action-icon{width:24px;height:24px;transform:translate(-1px,.5px)}

@@ -237,7 +237,13 @@
   else{const jc=R(document.querySelector('.journey-results-head')),er=R(eb),ofs=(a,b)=>Math.abs(a-b)>1;
    if(ofs(er.width,sr.width)||ofs(er.height,sr.height))bad('journey Edit button not the size of the station Reset button',Math.round(er.width)+' vs '+Math.round(sr.width)+' px');
    if(ofs(er.top-jc.top,sr.top-sc.top)||ofs(jc.right-er.right,sc.right-sr.right))bad('journey Edit button not placed like the station Reset button',Math.round(er.top-jc.top)+' / '+Math.round(sr.top-sc.top)+' px from the top');
-   if(ofs(glyph(eb),sg))bad('journey Edit icon not drawn as large as the Reset icon',glyph(eb).toFixed(1)+' vs '+sg.toFixed(1)+' px')}
+   if(ofs(glyph(eb),sg))bad('journey Edit icon not drawn as large as the Reset icon',glyph(eb).toFixed(1)+' vs '+sg.toFixed(1)+' px')
+   // it IS the Reset button: only Reset's class, and its own rules only show / place it or size its icon - so colour, hover and focus
+   // can never differ (user 2026-11-22: "why it's not highlighting like reset is")
+   if(eb.className.trim()!==$('stationReset').className.trim())bad('journey Edit button classes differ from the station Reset button',eb.className);
+   const okProp=/^(display|position|top|right|left|margin(-top|-bottom|-left|-right)?|width|height|transform)$/;
+   for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(_){continue}for(const r of rs){if(!r.selectorText||!/journeyEdit|jp-edit/.test(r.selectorText))continue;
+    for(const pr of r.style)if(!okProp.test(pr))bad('a rule styles the journey Edit button beyond showing / placing it',r.selectorText+' { '+pr+' }')}}}
   setViewMode('departures');setCurrentStation(st0||LABELS[0]);out.counts['card buttons checked']=2}
  // station facilities: every tile has its pictogram, and the pictogram exists (2026-11-20: 11 new station pictograms)
  {let nf=0;const st0=currentStation,byTier={};for(const n of S.keys()){const k=rrStationTier(n);if(!byTier[k])byTier[k]=n}
