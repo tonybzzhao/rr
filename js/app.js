@@ -2447,7 +2447,7 @@ const rrFrenchExact=Object.freeze({
  'Wheelchair accommodation · accessible toilet':'Emplacement PMR · toilettes accessibles',
  'French edition in preparation':'Version française en préparation',
  'Soon':'Bientôt',
-  '© Radelish Railways plc 2026':'© 2026 Société des chemins de fer de Radegne'
+  '© Radelish Railways plc 2026':'© 2026 Société des chemins de fer de Radegne SA'
 });
 const RR_DAYS_FR=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
 function rrFrenchText(source){
