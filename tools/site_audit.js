@@ -621,5 +621,31 @@
    const lm=app.classList.contains('local-colours')?rrLocalStationMarks().get(cand.point):null,g=layer.querySelector(`g[data-station="${CSS.escape(cand.name)}"]`);nk++;
    if(lm&&!(lm.n<=1&&lm.cols.size===1&&cand.sys==='L')&&g&&(!g.querySelector('rect.local-mark.current')||!g.querySelector('rect.local-mark-halo')))bad('current station not a capsule with a halo on the coloured Local map',cand.name)}
   serviceFilter=f0;rrRegioFilterKey='';zoom=z0.zoom;panX=z0.panX;panY=z0.panY;updateWorld();setCurrentStation(st0||LABELS[0]);drawMap();out.counts['current-station capsules checked']=nk}
+ // French (user 2026-11-22: "Première classe??? audit all french translation"): no English word left on any page in French, and no
+ // dictionary word with two meanings (a context-specific string carries data-rr-fr instead). Every page type: boards and filters,
+ // arrivals, station information, one train of every type with its formation, Regio / Local route pages, journeys, the menu.
+ {const src=await (await fetch('js/app.js',{cache:'no-store'})).text(),i=src.indexOf('const rrFrenchExact=Object.freeze({'),body=src.slice(i,src.indexOf('});',i));
+  const seenK=new Map();for(const m of body.matchAll(/'((?:[^'\\]|\\.)+)':'((?:[^'\\]|\\.)*)'/g)){if(seenK.has(m[1])&&seenK.get(m[1])!==m[2])bad('French dictionary word with two meanings',m[1]+': '+seenK.get(m[1])+' / '+m[2]);seenK.set(m[1],m[2])}
+  const loc0=rrActiveLocale,st0=currentStation,vm0=viewMode,f0=serviceFilter,frame=()=>new Promise(r=>setTimeout(r,40));
+  const names=new Set();for(const x of STATIONS){names.add(x.name);for(const c of x.conn||[]){if(c[1])names.add(c[1]);if(c[3])names.add(c[3])}}
+  for(const t of TRAINS){names.add(rrTrainLabel(t));if(t.network)names.add(t.network);if(t.line)names.add(String(t.line))}
+  const sorted=[...names].filter(n=>n&&n.length>1).sort((a,b)=>b.length-a.length);
+  const SAME=new Set('via train trains min direct services service information bus taxis express sprinter max rs rx ic nightline intercity local regio wc wi-fi date police assistance restaurant type couchette couchettes café locomotive destination english français copyright'.split(' '));
+  const left=new Map(),look=(t,lab)=>{if(!t||!/[A-Za-z]{3}/.test(t)||rrFrenchText(t)!==t)return;let r=' '+t+' ';for(const n of sorted)if(r.includes(n))r=r.split(n).join(' ');
+   const w=(r.match(/\p{L}[\p{L}'’-]{2,}/gu)||[]).filter(x=>!SAME.has(x.toLowerCase()));if(w.length&&!left.has(t))left.set(t,lab)};
+  const sweep=lab=>{rrLocalizeSubtree(document.body);const tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+   while(n=tw.nextNode()){const el=n.parentElement;if(!el||el.closest('script,style,svg')||el.dataset?.rrFr)continue;look((rrEnglishText.get(n)??n.nodeValue).replace(/\s+/g,' ').trim(),lab)}
+   for(const el of document.querySelectorAll('[aria-label],[title],[placeholder]')){if(el.closest('svg'))continue;const m=rrEnglishAttrs.get(el);for(const a of ['aria-label','title','placeholder']){const t=m?.get(a)??el.getAttribute(a);if(t)look(t.replace(/\s+/g,' ').trim(),lab+' @'+a)}}};
+  rrApplyLocale('fr');await frame();
+  const pick=[...new Map(TRAINS.map(t=>[t.type+'|'+(t.pattern||''),t])).values()];
+  for(const n of [...new Set(['Peiting Central','Mapleriver Central',LABELS[5],...pick.map(t=>t.route[0][0])])].filter(n=>S.has(n)).slice(0,12)){setViewMode('departures');setCurrentStation(n);await frame();sweep('board '+n);
+   for(const f of ['mainline','regio','local','all']){document.querySelector(`[data-filter="${f}"]`)?.click();await frame();sweep('board '+f+' '+n)}
+   $('arrivalsTab')?.click();await frame();sweep('arrivals '+n);$('departuresTab')?.click();
+   try{fillStationInfo(n);await frame();sweep('station information '+n)}catch(e){}}
+  for(const t of pick){try{setCurrentStation(t.route[0][0]);chooseTrain(t);await frame();sweep('train '+t.type+' '+(t.pattern||''))}catch(e){}}
+  for(const t of [...TRAINS.filter(t=>t.type==='Local').slice(0,2),...TRAINS.filter(t=>t.type==='Regio').slice(0,2)]){try{fillRouteInfo(t.type,t.network,t.line,t.route[0][0]);await frame();sweep('route '+t.type)}catch(e){}}
+  setViewMode('journeys');await frame();sweep('journeys');rrSelectValue($('from'),'Peiting Central');rrSelectValue($('to'),'Mapleriver Central');pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();$('trace').click();await frame();sweep('journey results');
+  for(const [t,lab] of left)bad('English left on the French site',lab+': '+t);
+  rrApplyLocale(loc0);clear();setViewMode(vm0==='journeys'?'departures':vm0);serviceFilter=f0;setCurrentStation(st0||LABELS[0]);out.counts['French pages checked']=1}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
