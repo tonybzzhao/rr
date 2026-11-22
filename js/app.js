@@ -2747,6 +2747,13 @@ function rrRefreshBrand(code){
   }
  }
 }
+// Words that cannot fit their box on their own are the only ones hyphenated (see .rr-hyphen in shapes.css): each text block is
+// probed with breaking inside words switched off; if it then overflows, one of its words is wider than the box.
+const RR_WRAP_SEL='.station-picto-grid .facility>span:not(.fac-icon),.route-stn,.le-side li,.service-dest,.station-name-band,.trainrow .dest,.stop-name,.journey-summary-time .station,.info-grid dd,.fac-note,.fac-detail strong,.rr-card-title,.rr-card-sub,.details-heading h2,.station-svc-name,.route-dep-dest,.jt-station,.jt-towards';
+function rrHyphenateLongWords(root=document){for(const el of root.querySelectorAll(RR_WRAP_SEL)){if(!el.clientWidth){el.classList.remove('rr-hyphen');continue}
+ el.classList.remove('rr-hyphen');el.classList.add('rr-hyphen-probe');const long=el.scrollWidth>el.clientWidth+1;el.classList.remove('rr-hyphen-probe');if(long)el.classList.add('rr-hyphen')}}
+let rrHyphenFrame=0;const rrHyphenSoon=()=>{cancelAnimationFrame(rrHyphenFrame);rrHyphenFrame=requestAnimationFrame(()=>rrHyphenateLongWords())};
+new MutationObserver(rrHyphenSoon).observe(document.body,{childList:true,subtree:true,characterData:true});addEventListener('resize',rrHyphenSoon);
 function rrApplyLocale(code){
  rrActiveLocale=code==='fr'?'fr':'en';
  rrRefreshBrand(rrActiveLocale);

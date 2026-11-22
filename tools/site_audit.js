@@ -757,5 +757,15 @@
   for(const t of [TRAINS.find(x=>x.ring),TRAINS.find(x=>x.fast),TRAINS.find(x=>x.type==='InterCity')].filter(Boolean)){setCurrentStation(t.route[1]?.[0]||t.route[0][0]);chooseTrain(t);look('.train-hero .service-dest','train page')}
   setViewMode('departures');setCurrentStation('Peiting Central');look('#board .trainrow .dest','board');fillStationInfo('Peiting Central');look('.station-name-band','station');
   setCurrentStation(st0||LABELS[0]);out.counts['heading lines checked']=nt}
+ // line breaks (user 2026-11-22): text wraps between words; a word is hyphenated only when it alone is wider than its box. Every
+ // wrapped text block: hyphenation on only if a single word overflows; nothing overflows its box. English and French.
+ {const st0=currentStation,loc0=rrActiveLocale;let nw=0;
+  const check=lab=>{rrHyphenateLongWords();for(const el of document.querySelectorAll(RR_WRAP_SEL)){if(!el.clientWidth)continue;nw++;
+   el.classList.add('rr-hyphen-probe');const long=el.scrollWidth>el.clientWidth+1;el.classList.remove('rr-hyphen-probe');const hy=getComputedStyle(el).hyphens==='auto';
+   if(hy&&!long){bad('hyphenation where whole words fit',lab+': '+el.textContent.trim().slice(0,30));return}
+   if(!hy&&long){bad('long word neither hyphenated nor fitted',lab+': '+el.textContent.trim().slice(0,30));return}}};
+  for(const loc of ['en','fr']){rrApplyLocale(loc);for(const n of ['Peiting Central','Mapleriver Central'].filter(n=>S.has(n))){fillStationInfo(n);rrLocalizeSubtree(document.body);check(loc+' station '+n)}
+   const t=TRAINS.find(x=>x.ring)||TRAINS[0];setCurrentStation(t.route[1][0]);chooseTrain(t);rrLocalizeSubtree(document.body);check(loc+' train')}
+  rrApplyLocale(loc0);setCurrentStation(st0||LABELS[0]);out.counts['line breaks checked']=nw}
  const fails=Object.keys(out.counts).filter(k=>!/checked$/.test(k));out.ok=!fails.length;return out;
 })()
