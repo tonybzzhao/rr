@@ -917,3 +917,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .station-conn-detail{font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate);white-space:nowrap}
 /* Regio network page: a line is its badges only, RX and RS side by side (user 2026-11-21: "no need to show station names") */
 .system-line-badges{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+/* Network details: only that network stands out (user 2026-11-21) */
+.app.system-focus .rail{opacity:.18}
+.app.system-focus #stationLayer g.off-system{opacity:.18}
+.app.system-focus #labelLayer .station-label.off-system{display:none}
+.system-overlay-line{fill:none;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}

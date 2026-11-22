@@ -76,10 +76,12 @@
   if(st0)setCurrentStation(st0);out.counts['airport glyphs checked']=ng}
 // every Regio network has a network page like a Local one (user 2026-11-21), and the journey Reset leaves an empty planner on Journeys
 {let nn=0;const nets=[...new Set(TRAINS.filter(t=>t.type==='Regio').map(t=>t.network))];
-  for(const n of nets){fillLocalSystem(n,currentStation,'Regio');nn++;if(!detail.querySelector('.system-hero[data-type="Regio"]')||!detail.querySelectorAll('.system-line').length)bad('Regio network without its network page',n);
+  for(const n of nets){fillLocalSystem(n,currentStation,'Regio');drawMap();nn++;
+   if(!app.classList.contains('system-focus')||!document.querySelectorAll('#systemOverlay path').length)bad('Regio network page does not single out its network on the map',n);
+   if([...document.querySelectorAll('#stationLayer g[data-station]:not(.off-system)')].some(g=>!rrFocusSystem.names.has(g.dataset.station)))bad('another network\'s station not faded on a network page',n);if(!detail.querySelector('.system-hero[data-type="Regio"]')||!detail.querySelectorAll('.system-line').length)bad('Regio network without its network page',n);
    if(!location.hash.startsWith('#regio/'))bad('Regio network page not at a #regio/ address',n+' '+location.hash);
    for(const b of detail.querySelectorAll('.system-line')){const arrow=b.querySelector('.rr-arrow-icon')?.getBoundingClientRect(),ends=b.querySelector('.line-ends')?.getBoundingClientRect();if(arrow&&ends&&ends.right>arrow.left+1){bad('line ends run into the arrow',n+': '+b.innerText.replace(/\s+/g,' '));break}}}
-  app.classList.remove('detail-open');clear();out.counts['Regio network pages checked']=nn;
+  app.classList.remove('detail-open');clear();drawMap();if(document.querySelector('#stationLayer g.off-system'))bad('faded stations left after the network page closed','');out.counts['Regio network pages checked']=nn;
   setViewMode('journeys');rrSelectValue($('from'),LABELS[0]);rrSelectValue($('to'),LABELS[1]);$('clear').click();
   if(viewMode!=='journeys'||$('from').value||$('to').value)bad('journey Reset did not leave an empty planner on Journeys',viewMode+' '+$('from').value+' '+$('to').value);
   setViewMode('departures')}
@@ -91,6 +93,9 @@
    if(rows.length!==x.conn.length)bad('station connections missing from Services',x.name);
    for(const r of rows){const m=r.dataset.mode;if(m!=='metro'&&!r.querySelector('.station-conn-icon use'))bad('connection without its pictogram',x.name+': '+m);
     if(m==='airport'&&!/ \([A-Z]{3}\)$/.test(r.querySelector('.station-svc-name').textContent.trim()))bad('airport row without its official name and (IATA) code',x.name)}}
+  // invented names are English (Windale, not Vindelle; user 2026-11-21) and every airport code is unique
+  {const codes=STATIONS.flatMap(x=>(x.conn||[]).filter(c=>c[0]==='airport').map(c=>c[2]));if(new Set(codes).size!==codes.length)bad('an IATA code used twice',codes.join(' '));
+   for(const x of STATIONS)for(const c of x.conn||[])if(/Vindelle|Érableuve|Pétine|Métro\b|Aéroport international/.test(c[1]))bad('connection name not in English',x.name+': '+c[1])}
   app.classList.remove('detail-open');setCurrentStation(st0);out.counts['station connections checked']=nc}
 // a station's facilities never use a train's words (user 2026-11-21: "station has no voiture-restaurant, that is on trains")
 {let nf=0;for(const l of [STATION_CORE,...Object.values(STATION_AMENITIES)])for(const f of l){nf++;if(['Dining','Quiet Zone','First Class','Bistro'].includes(f))bad('train-only facility listed for a station',f)}out.counts['station facility labels checked']=nf}
@@ -303,7 +308,7 @@
  const hit=(a,b,m=0)=>a.x<b.x+b.w-m&&b.x<a.x+a.w-m&&a.y<b.y+b.h-m&&b.y<a.y+a.h-m;
  const checkNames=lab=>{const o=map.getBoundingClientRect(),marks=new Map();
   for(const g of layer.querySelectorAll('g[data-station]')){const parts=[...g.children].filter(e=>!e.classList.contains('mapnode'));if(parts.length)marks.set(g.dataset.station,parts.map(e=>box(e,o)))}
-  const names=[...labels.querySelectorAll('.station-label')].map(g=>({name:g.getAttribute('aria-label').replace(/^Show departures at /,''),b:box(g.querySelector('text'),o),over:!!g.querySelector('.over-lines')}));
+  const names=[...labels.querySelectorAll('.station-label')].filter(g=>g.getClientRects().length).map(g=>({name:g.getAttribute('aria-label').replace(/^Show departures at /,''),b:box(g.querySelector('text'),o),over:!!g.querySelector('.over-lines')}));
   for(const n of names){const own=marks.get(n.name);if(!own){bad('name without its station mark',lab+': '+n.name);continue}
    const c=own[0],dx=Math.max(n.b.x-(c.x+c.w),0,c.x-(n.b.x+n.b.w)),dy=Math.max(n.b.y-(c.y+c.h),0,c.y-(n.b.y+n.b.h));   // gap between the name and its mark
    if(Math.hypot(dx,dy)>44)bad('name away from its station',lab+': '+n.name);
