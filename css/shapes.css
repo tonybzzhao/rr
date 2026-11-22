@@ -977,3 +977,7 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 .rr-firstlast td{padding:8px 0;border-top:1px solid var(--stroke-soft);vertical-align:top;font-weight:var(--fw-bold);color:var(--ink-strong)}
 .rr-firstlast td:first-child .rr-fast-tag{margin-left:6px}
 .rr-firstlast .fl-from{display:block;font-size:var(--fs-small);font-weight:var(--fw-regular);color:var(--muted-slate)}
+/* Mainline track that high-speed trains can also use is drawn slightly thicker, Mainline-only track slightly thinner (user
+   2026-11-22: "slightly thicker mainline to illustrate both mainline and hs can run. slightly thinner stroke for mainline only") */
+.rail.hsl{stroke-width:3.4}
+.rail.ml{stroke-width:2.2}

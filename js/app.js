@@ -294,13 +294,18 @@ function rrSharedChains(kind){
    const cos=Math.max(0.6,nx*b_[0]+ny*b_[1]),k=1/cos;               // mitre, limited to ~1.7x on sharp corners
    const t=Math.min(1,cum[i]/TAPER,(len-cum[i])/TAPER);
    return[nx*k*t,ny*k*t]});
-  return {pts,ns};
+  return {pts,ns,ids:c};
  });
 }
 function rrSharedPath(o,kind=1){return rrSharedChains(kind).map(({pts,ns})=>'M'+pts.map((p,i)=>(p[0]+ns[i][0]*o).toFixed(2)+' '+(p[1]+ns[i][1]*o).toFixed(2)).join('L')).join('')}
-function rrDrawShared(sc){if(sc===rrDrawShared.sc)return;rrDrawShared.sc=sc;const o=1.6/sc,d={ml:'',regio:'',local:''};
- for(const [k,lanes] of Object.entries(RR_SHARE_LANES))for(const [sys,m] of Object.entries(lanes))d[sys]+=rrSharedPath(m*o,+k);
- $('mlShared').setAttribute('d',d.ml);$('regioShared').setAttribute('d',d.regio);$('localShared').setAttribute('d',d.local)}
+// the Mainline lane split by track class: high-speed-capable (class 1) drawn thicker than Mainline-only (user 2026-11-22)
+const RR_EDGE_CLS=new Map(E.map(([a,b,t])=>[a<b?a+'_'+b:b+'_'+a,t]));
+function rrSharedPathCls(o,kind,hs){let d='';for(const {pts,ns,ids} of rrSharedChains(kind)){let run=false;for(let i=0;i<pts.length;i++){
+  const t=i<pts.length-1?RR_EDGE_CLS.get(ids[i]<ids[i+1]?ids[i]+'_'+ids[i+1]:ids[i+1]+'_'+ids[i]):null,on=t!=null&&(t===1)===hs,xy=(pts[i][0]+ns[i][0]*o).toFixed(2)+' '+(pts[i][1]+ns[i][1]*o).toFixed(2);
+  if(on&&!run){d+='M'+xy;run=true}else if(run){d+='L'+xy;if(!on)run=false}}}return d}
+function rrDrawShared(sc){if(sc===rrDrawShared.sc)return;rrDrawShared.sc=sc;const o=1.6/sc,d={ml:'',hsl:'',regio:'',local:''};
+ for(const [k,lanes] of Object.entries(RR_SHARE_LANES))for(const [sys,m] of Object.entries(lanes)){if(sys==='ml'){d.ml+=rrSharedPathCls(m*o,+k,false);d.hsl+=rrSharedPathCls(m*o,+k,true)}else d[sys]+=rrSharedPath(m*o,+k)}
+ $('mlShared').setAttribute('d',d.ml);$('hslShared').setAttribute('d',d.hsl);$('regioShared').setAttribute('d',d.regio);$('localShared').setAttribute('d',d.local)}
 function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',(GRAPH.land||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));$('waterShape')?.setAttribute('d',(GRAPH.water||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));const g=[],sh=[],lc=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;if(shared)continue;(t===3?lc:t===2?g:t?h:m).push(d)}$('localTrack').setAttribute('d',lc.join(' '));$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '))}
 
 const routeCache=new Map(),routeStopPathEnds=new Map();
