@@ -17,28 +17,26 @@ if(typeof RR_PATTERNS!=='undefined')for(const p of RR_PATTERNS){
   TRAINS.push({id:`${p.type==='Local'?p.line:label}·${p.code}-${p.dir}${String(hh).padStart(2,'0')}${p.type==='Local'||p.pat==='AX'?String(s0%60).padStart(2,'0'):''}`,label,dir:p.dir,hh,mp:p.mp,type:p.type,pattern:p.type==='Regio'?p.pat:undefined,fast:p.pat==='F'||undefined,form:p.form,line:p.line,network:p.net,origin:route[0][0],dest:route[route.length-1][0],route,plat,status:'On time',stock:p.stock,fac:p.fac,platforms,ring})}}
 /* Daily operations. The timetable is identical every day; what changes is
    the day's running: delays, cancellations and platform alterations. They are
-   drawn from a seed made of the viewer's local date, so every visitor sees the
+   drawn from a seed made of Radeland's date, so every visitor sees the
    same disruption on the same day and a new pattern tomorrow. Delays only show
    for trains that are running or due to leave soon, as they would on a real
    information screen. */
 /* Radeland time, one zone nationwide: Radelish Standard Time (RST, UTC−1); Radelish Daylight Time (RDT, UTC±0) from the
    last Sunday of March to the last Sunday of October, changing at 01:00 UTC.
-   Timetables and opening hours are written in Radeland local time, and "now" is Radeland's clock. Every time shown
-   is converted to the visitor's own time zone (RR_SHOW_SHIFT minutes). */
+   Timetables and opening hours are written in Radeland local time, and "now" is the real clock converted to Radeland
+   time. Every time and date shown, and every time or date typed in, is Radeland time whatever the visitor's own zone
+   (user 2026-11-22: "show radeland time do not specify it on website"): no zone note. */
 function rrLastSunday(y,m){const d=new Date(Date.UTC(y,m+1,0,1));d.setUTCDate(d.getUTCDate()-d.getUTCDay());return d.getTime()}
 function rrRadelandOffset(ms=Date.now()){const y=new Date(ms).getUTCFullYear();return ms>=rrLastSunday(y,2)&&ms<rrLastSunday(y,9)?0:-60}
 function rrNow(){const ms=Date.now(),d=new Date(ms);return new Date(ms+(rrRadelandOffset(ms)+d.getTimezoneOffset())*60000)}   // local getters read Radeland wall-clock time
-const RR_SHOW_SHIFT=-new Date().getTimezoneOffset()-rrRadelandOffset();
-function rrShowMinutes(m){return m+RR_SHOW_SHIFT}
-// How many of the visitor's calendar days ahead something is that happens rel minutes from now.
-function rrLocalDayOff(rel){return Math.round((rrDay(0,new Date(Date.now()+rel*60000))-rrDay(0))/864e5)}
-function rrToRadeland(m){return m-RR_SHOW_SHIFT}
+// How many Radeland calendar days ahead something is that happens rel minutes from now.
+function rrLocalDayOff(rel){return Math.floor((rrNowMinutes()+rel)/1440)}
 function rrDateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 let RR_DAY_KEY=rrDateKey(rrNow());
 function rrNowMinutes(){const d=rrNow();return d.getHours()*60+d.getMinutes()}
 // Dates: long form "Wednesday, 18/11/2026", short form "Wed, 18/11" (French: "mercredi 18/11/2026", "mer. 18/11").
 const RR_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-function rrDay(offset=0,base=new Date()){/* dates shown follow the visitor's calendar */const d=new Date(base);d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return d}
+function rrDay(offset=0,base=rrNow()){/* dates shown follow Radeland's calendar */const d=new Date(base);d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return d}
 function rrIsoDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function rrFmtDate(d,long=true){const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),wd=RR_DAYS[d.getDay()];
  return long?`${wd}, ${dd}/${mm}/${d.getFullYear()}`:`${wd.slice(0,3)}, ${dd}/${mm}`}
@@ -583,7 +581,7 @@ function rrStationFault(name){
 }
 function rrStationTier(name){return NATIONAL_HUBS.has(name)?'national':MAJOR_STATIONS.has(name)?'major':(REGIONAL_INTERCHANGES.has(name)||AIRPORT_STATIONS.has(name))?'regional':'local'}
 function rrHoursOn(h,day){return day===0?h.sun:day===6?h.sat:h.wk}
-function rrClock(m){return m>=1440&&!RR_SHOW_SHIFT?'24:00':rrMinutesToInput(rrShowMinutes(m))}
+function rrClock(m){return m>=1440?'24:00':rrMinutesToInput(m)}
 function rrOpenStatus(h){
  const d=rrNow(),day=d.getDay(),now=d.getHours()*60+d.getMinutes(),t=rrHoursOn(h,day);
  if(t&&t[0]===0&&t[1]>=1440)return{open:true,text:'Open 24 hours'};
@@ -691,8 +689,8 @@ function rrStationHours(name){
  if(gap<180)return {allDay:true};
  const hm=x=>{x=((x%1440)+1440)%1440;return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')};
  return {open:hm(m[(at+1)%m.length]-30),close:hm(m[at]+15)}}
-// a daily time (first / last train, opening hours) in the visitor's time zone, without a day mark
-function rrDailyTime(x){return `<span class="time-value"><span class="time-primary">${rrMinutesToInput(rrShowMinutes(timeOrdinal(x)))}</span></span>`}
+// a daily time (first / last train, opening hours), without a day mark
+function rrDailyTime(x){return `<span class="time-value"><span class="time-primary">${rrMinutesToInput(timeOrdinal(x))}</span></span>`}
 // first and last of a set of daily times: the first after the longest quiet spell, the last before it
 function rrFirstLast(times){const m=[...new Set(times.map(x=>timeOrdinal(x)%1440))].sort((a,b)=>a-b);let gap=-1,at=0;
  for(let i=0;i<m.length;i++){const g=((m[(i+1)%m.length]-m[i])+1440)%1440||1440;if(g>gap){gap=g;at=i}}
@@ -1927,13 +1925,12 @@ $('zoomIn').onclick=()=>zoomAt(1.25);$('zoomOut').onclick=()=>zoomAt(.8);$('zoom
 let viewMode='departures',journeyResults=[],selectedJourney=null,journeyShown=12,selectedLegPaths=[],appliedJourneyQuery=null,journeyEditing=false;
 const JOURNEY_MAX_RESULTS=260;
 function fmtDuration(n){const h=Math.floor(n/60),m=n%60;return h?(m?`${h}h ${String(m).padStart(2,'0')}m`:`${h}h`):`${m} min`}
-// Day marks (+1) count the visitor's days from a reference day: the stop being looked at (timetable, route and train details) or
-// the journey's first departure. Counted from the Radeland timetable day instead, a visitor behind Radeland saw 23:47 -1 for a
-// train that leaves tonight in their own time (user 2026-11-20: "what is -1?"); the timetable's day dividers already give the day.
-function rrDayIdx(s){return Math.floor(rrShowMinutes(timeOrdinal(s))/1440)}
+// Day marks (+1) count Radeland days from a reference day: the stop being looked at (timetable, route and train details) or
+// the journey's first departure, so a mark only shows where a train really runs past midnight; the day dividers give the day.
+function rrDayIdx(s){return Math.floor(timeOrdinal(s)/1440)}
 function timeMarkup(s,base=0){
  if(!/^\d{1,2}:\d{2}(\s*\+\d+)?$/.test(String(s)))return String(s);
- const total=rrShowMinutes(timeOrdinal(s)),day=Math.floor(total/1440)-base,hm=rrMinutesToInput(total);   // shown in the visitor's time zone
+ const total=timeOrdinal(s),day=Math.floor(total/1440)-base,hm=rrMinutesToInput(total);
  // Keep time and the day-offset together as one non-wrapping unit.
  return `<span class="time-value"><span class="time-primary">${hm}</span>${day?` <span class="day-offset">${day>0?'+':'−'}${Math.abs(day)}</span>`:''}</span>`;
 }
@@ -2106,14 +2103,14 @@ function setViewMode(mode){
  $('focusRoute').hidden=true;app.classList.remove('detail-open');
  requestAnimationFrame(resize);
 }
-function rrTimeInputMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):rrShowMinutes(RR_NOW)}
+function rrTimeInputMinutes(v){const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):RR_NOW}
 function rrMinutesToInput(n){n=((n%1440)+1440)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function rrJourneyDate(){const v=$('journeyWhenDate').value,m=v.match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(+m[1],+m[2]-1,+m[3],12):rrDay(0)}
 function rrJourneyDayOffset(){return Math.max(0,Math.round((rrJourneyDate()-rrDay(0))/864e5))}
 function rrJourneyDayLabel(extra){const off=rrJourneyDayOffset()+extra;return rrDayLabel(off)}
 function rrSyncWhenTabs(){const v=$('journeyWhenMode').value;document.querySelectorAll('.rr-when-tab').forEach(b=>{const on=b.dataset.when===v;b.classList.toggle('active',on);b.setAttribute('aria-selected',on)})}
 function rrSyncWhenDate(){rrSyncWhenTabs();$('journeyWhenDateLabel').textContent=rrJourneyDayOffset()===0?'Today':rrFmtDate(rrJourneyDate(),false)}
-function rrJourneyWhen(){return{mode:$('journeyWhenMode').value,time:(rrToRadeland(rrTimeInputMinutes($('journeyWhenTime').value))%1440+1440)%1440}}   // the field is in the visitor's time
+function rrJourneyWhen(){return{mode:$('journeyWhenMode').value,time:rrTimeInputMinutes($('journeyWhenTime').value)%1440}}
 // Order journeys around the chosen time. Depart after: from that time on,
 // wrapping into tomorrow. Arrive by: the latest arrivals before that time first.
 function rrJourneyWindow(list){
@@ -2126,7 +2123,7 @@ function rrJourneyWindow(list){
  }
  return list.map(j=>({j,rel:rrRelative(j.dep,time,0)}))
   .sort((a,b)=>a.rel-b.rel||a.j.change-b.j.change||a.j.arr-b.j.arr)
-  .map(x=>Object.assign(x.j,{whenTomorrow:((rrShowMinutes(time)%1440+1440)%1440)+x.rel>=1440}))   // the visitor's midnight
+  .map(x=>Object.assign(x.j,{whenTomorrow:time+x.rel>=1440}))   // past Radeland midnight
   .map(rrJourneyPlanned);
 }
 // Live running is only known for today: journeys on another day show the plan.
@@ -2156,7 +2153,7 @@ function renderJourneyResults(){
  if(!from||!to){$('journeyCount').textContent='';board.innerHTML='<div class="empty">Choose a From and a To station.</div>';return}
  const onlyDirect=query.directOnly;
  const list=rrJourneyWindow(journeyResults.filter(j=>(!onlyDirect||j.change===0)&&(!query.highSpeedOnly||j.legs.every(l=>isHighSpeed(l.train)))));
- {const w=rrJourneyWhen(),off=rrJourneyDayOffset();$('journeyCount').innerHTML=`<span>${list.length} ${list.length===1?'journey':'journeys'}</span><span class="jr-sep">·</span><span>${w.mode==='arrive'?'Arrive by':'Depart after'}</span> <span class="jr-time">${rrMinutesToInput(rrShowMinutes(w.time))}</span><span class="jr-sep">·</span><span>${off===0?'Today':off===1?'Tomorrow':rrFmtDate(rrJourneyDate(),false)}</span>`}
+ {const w=rrJourneyWhen(),off=rrJourneyDayOffset();$('journeyCount').innerHTML=`<span>${list.length} ${list.length===1?'journey':'journeys'}</span><span class="jr-sep">·</span><span>${w.mode==='arrive'?'Arrive by':'Depart after'}</span> <span class="jr-time">${rrMinutesToInput(w.time)}</span><span class="jr-sep">·</span><span>${off===0?'Today':off===1?'Tomorrow':rrFmtDate(rrJourneyDate(),false)}</span>`}
  if(from===to){board.innerHTML='<div class="empty">Choose two different stations.</div>';return}
  if(!list.length){board.innerHTML=`<div class="empty">No ${query.highSpeedOnly?'high-speed ':''}${onlyDirect?'direct ':''}journeys found between these stations in the current timetable.</div>`;return}
  const arriveBy=rrJourneyWhen().mode==='arrive';
@@ -2292,7 +2289,7 @@ $('journeysTab').addEventListener('click',()=>setViewMode('journeys'));
 // Filter existing results immediately; new stations still require Find trains.
 $('directOnly').addEventListener('change',refreshJourneyFilters);
 $('highSpeedOnly').addEventListener('change',refreshJourneyFilters);
-$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(RR_NOW));
+$('journeyWhenTime').value=rrMinutesToInput(RR_NOW);
 $('journeyWhenDate').value=$('journeyWhenDate').min=rrIsoDate(rrDay(0));rrSyncWhenDate();
 $('journeyWhenDate').addEventListener('change',()=>{if(!$('journeyWhenDate').value||$('journeyWhenDate').value<$('journeyWhenDate').min)$('journeyWhenDate').value=$('journeyWhenDate').min;rrSyncWhenDate();rrJourneyWhenChanged()});
 $('journeyWhenDate').addEventListener('click',e=>{try{e.target.showPicker()}catch(_){}});
@@ -2300,7 +2297,7 @@ function rrJourneyWhenChanged(){if(!appliedJourneyQuery)return;journeyShown=12;r
 $('journeyWhenMode').addEventListener('change',()=>{rrSyncWhenTabs();rrJourneyWhenChanged()});
 document.querySelectorAll('.rr-when-tab').forEach(b=>b.addEventListener('click',()=>{if($('journeyWhenMode').value===b.dataset.when)return;$('journeyWhenMode').value=b.dataset.when;$('journeyWhenMode').dispatchEvent(new Event('change'))}));
 $('journeyWhenTime').addEventListener('change',()=>rrJourneyWhenChanged());
-$('journeyWhenNow').addEventListener('click',()=>{$('journeyWhenMode').value='depart';$('journeyWhenDate').value=rrIsoDate(rrDay(0));rrSyncWhenDate();$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(rrNowMinutes()));rrJourneyWhenChanged()});
+$('journeyWhenNow').addEventListener('click',()=>{$('journeyWhenMode').value='depart';$('journeyWhenDate').value=rrIsoDate(rrDay(0));rrSyncWhenDate();$('journeyWhenTime').value=rrMinutesToInput(rrNowMinutes());rrJourneyWhenChanged()});
 // Keep the clock moving: refresh live status every minute, and start a new
 // day's running pattern after midnight.
 // Re-render an open train or journey panel when its live status changes,
@@ -2828,7 +2825,7 @@ function rrApplyHash(){
   else if(kind==='journey'&&(S.has(a)||RR_CITIES.has(a))&&(S.has(b)||RR_CITIES.has(b))&&a!==b){
    rrSelectValue($('from'),a);rrSelectValue($('to'),b);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();
    const m=String(c||'').match(/^(dep|arr)-(\d{2})(\d{2})$/);
-   if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';rrSyncWhenTabs();$('journeyWhenTime').value=rrMinutesToInput(rrShowMinutes(+m[2]*60+(+m[3])))}
+   if(m&&+m[2]<24&&+m[3]<60){$('journeyWhenMode').value=m[1]==='arr'?'arrive':'depart';rrSyncWhenTabs();$('journeyWhenTime').value=rrMinutesToInput(+m[2]*60+(+m[3]))}
    searchJourneys();
    if(d){const j=journeyResults.find(x=>x.key===d);if(j)chooseJourney(j)}
   }
