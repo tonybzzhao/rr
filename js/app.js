@@ -225,7 +225,19 @@ function rrVia(t,isArrival,n=t.ring?2:1){const i0=t.hereIndex??t.route.findIndex
 // a Regio or Local train always names the airport it calls at on the way (user 2026-11-21), the end itself left out
 function rrViaAirport(t,seq,end){if(t.type!=='Regio'&&t.type!=='Local')return null;for(const [nm] of seq)if(nm!==end&&rrIsAirport(nm))return nm;return null}
 function rrFastTag(t){return t.fast?'<span class="rr-fast-tag" title="Fast: calls at the main stations only">Fast</span>':''}
-function rrBadge(t){return `<span class="service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}" style="--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}">${rrTrainLabel(t)}</span>`}
+function rrBadge(t,from=null){const cls=`service${rrOutline(t)?' rr-ic-outline':''}${rrTrainLabel(t).length===1?' service-square':''}`,style=`--service-color:${rrTrainCss(t)};--rr-white-text-fill:${rrTrainFill(t)}${rrInk(t)}`;
+ // with a boarding station (journey results) the badge is the train's link: that train's page as departing from there (user 2026-11-22)
+ return from?`<button type="button" class="${cls} rr-train-link" style="${style}" data-train="${t.id}" data-from="${encodeURIComponent(from)}" aria-label="Train ${rrTrainLabel(t)} from ${from}" title="Train ${rrTrainLabel(t)} from ${from}">${rrTrainLabel(t)}</button>`:`<span class="${cls}" style="${style}">${rrTrainLabel(t)}</span>`}
+// a train as its station's board opens it: departing from that station (else arriving there)
+function rrOpenTrainAt(id,station){
+ const t=TRAINS.find(x=>x.id===id);if(!t)return null;
+ const st=station&&S.has(station)&&t.route.some(r=>r[0]===station)?station:t.route[0][0];
+ viewMode='departures';setCurrentStation(st);
+ let row=upcoming(st).find(x=>x.id===id);
+ if(!row){viewMode='arrivals';setCurrentStation(st);row=arriving(st).find(x=>x.id===id)}
+ if(row)chooseTrain(row);
+ return row||null}
+function rrWireTrainLinks(root){root.querySelectorAll('.rr-train-link').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();rrOpenTrainAt(b.dataset.train,decodeURIComponent(b.dataset.from));rrSyncHash()}))}
 function isHighSpeed(train){return train.type==='Max'||train.type==='VIA'}
 const P=GRAPH.pts, E=GRAPH.edges;
 const $=id=>document.getElementById(id);
@@ -956,17 +968,12 @@ function rrFacilities(car){
  if(car.role==='First')names.unshift('first');
  return names.map(name=>`<span class="rr-fac-item">${rrIcon(name)}<span>${RR_FACILITY_LABEL[name]||name}</span></span>`).join('');
 }
-function rrDirection(t,from=null,to=null){
+function rrDirection(t){
  // The local travel direction follows adjacent calls on the schematic.
  const route=t.route||[];
  const i=route.findIndex(x=>x[0]===currentStation);
- if(!from||!to){
-  const a=i>=0?i:0;
-  const b=a<route.length-1?a+1:a;
-  const p=b===a?Math.max(0,a-1):a;
-  from=route[p]?.[0]||t.origin;
-  to=route[b]?.[0]||t.dest;
- }
+ const ia=i>=0?i:0,ib=ia<route.length-1?ia+1:ia,ip=ib===ia?Math.max(0,ia-1):ia;
+ const from=route[ip]?.[0]||t.origin,to=route[ib]?.[0]||t.dest;
  const a=S.get(from),b=S.get(to);
  if(a&&b){
   const dx=b.x-a.x,dy=b.y-a.y;
@@ -993,7 +1000,7 @@ function rrCoachSelectionOutline(shape){
  const y1=shape.includes('first')?29:25,pad=1.2+.45;   // clearance + half of the .9-unit stroke
  return `<svg class="rr-car-selection-outline" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="${2-pad}" y="${3-pad}" width="${28+2*pad}" height="${y1-3+2*pad}" rx="1.4"/></svg>`;
 }
-function rrCoachFormation(t,fromStation=null,toStation=null){
+function rrCoachFormation(t){
  if(t.type==='Local')return '';   // RR Local shows no train formation
  const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
  const n=form.cars.length;   // no coach selected at first; a coach is selected and deselected by clicking it (user 2026-11-20)
@@ -1017,7 +1024,7 @@ function rrCoachFormation(t,fromStation=null,toStation=null){
  const widths=metrics.sections.map(({letter,width})=>
   `<span class="rr-section-cell" style="flex:0 0 ${width}px;width:${width}px">${letter}</span>`
  ).join('');
- const dir=rrDirection(t,fromStation,toStation);
+ const dir=rrDirection(t);
 
  return `<section class="rr-formation" style="--rr-direction-color:${color}" data-rr-form="${form.key}" data-rr-train="${t.id}">
   <h3>Train formation</h3>
@@ -2033,12 +2040,13 @@ function renderJourneyResults(){
  if(rrJourneyDayOffset()>0&&shown.length&&!shown[0].whenTomorrow){const d=document.createElement('div');d.className='rr-day-divider';d.textContent=rrJourneyDayLabel(0);board.append(d)}
  for(const j of shown){
   if(j.whenTomorrow&&!dividerShown){dividerShown=true;const d=document.createElement('div');d.className='rr-day-divider';d.textContent=rrJourneyDayLabel(1);board.append(d)}
-  const el=document.createElement('button');el.type='button';el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
+  const el=document.createElement('div');el.className='journey-row'+(selectedJourney?.key===j.key?' selected':'');
   el.style.setProperty('--journey-color',rrTrainCss(j.legs[0].train));
-  const badges=j.legs.map(l=>`${rrBadge(l.train)}`).join('');
+  const badges=j.legs.map(l=>rrBadge(l.train,l.from)).join('');
   const jb=rrJourneyBase(j),depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx,jb),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx,jb);
-  el.innerHTML=`<div class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></div><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
-  el.addEventListener('click',()=>selectedJourney?.key===j.key?clear():chooseJourney(j));board.append(el);
+  // the open button covers the card (::after); the train badges are buttons of their own above it (a button holds no button)
+  el.innerHTML=`<button type="button" class="journey-row-open"><span class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></span></button><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
+  el.querySelector('.journey-row-open').addEventListener('click',()=>selectedJourney?.key===j.key?clear():chooseJourney(j));rrWireTrainLinks(el);board.append(el);
  }
  if(!arriveBy&&journeyShown<list.length){const more=document.createElement('button');more.type='button';more.className='journey-more';more.textContent='Show more journeys';more.addEventListener('click',()=>{journeyShown+=12;renderJourneyResults()});board.append(more)}
 }
@@ -2105,12 +2113,6 @@ function rrJourneyNode(t,index,name,kind,spineIn,spineOut,legIndex){
  // kind: board | alight. spineIn/spineOut: none | solid | dot
  return `<li class="jt-row jt-node jt-${kind}"><div class="jt-time">${stopTimeMarkup(t,index,rrJourneyDay)}</div><div class="jt-spine jt-in-${spineIn} jt-out-${spineOut}" aria-hidden="true"><span class="jt-dot"></span></div><button type="button" class="jt-station stop-station" data-leg="${legIndex}" data-name="${encodeURIComponent(name)}" title="View station">${name}</button>${rrPlatformMarkup(rrPlatformAt(t,name),rrPlatformChangedFrom(t,name))}</li>`;
 }
-function rrJourneyCoachSummary(t,fromStation,toStation){
- if(t.type==='Local')return '';
- const form=RR_FORMATIONS[rrFormationKey(t)];if(!form)return '';
- const n=form.cars.length;
- return `<details class="jt-coach"><summary><span class="jt-coach-text"><span class="jt-coach-no">Train formation</span><span class="jt-coach-section">${n} coaches</span></span><span class="jt-chevron" aria-hidden="true"></span></summary>${rrCoachFormation(t,fromStation,toStation)}</details>`;
-}
 function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
  rrDetailsHeading('Journey details','rr-ui-more');$('focusRoute').hidden=false;
  const from=j.legs[0].from,to=j.legs[j.legs.length-1].to;
@@ -2124,10 +2126,9 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   rows+=`<li class="jt-leg" style="${accent}"><ol class="jt-leg-list">`;
   rows+=rrJourneyNode(t,leg.fromIdx,leg.from,'board',index?'dot':'none','solid',index);
   rows+=`<li class="jt-row jt-ride"><div class="jt-time"></div><div class="jt-spine jt-in-solid jt-out-solid" aria-hidden="true"></div><div class="jt-card">
-   <h3 class="jt-card-head">${rrBadge(t)}<span class="jt-service">${rrServiceLabel(t.type,t.network)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
+   <h3 class="jt-card-head">${rrBadge(t,leg.from)}<span class="jt-service">${rrServiceLabel(t.type,t.network)}</span>${statusTag(stopStatus(t,leg.fromIdx))}</h3>${rrAlertMarkup(t,'rr-alert-banner rr-alert-leg')}
    <div class="jt-towards">${t.ring?`${rrRingIcon(t)}<span>${rrDestText(t)}</span>`:`<span class="jt-towards-label">towards</span> <span>${t.dest}</span>${rrFastTag(t)}`}</div>
    <div class="jt-meta"><span>${fmtDuration(leg.arr-leg.dep)}</span><span class="jt-sep" aria-hidden="true">·</span>${calls.length?`<button type="button" class="jt-calls-toggle" aria-expanded="false" aria-controls="${callsId}"><span>${stopsLabel}</span><span class="jt-chevron" aria-hidden="true"></span></button>`:`<span>${stopsLabel}</span>`}</div>
-   ${rrJourneyCoachSummary(t,leg.from,leg.to)}
   </div></li>`;
   if(calls.length){
    rows+=`<li class="jt-calls" id="${callsId}" hidden><ol class="jt-calls-list">${calls.map(([name],i)=>{
@@ -2150,7 +2151,7 @@ function fillJourneyDetails(j){rrJourneyDay=rrJourneyBase(j);
   btn.setAttribute('aria-expanded',String(open));
   document.getElementById(btn.getAttribute('aria-controls')).hidden=!open;
  }));
- detail.querySelectorAll('.jt-coach').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)requestAnimationFrame(rrEnsureCoachVisible)}));
+ rrWireTrainLinks(detail);
  detail.querySelectorAll('.stop-station').forEach(btn=>btn.addEventListener('click',()=>{
   const name=decodeURIComponent(btn.dataset.name),returned=j;
   setCurrentStation(name);fillStationInfo(name,null,returned);
@@ -2185,10 +2186,8 @@ function rrRefreshOpenDetails(){
   fillDetails(selectedTrain);
  }else if(selectedJourney&&detail.querySelector('.jt-timeline')){
   const calls=[...detail.querySelectorAll('.jt-calls-toggle')].map(b=>b.getAttribute('aria-expanded')==='true');
-  const coaches=[...detail.querySelectorAll('.jt-coach')].map(d=>d.open);
   fillJourneyDetails(selectedJourney);
   detail.querySelectorAll('.jt-calls-toggle').forEach((b,i)=>{if(calls[i])b.click()});
-  detail.querySelectorAll('.jt-coach').forEach((d,i)=>{if(coaches[i])d.open=true});
  }else return;
  detail.scrollTop=top;
 }
@@ -2472,6 +2471,7 @@ function rrFrenchText(source){
   .replace(/\b1 journey\b/g,'1 trajet')
   .replace(/\b(\d+) changes\b/g,(_,n)=>n+' correspondances')
   .replace(/\b1 change\b/g,'1 correspondance')
+  .replace(/^Train (.+?) from (.+)$/,(_,n,st)=>'Train '+n+' au départ de '+st)
   .replace(/\bChange at ([^·]+?)(?=\s*·|$)/g,(_,name)=>'Correspondance à '+name.trim())
   .replace(/^towards$/,'direction')
   .replace(/^(\d+) stops$/,'$1 arrêts').replace(/^1 stop$/,'1 arrêt').replace(/^Non-stop$/,'Sans arrêt')
@@ -2692,14 +2692,7 @@ function rrApplyHash(){
   else if(kind==='station'&&S.has(a)){viewMode='departures';setCurrentStation(a);fillStationInfo(a)}
   else if(kind==='train'){
    const id=a?.replace(/^S4([12])(?=·HB-)/,'S1$1');
-   const t=TRAINS.find(x=>x.id===id);
-   if(t){
-    viewMode='departures';
-    setCurrentStation(b&&S.has(b)&&t.route.some(r=>r[0]===b)?b:t.route[0][0]);
-    let row=departures.find(x=>x.id===t.id);
-    if(!row){viewMode='arrivals';setCurrentStation(currentStation);row=departures.find(x=>x.id===t.id)}
-    if(row)chooseTrain(row);
-   }
+   rrOpenTrainAt(id,b);
   }
   else if(kind==='journey'&&(S.has(a)||RR_CITIES.has(a))&&(S.has(b)||RR_CITIES.has(b))&&a!==b){
    rrSelectValue($('from'),a);rrSelectValue($('to'),b);pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();
