@@ -670,22 +670,33 @@
    rrSelectValue($('from'),'Peiting Central');searchJourneys();if(board.querySelector('.journey-stations'))bad('station-to-station journey shows a station line','Peiting Central')}
   rrSelectValue($('from'),f0);rrSelectValue($('to'),t0);appliedJourneyQuery=q0;journeyResults=q0?findJourneys(q0.from,q0.to):[];renderJourneyResults()}
  /* City check-in available (user 2026-11-22): on a train's stop list and a journey's boarding stop exactly where that train reaches,
-    within 90 min, an airport checked in at that station; one row with time, dot and name; French; the facility tab gives the time limit */
- {let nh=0;const mid=e=>{const r=e.getBoundingClientRect();return r.top+r.height/2};
-  const ts=TRAINS.filter(t=>t.route.some((_,i)=>rrCheckInHere(t,i))).slice(0,6);
-  for(const t of ts){const i0=t.route.findIndex((_,i)=>rrCheckInHere(t,i));rrOpenTrainAt(t.id,t.route[i0][0]);
-   const want=t.route.map((_,i)=>i>=rrTrainProgressIndex(t)&&rrCheckInHere(t,i)).filter(Boolean).length,got=detail.querySelectorAll('.stop.has-checkin').length;nh+=got;
-   if(got!==want)bad('City check-in available missing or extra on a train',t.id+': '+got+' of '+want);
-   for(const st of detail.querySelectorAll('.stop.has-checkin')){const tm=st.querySelector('.stop-time'),nm=st.querySelector('.stop-name');if(Math.abs(mid(tm)-mid(nm))>2)bad('City check-in stop: time and name out of line',t.id);
-    const m=st.querySelector('.stop-marker:not(.stop-marker-cont)').getBoundingClientRect(),c=st.querySelector('.stop-marker-cont'),cb=getComputedStyle(c,'::before'),cr=c.getBoundingClientRect(),sr=st.getBoundingClientRect();
-    if(Math.abs(cr.top-m.bottom)>1||Math.abs(cr.bottom-sr.bottom)>1||parseFloat(cb.top)!==0||parseFloat(cb.bottom)!==0)bad('City check-in stop: route line broken beside the note',t.id)}}
-  const j=findJourneys('Amptonside Central','Alderford Airport')[0];if(j){chooseJourney(j);const n=detail.querySelector('.jt-node.has-checkin');
-   if(!n)bad('journey from a check-in station to its airport without City check-in available','Amptonside Central');
-   else if(Math.abs(mid(n.querySelector('.jt-time'))-mid(n.querySelector('.jt-station')))>2)bad('City check-in stop: time and name out of line','journey')}
+    within 90 min, an airport checked in at that station AND City check-in (the station's RR Services hours) is open at that time;
+    every stop state (first, current mid-route, later), English and French: time, dot and name on one row, the route line beside the
+    note unbroken and in the untravelled route colour; the facility tab gives the time limit */
+ {let nh=0,nt=0;const mid=e=>{const r=e.getBoundingClientRect();return r.top+r.height/2};
+  const openAt=(n,ord,d)=>{const h=STATION_HOURS[rrStationTier(n)]?.['RR Services'];if(!h)return false;const dd=(d.getDay()+Math.floor(ord/1440))%7,m=((ord%1440)+1440)%1440,t=dd===0?h.sun:dd===6?h.sat:h.wk;return !!t&&m>=t[0]&&m<t[1]};
+  const lineOK=(st,id)=>{const tm=st.querySelector('.stop-time'),nm=st.querySelector('.stop-name');if(Math.abs(mid(tm)-mid(nm))>2)bad('City check-in stop: time and name out of line',id);
+   const m=st.querySelector('.stop-marker:not(.stop-marker-cont)').getBoundingClientRect(),c=st.querySelector('.stop-marker-cont'),cb=getComputedStyle(c,'::before'),cr=c.getBoundingClientRect(),sr=st.getBoundingClientRect();
+   const route=getComputedStyle(st.closest('.stop-list')).getPropertyValue('--route').trim(),probe=document.createElement('i');probe.style.color=route;document.body.append(probe);const rc=getComputedStyle(probe).color;probe.remove();
+   if(Math.abs(cr.top-m.bottom)>1||Math.abs(cr.bottom-sr.bottom)>1||parseFloat(cb.top)!==0||parseFloat(cb.bottom)!==0)bad('City check-in stop: route line broken beside the note',id);
+   if(cb.backgroundImage!=='none'||(route&&cb.backgroundColor!==rc))bad('City check-in stop: line beside the note not in the route colour',id+': '+cb.backgroundColor+' vs '+rc)};
+  const cand=TRAINS.filter(t=>t.route.some((_,i)=>rrCheckInHere(t,i)));const pick=[...cand.filter((_,k)=>k%Math.max(1,Math.floor(cand.length/24))===0).slice(0,24)];
+  for(const t of pick){const i0=t.route.findIndex((_,i)=>rrCheckInHere(t,i));for(const at of [t.route[0][0],t.route[i0][0]]){rrOpenTrainAt(t.id,at);nt++;
+    const here=rrTrainProgressIndex(t),base=rrTrainDayBase(t),want=t.route.filter((_,i)=>i>=here&&rrCheckInHere(t,i)&&openAt(t.route[i][0],stopOrdinal(t,i),base)).length,got=detail.querySelectorAll('.stop.has-checkin').length;nh+=got;
+    if(got!==want)bad('City check-in available shown where check-in is closed / missing where open',t.id+' at '+at+': '+got+' of '+want);
+    for(const st of detail.querySelectorAll('.stop.has-checkin'))lineOK(st,t.id)}}
+  /* French: the longer note wraps; the line must still be whole */
+  {const t=pick.find(t=>{rrOpenTrainAt(t.id,t.route[0][0]);return detail.querySelector('.stop.has-checkin')});if(t){rrSetLanguage('fr');rrOpenTrainAt(t.id,t.route[0][0]);for(const st of detail.querySelectorAll('.stop.has-checkin'))lineOK(st,t.id+' (FR)');rrSetLanguage('en')}}
+  /* journeys: shown by day, hidden after closing; one row */
+  {const st0=[...MAJOR_STATIONS].find(n=>rrCityCheckIn(n)&&findJourneys(n,rrCityCheckIn(n)[0]).length);if(st0){const js=findJourneys(st0,rrCityCheckIn(st0)[0]);
+   for(const j of js.slice(0,40)){j.whenTomorrow=false;chooseJourney(j);const leg=j.legs[0],n=detail.querySelector('.jt-node.jt-board');const d=rrJourneyBoardDay(j,leg);
+    const want=rrCheckInHere(leg.train,leg.fromIdx,leg.toIdx)&&openAt(st0,stopOrdinal(leg.train,leg.fromIdx)%1440,d),got=n?.classList.contains('has-checkin');
+    if(!!got!==!!want)bad('journey: City check-in available shown while closed / missing while open',st0+' '+leg.train.route[leg.fromIdx][1]);
+    if(got&&Math.abs(mid(n.querySelector('.jt-time'))-mid(n.querySelector('.jt-station')))>2)bad('City check-in stop: time and name out of line','journey '+st0)}}}
   if(rrFrenchText('City check-in available')!=='Enregistrement en ville disponible')bad('City check-in available not in French',rrFrenchText('City check-in available'));
   const cs=[...MAJOR_STATIONS].find(n=>rrCityCheckIn(n));if(cs){fillStationInfo(cs);detail.querySelector('.facility[data-fac="City check-in"]')?.click();
    if(!detail.querySelector('.fac-detail .fac-checkin-limit')?.dataset.rrFr)bad('City check-in tab without its time limit',cs)}
-  out.counts['city check-in hints checked']=nh;if(currentStation)fillStationInfo(currentStation)}
+  out.counts['city check-in trains checked']=nt;out.counts['city check-in hints checked']=nh;if(currentStation)fillStationInfo(currentStation)}
  /* First Class lounge (user 2026-11-22): at every national station and the major Max hubs (>= RR_LOUNGE_MAX_CALLS Max calls a day), nowhere
     else, with the First icon */
  {const calls=new Map();for(const t of TRAINS)if(t.type==='Max')for(const [n] of t.route)calls.set(n,(calls.get(n)||0)+1);let nl=0;
