@@ -1084,6 +1084,8 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 /* "City check-in available" under a station on a train's stop list and a journey's boarding stop (user 2026-11-22): second row in
    the name column; a plain marker / spine segment carries the line on beside the hint, so the line stays unbroken */
 .stop.has-checkin>.stop-marker-cont{grid-column:1;grid-row:2}   /* time, dot and name stay on one row; the line carries on beside the hint */
+.stop.has-checkin>.stop-marker-cont{min-height:0}
+.stop.has-checkin>.stop-marker-cont::before{top:0!important;bottom:0!important;background:var(--route)!important}   /* full height, untravelled colour: the origin / current-stop rules must not cut it (user 2026-11-22 screenshot) */
 .stop.has-checkin>.rr-checkin-hint{grid-column:3;grid-row:2;margin:0 0 6px}
 .jt-node.has-checkin>.jt-spine-cont{grid-column:2;grid-row:2}   /* time, dot and name stay on one row; the line carries on beside the hint */
 .jt-node.has-checkin>.rr-checkin-hint{grid-column:3/5;grid-row:2;margin:0 0 6px}

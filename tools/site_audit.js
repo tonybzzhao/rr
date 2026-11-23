@@ -676,7 +676,9 @@
   for(const t of ts){const i0=t.route.findIndex((_,i)=>rrCheckInHere(t,i));rrOpenTrainAt(t.id,t.route[i0][0]);
    const want=t.route.map((_,i)=>i>=rrTrainProgressIndex(t)&&rrCheckInHere(t,i)).filter(Boolean).length,got=detail.querySelectorAll('.stop.has-checkin').length;nh+=got;
    if(got!==want)bad('City check-in available missing or extra on a train',t.id+': '+got+' of '+want);
-   for(const st of detail.querySelectorAll('.stop.has-checkin')){const tm=st.querySelector('.stop-time'),nm=st.querySelector('.stop-name');if(Math.abs(mid(tm)-mid(nm))>2)bad('City check-in stop: time and name out of line',t.id)}}
+   for(const st of detail.querySelectorAll('.stop.has-checkin')){const tm=st.querySelector('.stop-time'),nm=st.querySelector('.stop-name');if(Math.abs(mid(tm)-mid(nm))>2)bad('City check-in stop: time and name out of line',t.id);
+    const m=st.querySelector('.stop-marker:not(.stop-marker-cont)').getBoundingClientRect(),c=st.querySelector('.stop-marker-cont'),cb=getComputedStyle(c,'::before'),cr=c.getBoundingClientRect(),sr=st.getBoundingClientRect();
+    if(Math.abs(cr.top-m.bottom)>1||Math.abs(cr.bottom-sr.bottom)>1||parseFloat(cb.top)!==0||parseFloat(cb.bottom)!==0)bad('City check-in stop: route line broken beside the note',t.id)}}
   const j=findJourneys('Amptonside Central','Alderford Airport')[0];if(j){chooseJourney(j);const n=detail.querySelector('.jt-node.has-checkin');
    if(!n)bad('journey from a check-in station to its airport without City check-in available','Amptonside Central');
    else if(Math.abs(mid(n.querySelector('.jt-time'))-mid(n.querySelector('.jt-station')))>2)bad('City check-in stop: time and name out of line','journey')}
