@@ -14,6 +14,7 @@ ICONS = {   # source file -> symbol id
     'drop-off': 'drop-off', 'ticket-machine': 'ticket-machine',
     '../city-check-in': 'city-check-in',
     '111 - Luggage locker': 'luggage-locker', '106 - Cycle parking': 'cycle-parking',   # station-only facilities (2026-11-22)   # city check-in at major stations with a direct train to a major airport (2026-11-22)
+    '114 - First class lounge': 'lounge',   # First Class lounge (user's updated icon, 2026-11-22)
     '../underground': 'underground',   # metro / underground / urban rail connection (user 2026-11-22: "use new underground icon for Connections")
     '101 - Bus': 'bus', '102 - Tram': 'tram', '104 - Taxi': 'taxi', '134 - Ferry': 'ferry', 'Coach': 'coach',   # station connections (2026-11-21)
 }
