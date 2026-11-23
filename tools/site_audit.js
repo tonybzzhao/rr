@@ -660,6 +660,21 @@
    if(tile){if(!tile.querySelector('use[href="#rr-picto-city-check-in"]')||!document.getElementById('rr-picto-city-check-in'))bad('City check-in without its icon',n);
     tile.click();const note=detail.querySelector('.fac-detail .fac-note');for(const a of rrCityCheckIn(n)||[])if(!rrMetro(S.get(n)?.city).includes(rrAirportCity(a)))bad('City check-in names an airport of another city',n+': '+a);if(!note||!/^Check in your bags here for flights from .+/.test(note.textContent)||!note.dataset.rrFr?.startsWith('Enregistrez vos bagages'))bad('City check-in note missing or untranslated',n)}}
   if(rrFrenchText('City check-in')!=='Enregistrement en ville')bad('City check-in not in French',rrFrenchText('City check-in'));
+ /* City check-in available (user 2026-11-22): on a train's stop list and a journey's boarding stop exactly where that train reaches,
+    within 90 min, an airport checked in at that station; one row with time, dot and name; French; the facility tab gives the time limit */
+ {let nh=0;const mid=e=>{const r=e.getBoundingClientRect();return r.top+r.height/2};
+  const ts=TRAINS.filter(t=>t.route.some((_,i)=>rrCheckInHere(t,i))).slice(0,6);
+  for(const t of ts){const i0=t.route.findIndex((_,i)=>rrCheckInHere(t,i));rrOpenTrainAt(t.id,t.route[i0][0]);
+   const want=t.route.map((_,i)=>i>=rrTrainProgressIndex(t)&&rrCheckInHere(t,i)).filter(Boolean).length,got=detail.querySelectorAll('.stop.has-checkin').length;nh+=got;
+   if(got!==want)bad('City check-in available missing or extra on a train',t.id+': '+got+' of '+want);
+   for(const st of detail.querySelectorAll('.stop.has-checkin')){const tm=st.querySelector('.stop-time'),nm=st.querySelector('.stop-name');if(Math.abs(mid(tm)-mid(nm))>2)bad('City check-in stop: time and name out of line',t.id)}}
+  const j=findJourneys('Amptonside Central','Alderford Airport')[0];if(j){chooseJourney(j);const n=detail.querySelector('.jt-node.has-checkin');
+   if(!n)bad('journey from a check-in station to its airport without City check-in available','Amptonside Central');
+   else if(Math.abs(mid(n.querySelector('.jt-time'))-mid(n.querySelector('.jt-station')))>2)bad('City check-in stop: time and name out of line','journey')}
+  if(rrFrenchText('City check-in available')!=='Enregistrement en ville disponible')bad('City check-in available not in French',rrFrenchText('City check-in available'));
+  const cs=[...MAJOR_STATIONS].find(n=>rrCityCheckIn(n));if(cs){fillStationInfo(cs);detail.querySelector('.facility[data-fac="City check-in"]')?.click();
+   if(!detail.querySelector('.fac-detail .fac-checkin-limit')?.dataset.rrFr)bad('City check-in tab without its time limit',cs)}
+  out.counts['city check-in hints checked']=nh;if(currentStation)fillStationInfo(currentStation)}
  /* First Class lounge (user 2026-11-22): at every national station and the major Max hubs (>= RR_LOUNGE_MAX_CALLS Max calls a day), nowhere
     else, with the First icon */
  {const calls=new Map();for(const t of TRAINS)if(t.type==='Max')for(const [n] of t.route)calls.set(n,(calls.get(n)||0)+1);let nl=0;
