@@ -706,6 +706,8 @@
    if(tile&&!tile.querySelector('use[href="#rr-picto-first"]'))bad('First Class lounge without the First icon',n)}
   out.counts['first class lounge checked']=nl;if(currentStation)fillStationInfo(currentStation)}
   setCurrentStation(st0||LABELS[0]);out.counts['City check-in stations checked']=nc}
+ // no seating in station facilities (user 2026-11-22: "remove seating from facilities")
+ {for(const x of STATIONS)if(stationFacilities(x.name).includes('Seating')){bad('seating listed in station facilities',x.name);break}}   /* data check only: opening a station here changed the map's label state for the zoom checks that follow */
  // no vending machines in station facilities (user 2026-11-22: "remove vending machine from facilities")
  {let nv=0;for(const x of STATIONS){nv++;if(stationFacilities(x.name).includes('Vending machines')){bad('vending machines listed in station facilities',x.name);break}}out.counts['vending-free facilities checked']=nv}
  // facility tile labels fit inside their tile, in English and French (2026-11-22: "Enregistrement en ville" ran past the tile)
