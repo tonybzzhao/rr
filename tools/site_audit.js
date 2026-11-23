@@ -506,7 +506,7 @@
  zoom=view0.zoom;panX=view0.panX;panY=view0.panY;updateWorld();drawMap();out.counts['main-station labels checked']=nl;
  // Local networks in colour (each network's page, fitted and zoomed in): every Local station is on its coloured line;
  // every name sits by its own station mark, clear of other names and of other stations' marks
- const frame=async()=>{resize();focusRoute()};   // what the page does on its next frame (no animation frames in a hidden tab)
+ const frame=async()=>{resize();focusRoute();rrRedraw()};   /* flush the pending redraw: zooming first stretches the old names and redraws them a frame later (Prinsburg Central flake 2026-11-22) */   // what the page does on its next frame (no animation frames in a hidden tab)
  const box=(e,o)=>{const b=e.getBoundingClientRect();return{x:b.left-o.left,y:b.top-o.top,w:b.width,h:b.height}};
  const hit=(a,b,m=0)=>a.x<b.x+b.w-m&&b.x<a.x+a.w-m&&a.y<b.y+b.h-m&&b.y<a.y+a.h-m;
  const checkNames=lab=>{const o=map.getBoundingClientRect(),marks=new Map();
