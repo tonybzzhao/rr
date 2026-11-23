@@ -690,7 +690,7 @@ function pictoItem(name){
  const label=pictoLabel(name);
  return `<div class="facility" title="${label}"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#rr-picto-${kind}"></use></svg><span>${label}</span></div>`;
 }
-const STATION_CORE=['Information','Assistance','Defibrillator (AED)','Ticket machines','Accessible','Accessible Toilet','Toilet','Lift','Escalator','Seating'];
+const STATION_CORE=['Information','Assistance','Defibrillator (AED)','Ticket machines','Accessible','Accessible Toilet','Toilet','Lift','Escalator'];   // no Seating (user 2026-11-22: "remove seating from facilities")
 const STATION_AMENITIES={
  national:['Café','Restaurant','Pharmacy','Business centre','Wi-Fi','Left luggage','Cycle parking','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family room','Water fountain','Pet water point','Animal relief area','Photo booth'],
  major:['Café','Restaurant','Pharmacy','Wi-Fi','Left luggage','Cycle parking','Drop-off','Baby Changing','Baby feeding room','Changing Places','Family room','Water fountain','Pet water point','Animal relief area','Photo booth'],
