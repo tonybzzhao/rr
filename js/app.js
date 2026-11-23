@@ -2195,6 +2195,10 @@ $('journeyWhenTime')?.addEventListener('click',e=>{try{e.currentTarget.showPicke
 const rrCoarsePointer=()=>window.rrForceCoarsePointer??matchMedia('(pointer: coarse)').matches;
 $('journeyEdit')?.addEventListener('click',()=>{journeyEditing=true;$('sidebarContent').classList.remove('jp-collapsed');document.querySelector('.journey-results-head').hidden=true;$('sidebarContent').scrollTop=0;
  {/* focus now, not on the next frame: a frame can be late or never come in a background tab */const panel=$('journeyPanel');if(rrCoarsePointer()){panel.tabIndex=-1;panel.focus({preventScroll:true})}else panel.querySelector('input,select,button')?.focus()}});
+/* change marks on a result's timeline (user 2026-11-22): illustrative, evenly spaced, one change-trains icon per change up to three;
+   four or more show one icon with the count so the line never crowds */
+function rrJourneyChangeMarks(n){const ic=(at,k='')=>`<span class="journey-change${k?' journey-change-many':''}" style="left:${at}%" aria-hidden="true"><svg focusable="false"><use href="#rr-ui-change-trains"></use></svg>${k}</span>`;
+ return !n?'':n>3?ic(50,'×'+n):Array.from({length:n},(_,i)=>ic(((i+1)/(n+1)*100).toFixed(1))).join('')}
 function renderJourneyResults(){
  // The form is a draft. Results always reflect the last Find trains action.
  const query=appliedJourneyQuery;
@@ -2217,6 +2221,7 @@ function renderJourneyResults(){
  if(from===to){board.innerHTML='<div class="empty">Choose two different stations.</div>';return}
  if(!list.length){board.innerHTML=`<div class="empty">No ${query.highSpeedOnly?'high-speed ':''}${onlyDirect?'direct ':''}journeys found between these stations in the current timetable.</div>`;return}
  const arriveBy=rrJourneyWhen().mode==='arrive';
+ const fromCity=RR_CITIES.has(from),toCity=RR_CITIES.has(to);   // a whole-city search: each result names its departure and arrival stations under the times (user 2026-11-22, option B)
  const shown=arriveBy?list.slice(0,journeyShown).reverse():list.slice(0,journeyShown);
  if(arriveBy&&journeyShown<list.length){const more=document.createElement('button');more.type='button';more.className='journey-more journey-earlier';more.textContent='Show earlier journeys';more.addEventListener('click',()=>{journeyShown+=12;renderJourneyResults()});board.append(more)}
  let dividerShown=false;
@@ -2228,7 +2233,7 @@ function renderJourneyResults(){
   const badges=j.legs.map(l=>rrBadge(l.train,l.from)).join('');
   const jb=rrJourneyBase(j),depMarkup=stopTimeMarkup(j.legs[0].train,j.legs[0].fromIdx,jb),arrLast=j.legs[j.legs.length-1],arrMarkup=stopTimeMarkup(arrLast.train,arrLast.toIdx,jb);
   // the open button covers the card (::after); the train badges are buttons of their own above it (a button holds no button)
-  el.innerHTML=`<button type="button" class="journey-row-open"><span class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line"></span><span class="journey-clock">${arrMarkup}</span></span></button><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min`).join(' · ')}</div>`:''}`;
+  el.innerHTML=`<button type="button" class="journey-row-open"><span class="journey-times"><span class="journey-clock">${depMarkup}</span><span class="journey-line">${rrJourneyChangeMarks(j.change)}</span><span class="journey-clock">${arrMarkup}</span></span>${fromCity||toCity?`<span class="journey-stations"><span class="journey-from-station">${j.legs[0].from}</span><span class="journey-to-station">${arrLast.to}</span></span>`:''}</button><div class="journey-row-meta">${badges}<span class="duration">${fmtDuration(j.arr-j.dep)}</span><span class="change">${j.change?`${j.change} ${j.change===1?'change':'changes'}`:'Direct'}</span></div>${j.change?`<div class="journey-via">${j.legs.slice(0,-1).map((l,i)=>`<span>Change at ${l.to} · ${j.legs[i+1].dep-l.arr} min</span>`).join('')}</div>`:''}`;
   el.querySelector('.journey-row-open').addEventListener('click',()=>selectedJourney?.key===j.key?clear():chooseJourney(j));rrWireTrainLinks(el,j);board.append(el);
  }
  if(!arriveBy&&journeyShown<list.length){const more=document.createElement('button');more.type='button';more.className='journey-more';more.textContent='Show more journeys';more.addEventListener('click',()=>{journeyShown+=12;renderJourneyResults()});board.append(more)}

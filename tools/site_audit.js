@@ -660,6 +660,15 @@
    if(tile){if(!tile.querySelector('use[href="#rr-picto-city-check-in"]')||!document.getElementById('rr-picto-city-check-in'))bad('City check-in without its icon',n);
     tile.click();const note=detail.querySelector('.fac-detail .fac-note');for(const a of rrCityCheckIn(n)||[])if(!rrMetro(S.get(n)?.city).includes(rrAirportCity(a)))bad('City check-in names an airport of another city',n+': '+a);if(!note||!/^Check in your bags here for flights from .+/.test(note.textContent)||!note.dataset.rrFr?.startsWith('Enregistrez vos bagages'))bad('City check-in note missing or untranslated',n)}}
   if(rrFrenchText('City check-in')!=='Enregistrement en ville')bad('City check-in not in French',rrFrenchText('City check-in'));
+ /* whole-city journey search (user 2026-11-22): every result names the station of that city it departs from (and arrives at, for a city
+    To); a station-to-station search shows no such line */
+ {const q0=appliedJourneyQuery,f0=$('from').value,t0=$('to').value;const city=[...RR_CITIES.keys()].find(c=>rrPlace(c).size>1&&findJourneys(c,'Victoria Central').length);
+  if(city){rrSelectValue($('from'),city);rrSelectValue($('to'),'Victoria Central');searchJourneys();const rows=[...board.querySelectorAll('.journey-row')];
+   if(!rows.length)bad('whole-city journey search found nothing to check',city);out.counts['whole-city journeys checked']=rows.length;
+   for(const r of rows){const st=r.querySelector('.journey-from-station')?.textContent;if(!st||!rrPlace(city).has(st))bad('whole-city journey without its departure station',city+': '+(st||'none'))}
+   for(const r of rows){const n=r.querySelectorAll('.journey-change').length,ch=r.querySelector('.change')?.textContent||'';const want0=/^(\d+)/.test(ch)?+ch.match(/^(\d+)/)[1]:0,want=want0>3?1:want0;if(n!==want)bad('journey timeline dots do not match its changes',city+': '+n+' vs '+ch)}
+   rrSelectValue($('from'),'Peiting Central');searchJourneys();if(board.querySelector('.journey-stations'))bad('station-to-station journey shows a station line','Peiting Central')}
+  rrSelectValue($('from'),f0);rrSelectValue($('to'),t0);appliedJourneyQuery=q0;journeyResults=q0?findJourneys(q0.from,q0.to):[];renderJourneyResults()}
  /* City check-in available (user 2026-11-22): on a train's stop list and a journey's boarding stop exactly where that train reaches,
     within 90 min, an airport checked in at that station; one row with time, dot and name; French; the facility tab gives the time limit */
  {let nh=0;const mid=e=>{const r=e.getBoundingClientRect();return r.top+r.height/2};
