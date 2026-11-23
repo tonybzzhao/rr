@@ -91,6 +91,13 @@
   setViewMode('departures')}
 // every main / central station has Regio trains (user 2026-11-21: "why regio won't serve a central station???")
 {let nm=0;for(const x of STATIONS)if(LABELS.includes(x.name)||/(Central|Centrale|Hbf|Main)$/.test(x.name)){nm++;if(!/R/.test(x.sys||''))bad('main station without Regio trains',x.name)}out.counts['main stations with Regio checked']=nm}
+// Onward travel (user 2026-11-23): connections sit in their own "Onward travel" card right after Services and before Facilities,
+// never as a "Connections" group inside Services
+{let no=0;for(const x of STATIONS.filter(x=>x.conn?.length).slice(0,15)){fillStationInfo(x.name);no++;const cards=[...detail.querySelectorAll('.rr-card')],t=cards.map(c=>c.querySelector('.rr-card-title')?.textContent);
+  const i=t.indexOf('Onward travel');if(i<0){bad('station connections without an Onward travel card',x.name);continue}
+  if(t[i+1]!=='Facilities'||(t.includes('Services')&&t.indexOf('Services')!==i-1))bad('Onward travel card out of place',x.name+': '+t.join(' / '));
+  if([...detail.querySelectorAll('.station-svc-group')].some(h=>h.textContent==='Connections'))bad('Connections group still inside Services',x.name);
+  if(cards[i].querySelectorAll('.station-conn').length!==x.conn.length)bad('Onward travel rows missing',x.name)}out.counts['Onward travel cards checked']=no}
 // station Connections (user 2026-11-21): every station with GIS connections shows them, each mode with its pictogram (metro: its
 // own logo once provided), no airport row repeating the station's name, and an airport station always has its airport row
 {const st0=currentStation;let nc=0;const withC=STATIONS.filter(x=>x.conn?.length);
@@ -743,7 +750,7 @@
    const tiles=[...detail.querySelectorAll('.station-picto-grid .facility.has-hours')];
    for(const t of [null,...tiles.slice(0,6)]){if(t)t.click();
     for(const card of detail.querySelectorAll('.rr-card')){const cr=card.getBoundingClientRect();if(!cr.width)continue;
-     for(const el of card.querySelectorAll('*')){if(el.closest('svg')&&el.tagName.toLowerCase()!=='svg')continue;const cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||cs.position==='absolute'||cs.position==='fixed')continue;
+     for(const el of card.querySelectorAll('*')){if(el.closest('svg')&&el.tagName.toLowerCase()!=='svg')continue;{const d=el.closest('details:not([open])');if(d&&!el.closest('summary'))continue}   /* content of a closed <details> is not rendered (it still reports a box) */const cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||cs.position==='absolute'||cs.position==='fixed')continue;
       const r=el.getBoundingClientRect();if(!r.width||!r.height)continue;nb++;if(!inside(r,cr)){bad('element spills out of its card',n+': '+(el.className||el.tagName)+' '+(el.textContent||'').trim().slice(0,24));break}}}
     for(const g of detail.querySelectorAll('.station-picto-grid')){const gr=g.getBoundingClientRect(),cols=getComputedStyle(g).gridTemplateColumns.split(' ').map(parseFloat),gap=parseFloat(getComputedStyle(g).columnGap)||0;
      for(const f of g.querySelectorAll(':scope>.facility')){const r=f.getBoundingClientRect();let x=gr.left+parseFloat(getComputedStyle(g).paddingLeft),ok=false;for(const w of cols){if(r.left>=x-0.5&&r.right<=x+w+0.5){ok=true;break}x+=w+gap}nb++;
