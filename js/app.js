@@ -763,7 +763,11 @@ function rrStationHoursLine(name){const h=rrStationHours(name);if(!h)return '';
 function rrServicesCard(svc,station){
  const groups=RR_SERVICE_GROUPS.map(([g,types])=>[g,svc.filter(x=>types.includes(x.type))]);
  for(const x of svc)if(!RR_SERVICE_GROUPS.some(([,types])=>types.includes(x.type))){let g=groups.find(([k])=>k===x.type);if(!g)groups.push(g=[x.type,[]]);g[1].push(x)}   // a kind not listed yet still shows, under its own name
- return `<section class="rr-card"><h3 class="rr-card-title">Services</h3>${groups.filter(([,l])=>l.length).map(([g,l])=>`<h4 class="rr-card-sub station-svc-group">${g}</h4><div class="station-services">${l.map(rrServiceRow).join('')}</div>`).join('')}${S.get(station)?.conn?.length?`<h4 class="rr-card-sub station-svc-group">Connections</h4><div class="station-services">${S.get(station).conn.map(c=>rrConnRow(c,station)).join('')}</div>`:''}</section>`}
+ return `<section class="rr-card"><h3 class="rr-card-title">Services</h3>${groups.filter(([,l])=>l.length).map(([g,l])=>`<h4 class="rr-card-sub station-svc-group">${g}</h4><div class="station-services">${l.map(rrServiceRow).join('')}</div>`).join('')}</section>${rrOnwardCard(station)}`}
+// Onward travel (user 2026-11-23: its own section, not "Local transport", which clashes with RR Local): metro, buses, coaches,
+// taxis, ferries, airport, cruise terminal - not RR services, so a card of its own after Services (FR "Correspondances")
+function rrOnwardCard(station){const c=S.get(station)?.conn;if(!c?.length)return '';
+ return `<section class="rr-card station-onward"><h3 class="rr-card-title">Onward travel</h3><div class="station-services">${c.map(x=>rrConnRow(x,station)).join('')}</div></section>`}
 /* Route details: one Regio or Local line on one network. Next departures from the station you came from (3 each way),
    and a line diagram of the whole route with one lane per stopping pattern (RS stops everywhere, RX only at its stops). */
 function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;rrFocusSystem=null;
@@ -2624,7 +2628,7 @@ const rrFrenchExact=Object.freeze({
  'Zoom in':'Zoom avant','Zoom out':'Zoom arrière','Fit map':'Ajuster la carte',
  'Close train details':'Fermer les détails du train',
  'Collapse departures':'Réduire le panneau','Expand departures':'Déployer le panneau',
- 'Search station':'Rechercher une gare','Connections':'Correspondances','Buses':'Bus','Coaches':'Cars','City check-in available':'Enregistrement en ville disponible','Taxis':'Taxis','Bus station':'Gare routière','Change for Mainline and Local':'Correspondances Magistrale et Banlieue','Every leg on a high-speed train':'Tous les trains du trajet à grande vitesse','Departures or arrivals':'Départs ou arrivées','Fast: calls at the main stations only':'Rapide : dessert uniquement les gares principales','Open':'Ouvert','Copyright':'Droits d’auteur','Fast':'Rapide','Browse stations':'Parcourir les gares',
+ 'Search station':'Rechercher une gare','Connections':'Correspondances','Onward travel':'Correspondances','Buses':'Bus','Coaches':'Cars','City check-in available':'Enregistrement en ville disponible','Taxis':'Taxis','Bus station':'Gare routière','Change for Mainline and Local':'Correspondances Magistrale et Banlieue','Every leg on a high-speed train':'Tous les trains du trajet à grande vitesse','Departures or arrivals':'Départs ou arrivées','Fast: calls at the main stations only':'Rapide : dessert uniquement les gares principales','Open':'Ouvert','Copyright':'Droits d’auteur','Fast':'Rapide','Browse stations':'Parcourir les gares',
  'Current station':'Gare sélectionnée','From station':'Gare de départ',
  'To station':'Gare d’arrivée',
  'Swap From and To stations':'Inverser le départ et l’arrivée',
