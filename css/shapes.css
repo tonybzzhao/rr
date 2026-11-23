@@ -1081,3 +1081,11 @@ svg.rr-station-fac-chevron{width:14px;height:14px;flex:none;fill:currentColor;co
 /* RR Services mark (user 2026-11-22 "rr symbol slightly smaller"): it filled its icon box edge to edge; inset it so it reads at the
    weight of the other pictograms, box and row alignment unchanged */
 .fac-rr{box-sizing:border-box!important;padding:0 2.5px!important}
+/* "City check-in available" under a station on a train's stop list and a journey's boarding stop (user 2026-11-22): second row in
+   the name column; a plain marker / spine segment carries the line on beside the hint, so the line stays unbroken */
+.stop.has-checkin>.stop-marker-cont{grid-column:1;grid-row:2}   /* time, dot and name stay on one row; the line carries on beside the hint */
+.stop.has-checkin>.rr-checkin-hint{grid-column:3;grid-row:2;margin:0 0 6px}
+.jt-node.has-checkin>.jt-spine-cont{grid-column:2;grid-row:2}   /* time, dot and name stay on one row; the line carries on beside the hint */
+.jt-node.has-checkin>.rr-checkin-hint{grid-column:3/5;grid-row:2;margin:0 0 6px}
+.rr-checkin-hint{display:flex;align-items:center;gap:6px;font-size:var(--fs-small);font-weight:500;line-height:1.3;color:var(--ink-soft)}
+.rr-checkin-icon{width:18px;height:18px;flex:none;color:var(--ink-soft)}
