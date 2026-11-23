@@ -535,7 +535,7 @@ const ICONS={
  'Couchette':'couchette','Sleeper':'sleeper',
  'Deluxe Sleeper':'deluxe-sleeper','Parent-and-child compartment':'toddler',
  'Toddler Compartment':'toddler','Power Car':'power-car',
- 'Duplex':'duplex','Police':'police','First Class lounge':'lounge','Lost property':'lost-property','Mobility assistance':'mobility',
+ 'Duplex':'duplex','Police':'police','First Class lounge':'first','Lost property':'lost-property','Mobility assistance':'mobility',
  // station pictograms added 2026-11-20 (RR Info/Station)
  'Assistance':'help-point','First aid':'first-aid','Pharmacy':'pharmacy','Business centre':'business-centre','Changing Places':'changing-places',
  'Baby feeding room':'baby-room','Water fountain':'water-fountain','Pet water point':'dog-water','Seating':'seating','Photo booth':'photo-booth',
@@ -597,6 +597,12 @@ function rrAirportCity(st){const x=S.get(st);if(x?.city)return x.city;RR_CITY_NA
  for(const t of TRAINS){const i=t.route.findIndex(r=>r[0]===st);if(i<0)continue;for(let k=0;k<t.route.length;k++){const n=t.route[k][0];if(k===i||!MAJOR_STATIONS.has(n)||!S.get(n)?.city)continue;const m=Math.abs(timeOrdinal(t.route[k][1])-timeOrdinal(t.route[i][1]));if(m<bm){bm=m;best=S.get(n).city}}}
  return best}
 function rrAirportName(st){const c=(S.get(st)?.conn||[]).find(c=>c[0]==='airport');return c?[c[1],c[3]||c[1]]:[st,st]}
+/* First Class lounge (user 2026-11-22 "selectively add first class lounge, use first icon"): every national station, and the major
+   stations that are Max hubs (at least RR_LOUNGE_MAX_CALLS Max calls a day); major-station hours there. */
+const RR_LOUNGE_MAX_CALLS=50,RR_LOUNGE_MAJOR_HOURS={wk:RR_H(6,21),sat:RR_H(7,21),sun:RR_H(7,21)};let rrMaxCalls=null;
+function rrFirstLounge(name){const t=rrStationTier(name);if(t==='national')return true;if(t!=='major')return false;
+ if(!rrMaxCalls){rrMaxCalls=new Map();for(const tr of TRAINS)if(tr.type==='Max')for(const [n] of tr.route)rrMaxCalls.set(n,(rrMaxCalls.get(n)||0)+1)}
+ return (rrMaxCalls.get(name)||0)>=RR_LOUNGE_MAX_CALLS}
 function rrCityCheckIn(name){
  if(!rrCheckInMemo){rrCheckInMemo=new Map();const air=rrMajorAirports();
   for(const n of MAJOR_STATIONS){if(rrIsAirport(n))continue;const hit=new Set();
@@ -851,7 +857,7 @@ function fillStationInfo(name=currentStation, returnTrain=null, returnJourney=nu
  rrDetailsHeading('Station information','rr-ui-info');$('focusRoute').hidden=true;
  const facilities=stationFacilities(name);
  const additional=facilities.filter(f=>!STATION_CORE.includes(f));
- const tierHours=STATION_HOURS[rrStationTier(name)],hours=rrCityCheckIn(name)?{...tierHours,'City check-in':tierHours['RR Services']}:tierHours,help=STATION_HELP.filter(f=>hours[f]),fault=rrStationFault(name);rrFacStation=name;
+ const tierHours=STATION_HOURS[rrStationTier(name)],hours0=rrCityCheckIn(name)?{...tierHours,'City check-in':tierHours['RR Services']}:tierHours,hours=rrFirstLounge(name)&&!hours0['First Class lounge']?{...hours0,'First Class lounge':RR_LOUNGE_MAJOR_HOURS}:hours0,help=STATION_HELP.filter(f=>hours[f]),fault=rrStationFault(name);rrFacStation=name;
  const backButton=returnTrain?`<button type="button" class="back-to-train" id="backToTrain" aria-label="Back to train ${rrTrainLabel(returnTrain.train)}"><span aria-hidden="true"><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-left"></use></svg></span><span>Back to</span>${rrBadge(returnTrain.train)}</button>`:returnJourney?rrBackToJourneyMarkup():'';
  const svc=rrStationServices(name),plats=new Set(TRAINS.map(t=>t.platforms?.[name]).filter(Boolean));
  detail.innerHTML=`${backButton}<div class="train-hero station-hero" data-station="${name}"><div class="station-name-band">${name}</div>${rrStationHoursLine(name)}<div class="station-actions">${[['departures','Departures'],['arrivals','Arrivals'],['from','Journey from here'],['to','Journey to here']].map(([k,l])=>`<button type="button" class="station-action" data-action="${k}"><span>${l}</span><svg class="rr-arrow-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><use href="#rr-picto-arrow-right"></use></svg></button>`).join('')}</div></div>
@@ -2659,7 +2665,7 @@ function rrFrenchText(source){
   .replace(/^(\d+) earlier stops$/,'$1 arrêts précédents')
   .replace(/^Next departures from (.+)$/,'Prochains départs de $1').replace(/^Towards (.+)$/,'Direction $1')
   .replace(/^Coach (\d+)$/,'Voiture $1')
-  .replace(/^Cancelled, was due (\d\d:\d\d)$/,'Supprimé, prévu à $1')
+  .replace(/^Cancelled, was due (\d\d:\d\d(?: \+\d)?)$/,'Supprimé, prévu à $1')   /* next-day times carry ' +1' */
   .replace(/^(\d+), (.+)$/,(m,n,rest)=>Object.prototype.hasOwnProperty.call(rrFrenchExact,rest)?'Voiture '+n+', '+rrFrenchExact[rest]:m)   // a coach's label: '7, Dining'
   .replace(/^Runs between (.+) and (.+)$/,(_,a,b)=>'Circule entre '+a.replace(/ or /g,' ou ')+' et '+b.replace(/ or /g,' ou '))
   .replace(/^Platform (\S+)$/,'Voie $1')

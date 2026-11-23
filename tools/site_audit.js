@@ -660,6 +660,14 @@
    if(tile){if(!tile.querySelector('use[href="#rr-picto-city-check-in"]')||!document.getElementById('rr-picto-city-check-in'))bad('City check-in without its icon',n);
     tile.click();const note=detail.querySelector('.fac-detail .fac-note');for(const a of rrCityCheckIn(n)||[])if(!rrMetro(S.get(n)?.city).includes(rrAirportCity(a)))bad('City check-in names an airport of another city',n+': '+a);if(!note||!/^Check in your bags here for flights from .+/.test(note.textContent)||!note.dataset.rrFr?.startsWith('Enregistrez vos bagages'))bad('City check-in note missing or untranslated',n)}}
   if(rrFrenchText('City check-in')!=='Enregistrement en ville')bad('City check-in not in French',rrFrenchText('City check-in'));
+ /* First Class lounge (user 2026-11-22): at every national station and the major Max hubs (>= RR_LOUNGE_MAX_CALLS Max calls a day), nowhere
+    else, with the First icon */
+ {const calls=new Map();for(const t of TRAINS)if(t.type==='Max')for(const [n] of t.route)calls.set(n,(calls.get(n)||0)+1);let nl=0;
+  for(const x of STATIONS){const n=x.name,tier=rrStationTier(n);if(tier!=='national'&&tier!=='major')continue;const want=tier==='national'||(calls.get(n)||0)>=RR_LOUNGE_MAX_CALLS;
+   fillStationInfo(n);const tile=detail.querySelector('.facility[data-fac="First Class lounge"]');if(tile)nl++;
+   if(want&&!tile)bad('national station or Max hub without a First Class lounge',n);if(!want&&tile)bad('First Class lounge at a station that is not a Max hub',n);
+   if(tile&&!tile.querySelector('use[href="#rr-picto-first"]'))bad('First Class lounge without the First icon',n)}
+  out.counts['first class lounge checked']=nl;if(currentStation)fillStationInfo(currentStation)}
   setCurrentStation(st0||LABELS[0]);out.counts['City check-in stations checked']=nc}
  // no vending machines in station facilities (user 2026-11-22: "remove vending machine from facilities")
  {let nv=0;for(const x of STATIONS){nv++;if(stationFacilities(x.name).includes('Vending machines')){bad('vending machines listed in station facilities',x.name);break}}out.counts['vending-free facilities checked']=nv}
