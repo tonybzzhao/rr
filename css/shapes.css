@@ -768,6 +768,10 @@ button.train-number.train-route-link:hover,button.service.rr-train-link:hover{te
 .trainrow .platform .scheduled-time{font-size:var(--fs-body)!important}
 .stop-time .scheduled-time,.stop-time .scheduled-time .time-primary,.route-dep-time .scheduled-time,.route-dep-time .scheduled-time .time-primary,
 .jt-time .scheduled-time,.jt-time .scheduled-time .time-primary,.infoval .scheduled-time,.route-dep-plat .scheduled-time{font-size:var(--fs-small)!important}
+/* Board rows, delayed train (user 2026-11-24 "slightly smaller new time"): the new time in its box drops one tier to body, and the
+   crossed-out time keeps its one-tier step below it (small), as on stop lists. */
+.row-time .time-delayed .retime-box,.row-time .time-delayed .retime-box .time-primary{font-size:var(--fs-body)!important}
+.row-time .time-delayed .scheduled-time,.row-time .time-delayed .scheduled-time .time-primary{font-size:var(--fs-small)!important}
 .depart-time .scheduled-time,.depart-time .scheduled-time .time-primary{font-size:var(--fs-primary)!important}
 .journey-summary-time .scheduled-time,.journey-summary-time .scheduled-time .time-primary{font-size:var(--fs-hero)!important}
 .jt-plat .scheduled-time{font-size:var(--fs-caption)!important}
