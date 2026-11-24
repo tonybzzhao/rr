@@ -8,6 +8,8 @@
    - drawn track: Regio / Local colour (own or shared lane) only where trains of that system run, and every train's
      track drawn in its own system's colour (Mainline, Regio, Local - otherwise the line looks broken);
    - main stations are named on the map at three zoom levels (a busy hub must not lose its name);
+   - every drawn name, at every zoom the map uses: within one line height of its own mark, no other mark nearer, over no other
+     name, mark or line (a main station's name may cross lines with its halo only where a busy hub leaves no clear spot);
    - one presentation: every badge on its tier (size, height, bold), all text on the type tiers (sizes, weights 500 / 700);
    - Local networks in colour: every Local station on its coloured line, every name by its own mark, clear of other names and marks;
    - journey results: no train formation; every train badge opens that train departing from the leg's boarding station;
@@ -511,6 +513,45 @@
   panX=W/2-s.attach[0]*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-s.attach[1]*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();drawMap();
   if(![...document.querySelectorAll('#labelLayer text')].some(t=>norm(t.textContent).startsWith(norm(name))))bad('main station without its name on the map','zoom '+z+': '+name)}
  zoom=view0.zoom;panX=view0.panX;panY=view0.panY;updateWorld();drawMap();out.counts['main-station labels checked']=nl;
+ // Every drawn name (user 2026-11-23: "label messup in local pilot" - names beside other stations' marks, a main station's name over
+ // marks and lines): on the plain map and with a station chosen, at every zoom the map uses (fitted, each zoom tier, a city zoom
+ // and the deepest, centred on every main station), every name on the map sits within one line height of its own station mark,
+ // no other mark is nearer to it, and it covers no other name, no station mark and no line. A main station's name that has no
+ // clear spot in a busy hub may cross lines with its halo (.over-lines), never a mark or a name; those are counted.
+ {const st0=currentStation,v0={zoom,panX,panY};clear();app.classList.remove('detail-open');if(phone)rrSetPhoneView(true,false);resize();
+  let nv=0,nn=0,nh=0;
+  const rd=(b,x,y)=>Math.hypot(Math.max(b.x-x,0,x-b.x-b.w),Math.max(b.y-y,0,y-b.y-b.h));   // point to box
+  const segBox=(x1,y1,x2,y2,b)=>{let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;for(const [p,q] of [[-dx,x1-b.x],[dx,b.x+b.w-x1],[-dy,y1-b.y],[dy,b.y+b.h-y1]]){if(Math.abs(p)<1e-9){if(q<0)return false}else{const t=q/p;if(p<0){if(t>t1)return false;t0=Math.max(t0,t)}else{if(t<t0)return false;t1=Math.min(t1,t)}}}return true};
+  const ptSeg=(px,py,x1,y1,x2,y2)=>{const dx=x2-x1,dy=y2-y1,L=dx*dx+dy*dy,t=L?Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/L)):0;return Math.hypot(px-x1-t*dx,py-y1-t*dy)};
+  // a mark is a capsule (segment + radius; a dot is a capsule of length 0): distance from a box to it
+  const markDist=(b,m)=>{if(segBox(m.x1,m.y1,m.x2,m.y2,b))return -m.r;const cs=[[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]];
+   return Math.min(rd(b,m.x1,m.y1),rd(b,m.x2,m.y2),...cs.map(([x,y])=>ptSeg(x,y,m.x1,m.y1,m.x2,m.y2)))-m.r};
+  const marksOf=g=>[...g.children].filter(e=>!e.classList.contains('mapnode')).map(e=>{const sw=+(e.getAttribute('stroke-width')||0)/2;
+   if(e.tagName==='rect'){const w=+e.getAttribute('width'),h=+e.getAttribute('height'),m=e.transform.baseVal.consolidate()?.matrix||new DOMMatrix(),k=Math.max(0,(h-w)/2),
+     a=new DOMPoint(0,-k).matrixTransform(m),z=new DOMPoint(0,k).matrixTransform(m);return{x1:a.x,y1:a.y,x2:z.x,y2:z.y,r:w/2+sw}}
+   const c=g.querySelector('.mapnode'),x=+c.getAttribute('cx'),y=+c.getAttribute('cy'),bb=e.getBBox();return{x1:x,y1:y,x2:x,y2:y,r:Math.max(bb.width,bb.height)/2+sw}});
+  const look=lab=>{nv++;const sc=fit*zoom,marks=new Map();
+   for(const g of layer.querySelectorAll('g[data-station]'))marks.set(g.dataset.station,marksOf(g));
+   const segs=[];for(const [a,b] of (selectedPath.length>1?selectedPath.slice(1).map((q,i)=>[selectedPath[i],q]):E)){const x1=P[a][0]*sc+offX,y1=P[a][1]*sc+offY,x2=P[b][0]*sc+offX,y2=P[b][1]*sc+offY;
+    if(Math.max(x1,x2)<0||Math.min(x1,x2)>W||Math.max(y1,y2)<0||Math.min(y1,y2)>H)continue;segs.push([x1,y1,x2,y2])}
+   const names=[...labels.querySelectorAll('.station-label')].map(g=>{const t=g.querySelector('text'),bb=t.getBBox(),n=t.querySelectorAll('tspan').length||1,fs=parseFloat(t.style.fontSize)||15.625;
+    // the name's own box: its lines at the map's line height (getBBox adds the font's full ascent and descent)
+    const lh=fs*1.16,h=n*lh,y=+t.getAttribute('y')-fs;return{name:g.getAttribute('aria-label').replace(/^Show departures at /,''),b:{x:bb.x+1,y:y+1,w:bb.width-2,h:h-2},lh,halo:t.classList.contains('over-lines')}});
+   for(const n of names){nn++;const own=marks.get(n.name);if(!own?.length){bad('name without its station mark',lab+': '+n.name);continue}
+    const d=Math.min(...own.map(m=>markDist(n.b,m)));
+    if(d>n.lh+2)bad('name more than a line height from its station',lab+': '+n.name+' '+d.toFixed(0)+' px');
+    for(const [k,ms] of marks){if(k===n.name)continue;const e=Math.min(...ms.map(m=>markDist(n.b,m)));
+     if(e<0){bad('name covers another station mark',lab+': '+n.name+' over '+k);break}
+     if(e<d-1){bad('name nearer another station than its own',lab+': '+n.name+' ('+d.toFixed(0)+' px) by '+k+' ('+e.toFixed(0)+' px)');break}}
+    for(const q of names)if(q!==n&&n.b.x<q.b.x+q.b.w&&q.b.x<n.b.x+n.b.w&&n.b.y<q.b.y+q.b.h&&q.b.y<n.b.y+n.b.h){bad('names overlap',lab+': '+n.name+' / '+q.name);break}
+    if(segs.some(s=>segBox(...s,n.b))){if(n.halo)nh++;else bad('name covers a line',lab+': '+n.name)}}};
+  const centre=(z,s)=>{zoom=z;const sc=fit*zoom,[px,py]=P[s.point];panX=W/2-px*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-py*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld()};
+  const majors=LABELS.filter(n=>S.has(n)).map(n=>S.get(n)),zs=[RR_TIER_ZOOM[1],RR_TIER_ZOOM[2],RR_TIER_ZOOM[3],14,rrMaxZoom()];
+  setCurrentStation(null);zoom=1;panX=panY=0;updateWorld();look('fitted map');
+  for(const s of majors)for(const z of zs){centre(z,s);look('zoom '+z.toFixed(1)+' at '+s.name)}
+  for(const s of majors.slice(0,8)){setCurrentStation(s.name);for(const z of [1,RR_TIER_ZOOM[2],14]){centre(z,s);look('chosen '+s.name+', zoom '+z)}}
+  clear();setCurrentStation(null);zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(phone)rrSetPhoneView(false,false);setCurrentStation(st0||null);drawMap();
+  out.counts['map name views checked']=nv;out.counts['map names checked']=nn;out.counts['halo names across lines checked']=nh}
  // Local networks in colour (each network's page, fitted and zoomed in): every Local station is on its coloured line;
  // every name sits by its own station mark, clear of other names and of other stations' marks
  const frame=async()=>{resize();focusRoute();rrRedraw()};   /* flush the pending redraw: zooming first stretches the old names and redraws them a frame later (Prinsburg Central flake 2026-11-22) */   // what the page does on its next frame (no animation frames in a hidden tab)
@@ -521,7 +562,7 @@
   const names=[...labels.querySelectorAll('.station-label')].filter(g=>g.getClientRects().length).map(g=>({name:g.getAttribute('aria-label').replace(/^Show departures at /,''),b:box(g.querySelector('text'),o),over:!!g.querySelector('.over-lines')}));
   for(const n of names){const own=marks.get(n.name);if(!own){bad('name without its station mark',lab+': '+n.name);continue}
    const c=own[0],dx=Math.max(n.b.x-(c.x+c.w),0,c.x-(n.b.x+n.b.w)),dy=Math.max(n.b.y-(c.y+c.h),0,c.y-(n.b.y+n.b.h));   // gap between the name and its mark
-   if(Math.hypot(dx,dy)>44)bad('name away from its station',lab+': '+n.name);
+   if(Math.hypot(dx,dy)>20)bad('name away from its station',lab+': '+n.name);   // one line height (2026-11-23; was 44 px)
    if(!n.over)for(const [k,bs] of marks)if(k!==n.name&&bs.some(b=>hit(n.b,b,1))){bad('name covers another station',lab+': '+n.name+' over '+k);break}
    for(const q of names)if(q!==n&&hit(n.b,q.b,1)){bad('names overlap',lab+': '+n.name+' / '+q.name);break}}
   return names.length};
@@ -555,12 +596,14 @@
  // every marker on its line's exact point; at the deepest zoom every station in view is named (user 2026-11-20)
  {clear();app.classList.remove('detail-open');setCurrentStation(null);if(phone)rrSetPhoneView(true,false);resize();const v0={zoom,panX,panY};
   let nmk=0,nz=0;const centres=[...LABELS].map(n=>P[S.get(n)?.point]).filter(Boolean);
+  const nameW=n=>{ctx.font=`500 12.5px 'RR Glyphs',Frutiger,Arial`;return Math.min(...splitName(n).map(ls=>Math.max(...ls.map(l=>ctx.measureText(l).width))))};
   for(const [cx,cy] of centres){resize();zoom=rrMaxZoom();const sc=fit*zoom;panX=W/2-cx*sc-((W-graphWidth*sc)/2-minX*sc);panY=H/2-cy*sc-((H-graphHeight*sc)/2-minY*sc);updateWorld();
    const named=new Set([...labels.querySelectorAll('.station-label')].map(g=>g.getAttribute('aria-label').replace(/^Show departures at /,'')));
    for(const g of layer.querySelectorAll('g[data-station]')){const c=g.querySelector('.mapnode'),x=+c.getAttribute('cx'),y=+c.getAttribute('cy'),st=S.get(g.dataset.station);
     const [px,py]=P[st.point];nmk++;if(Math.hypot(x-(px*sc+offX),y-(py*sc+offY))>0.5)off('station marker off its line','"'+g.dataset.station+'"');
     const mb=container.getBoundingClientRect(),ovs=[...container.querySelectorAll('.map-legend,.zoom-control')].map(e=>{const b=e.getBoundingClientRect();return{x:b.left-mb.left,y:b.top-mb.top,w:b.width,h:b.height}}).filter(r=>r.w>0&&r.h>0);
-    if(x<40||y<40||x>W-40||y>H-40||ovs.some(p=>x>=p.x-8&&x<=p.x+p.w+8&&y>=p.y-8&&y<=p.y+p.h+8))continue;nz++;   /* as the map: not at the edge or under its legend / controls */ if(!named.has(g.dataset.station))off('station without its name at the deepest zoom','"'+g.dataset.station+'"')}}
+    const sideRoom=Math.max(40,nameW(g.dataset.station)+20);   // a name never leaves the map: a station nearer the side than its name is wide may wait for a pan (2026-11-23)
+    if(x<sideRoom||y<40||x>W-sideRoom||y>H-40||ovs.some(p=>x>=p.x-8&&x<=p.x+p.w+8&&y>=p.y-8&&y<=p.y+p.h+8))continue;nz++;   /* as the map: not at the edge or under its legend / controls */ if(!named.has(g.dataset.station))off('station without its name at the deepest zoom','"'+g.dataset.station+'"')}}
   zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(phone)rrSetPhoneView(false,false);out.counts['station markers checked']=nmk;out.counts['deepest-zoom names checked']=nz}
  // Map speed (2026-11-22, user: "improve desktop/tablet map slow loading problem"): the map is drawn once per change - a resize to
  // the same size or an unchanged theme does not redraw it (startup drew it 7 times) - colour tokens are read from a cache (each
