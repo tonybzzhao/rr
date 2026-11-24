@@ -1472,6 +1472,24 @@ function appendStationDisc(group,x,y,r,colors,opacity=1,startAngle=Math.PI/2){
  }
 }
 let rrPendingMapFocus=null;
+// A station mark's exact outline in screen pixels, read from what was drawn (no layout read): a capsule - a segment and a radius
+// (a dot is a capsule of length 0), stroke and halo included. Name placement tests every name against these outlines.
+function rrMarkShape(g,x,y){let r=0,m=null;
+ for(const e of g.children){if(e.classList.contains('mapnode'))continue;const sw=+(e.getAttribute('stroke-width')||0)/2;
+  if(e.tagName==='rect'){const w=+e.getAttribute('width'),h=+e.getAttribute('height'),a=+(/rotate\(([-\d.e]+)/.exec(e.getAttribute('transform'))?.[1]||0)*Math.PI/180,k=Math.max(0,(h-w)/2);
+   if(!m||w/2+sw>m.r)m={x1:x+k*Math.sin(a),y1:y-k*Math.cos(a),x2:x-k*Math.sin(a),y2:y+k*Math.cos(a),r:w/2+sw}}
+  else r=Math.max(r,(e.tagName==='circle'?+e.getAttribute('r'):+(/A ([\d.]+)/.exec(e.getAttribute('d'))?.[1]||0))+sw)}
+ return m&&m.r>=r?m:{x1:x,y1:y,x2:x,y2:y,r:Math.max(r,m?.r||0)}}
+// Gap in px from a box to a mark outline (negative: the box covers the mark).
+function rrMarkGap(b,m){const rd=(x,y)=>Math.hypot(Math.max(b.x-x,0,x-b.x-b.w),Math.max(b.y-y,0,y-b.y-b.h));
+ if(m.x1===m.x2&&m.y1===m.y2)return rd(m.x1,m.y1)-m.r;
+ if(lineRect(m.x1,m.y1,m.x2,m.y2,b))return -m.r;
+ const ps=(px,py)=>{const dx=m.x2-m.x1,dy=m.y2-m.y1,t=Math.max(0,Math.min(1,((px-m.x1)*dx+(py-m.y1)*dy)/(dx*dx+dy*dy)));return Math.hypot(px-m.x1-t*dx,py-m.y1-t*dy)};
+ return Math.min(rd(m.x1,m.y1),rd(m.x2,m.y2),ps(b.x,b.y),ps(b.x+b.w,b.y),ps(b.x,b.y+b.h),ps(b.x+b.w,b.y+b.h))-m.r}
+// Length of a segment inside a box (0 when it misses it).
+function rrClipLen(x1,y1,x2,y2,r){let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;
+ for(const [p,q] of [[-dx,x1-r.x],[dx,r.x+r.w-x1],[-dy,y1-r.y],[dy,r.y+r.h-y1]]){if(Math.abs(p)<1e-8){if(q<0)return 0}else{const t=q/p;if(p<0){if(t>t1)return 0;t0=Math.max(t0,t)}else{if(t<t0)return 0;t1=Math.min(t1,t)}}}
+ return t0<t1?(t1-t0)*Math.hypot(dx,dy):0}
 function rrLabelAcross(s){
  // All 8 label positions, best first: the one with the widest open angle between the lines
  // that meet at this dot (across a plain line, into the free quadrant at a junction).
@@ -1547,7 +1565,7 @@ function drawMap(){
   if(!keep&&!rrDotFree(x,y))continue;                // too close to a dot already drawn at this zoom
   rrDotTake(x,y);
   const lm=localMarks?.get(s.point),mark=lm&&(!localNet||lm.net===localNet)?lm:null;
-  visible.push({...s,sx:x,sy:y,hw:mark?(mark.n-1)*RR_LOCAL_GAP/2:0});
+  const vis={...s,sx:x,sy:y,hw:mark?(mark.n-1)*RR_LOCAL_GAP/2:0};visible.push(vis);
   const selected=selectedSet.has(s.name),current=s.name===currentStation,important=LABELS.includes(s.name);
   const radius=selected?5.8:(important?4.7:(s.regio?2.2:3.2)),g=se('g',{'data-station':s.name});
   const colors=selectedJourney?legStationColors.get(s.name)||[]:[];
@@ -1603,7 +1621,7 @@ function drawMap(){
   hit.addEventListener('focus',()=>{tooltip.textContent=s.name;tooltip.style.display='block';tooltip.style.left=x+'px';tooltip.style.top=(y-13)+'px'});
   hit.addEventListener('blur',()=>tooltip.style.display='none');
   if(tripRole==='hub')g.querySelectorAll('circle:not(.mapnode)').forEach(c=>{c.setAttribute('stroke',RR_UI_CSS_COLOR('--hub-faded'));c.setAttribute('fill',RR_UI_CSS_COLOR('--surface'))});   // solid faded ring, not transparency
-  g.append(hit);layer.append(g);
+  g.append(hit);layer.append(g);vis.g=g;vis.m=rrMarkShape(g,x,y);
   // Keep keyboard focus on the same station when the map redraws.
   if(focusedStation===s.name){rrPendingMapFocus=s.name;requestAnimationFrame(()=>{if(hit.isConnected){hit.focus({preventScroll:true});if(document.activeElement===hit)rrPendingMapFocus=null}})}
  }
@@ -1623,7 +1641,7 @@ function drawMap(){
  const overlayRects=[...container.querySelectorAll('.map-legend,.zoom-control')]
   .map(el=>{const b=el.getBoundingClientRect();return {x:b.left-mapBounds.left,y:b.top-mapBounds.top,w:b.width,h:b.height}})
   .filter(r=>r.w>0&&r.h>0);
- const placed=[],segments=[];
+ const segments=[];
  // During a trip only the trip's own line blocks names; the faded network behind it does not.
  const segEdges=rrTrip?selectedPath.slice(1).map((b,i)=>[selectedPath[i],b]):E;
  for(const [a,b] of segEdges){
@@ -1637,13 +1655,15 @@ function drawMap(){
    if(Math.max(x1,x2)<-20||Math.min(x1,x2)>W+20||Math.max(y1,y2)<-20||Math.min(y1,y2)>H+20)continue;
    const L=Math.hypot(x2-x1,y2-y1)||1,o=(cols.length-1)/2*RR_LOCAL_GAP+1.5,nx=-(y2-y1)/L*o,ny=(x2-x1)/L*o;
    segments.push([x1+nx,y1+ny,x2+nx,y2+ny],[x1-nx,y1-ny,x2-nx,y2-ny])}}
- const segGrid=rrScreenGrid(),dotGrid=rrScreenGrid(),placedGrid=rrScreenGrid();let maxHw=0;
+ const segGrid=rrScreenGrid(),dotGrid=rrScreenGrid();let placedGrid,named,plan,misses;
  for(const g of segments)segGrid.add(g[0],g[1],g[2],g[3],g);
- for(const v of visible){dotGrid.add(v.sx,v.sy,v.sx,v.sy,v);maxHw=Math.max(maxHw,v.hw)}
+ for(const v of visible){const m=v.m;dotGrid.add(Math.min(m.x1,m.x2)-m.r,Math.min(m.y1,m.y2)-m.r,Math.max(m.x1,m.x2)+m.r,Math.max(m.y1,m.y2)+m.r,v)}
  const RR_TRIP_ROOM=22,tripDots=rrTrip?selectedNames.map(n=>byVisible.get(n)).filter(Boolean):[];
  const rrTripCrowded=s=>tripDots.some(o=>o!==s&&Math.hypot(o.sx-s.sx,o.sy-s.sy)<RR_TRIP_ROOM);
- for(const name of priorities){
-  const s=byVisible.get(name);if(!s)continue;
+ // A spot for one name (opt.noNames: as if no other name were placed; opt.noHide: no mark gives way). null: no name here;
+ // {fail} : a name that must be drawn found no spot.
+ const rrFindSpot=(name,opt={})=>{
+  const s=byVisible.get(name);if(!s||s.hidden)return null;
   const tripKey=!!rrTrip&&(rrTrip.key.has(name)||rrTrip.changes.has(name)),tripHub=!!rrTrip&&!rrTrip.calls.has(name)&&name!==currentStation;
   const important=rrTrip?tripKey:LABELS.includes(name);
   const mixedServiceInterchange=!!(selectedJourney&&selectedPath.length&&selectedSet.has(name)&&interchangeMarkers.get(name)?.colors.length>1);
@@ -1661,51 +1681,93 @@ function drawMap(){
   const across=rrLabelAcross(s);
   const dirsAll=[preferredSide,opposing,preferredSide+'N',opposing+'N',preferredSide+'S',opposing+'S','N','S'],dirs=across||dirsAll;
   let chosen=null;
-  // Main stations, the current station and a selected trip's stops always get their name: if no spot clear of the lines
-  // exists (a busy hub), a second pass lets the name cross lines (with a halo), never another name, dot or the controls.
+  // Every name sits by its own mark (user 2026-11-23: "label messup in local pilot" - names floated beside other stations' marks):
+  // within one line height of its mark, no other mark as near, clear of every other mark, name and line. Spots are tried round the
+  // mark (across the lines first, LABEL_HINTS only choose the side to try first) and each is tested on the drawn geometry, so the
+  // names follow the track and the stations wherever the network is redrawn.
+  // Main stations, the current station and a selected trip's stops always get their name: where a busy hub has no clear spot, a
+  // few minor halts' marks beside it give way (not at the deepest zoom, where every station is named), else the name crosses
+  // lines with its halo, else marks give way and it crosses lines - never over a mark or another name, never further from its mark.
   // (a main station at the very edge of the map or under its controls is not forced: its name would land far from it)
   const tucked=s.sx<24||s.sy<24||s.sx>W-24||s.sy>H-24||overlayRects.some(p=>s.sx>=p.x-8&&s.sx<=p.x+p.w+8&&s.sy>=p.y-8&&s.sy<=p.y+p.h+8);
   // A selected train / journey: its key stops (ends, the station you are at, changes) and major stations are always named; its other
   // stops only where their dot has room (another highlighted stop >= RR_TRIP_ROOM px away) and never forced across the lines, so a
   // zoomed-out map does not scatter names far from their dots (user 2026-11-20); zooming in names them one by one.
   const deepest=zoom>=rrMaxZoom()-1e-6,tripMajor=!!rrTrip&&(tripKey||LABELS.includes(name));
-  if(rrTrip&&selectedSet.has(name)&&!tripMajor&&name!==currentStation&&!deepest&&rrTripCrowded(s))continue;
+  if(rrTrip&&selectedSet.has(name)&&!tripMajor&&name!==currentStation&&!deepest&&rrTripCrowded(s))return null;
   const mustName=(important&&!tucked)||name===currentStation||(selectedSet.has(name)&&(!rrTrip||tripMajor))||(deepest&&!tucked);
-  for(const overLines of (mustName?[false,true]:[false])){
+  const canHide=!deepest&&!rrTrip&&!opt.noHide,hideable=v=>!LABELS.includes(v.name)&&v.name!==currentStation&&!selectedSet.has(v.name)&&!named.has(v.name);
+  const R=s.m.r,hw=s.hw||0,RR_NAME_CLEAR=3,hidden=[];let best=null;   // a pass that hides marks takes the spot that hides the fewest
+  const passes=mustName?[{lines:false,hide:false},...(canHide?[{lines:false,hide:true,max:3}]:[]),{lines:true,hide:false},...(canHide?[{lines:true,hide:true,max:Infinity}]:[])]:[{lines:false,hide:false}];   // hiding a few small halts beats a name across lines
+  for(const pass of passes){
+  if(best){chosen=best.c;hidden.splice(0,hidden.length,...best.h);break}
   if(chosen)break;
-  for(const dir of (overLines&&across?[...across,...dirsAll.filter(d_=>!across.includes(d_))]:dirs)){   // the second pass may also go along the line
+  for(const dir of (pass.lines&&across?[...across,...dirsAll.filter(d_=>!across.includes(d_))]:dirs)){   // the halo pass may also go along the line
    if(chosen)break;
-   for(const gap of (across?[2,5,9,14]:[7,10,14,19]).concat(overLines?[26,34,44]:[])){
+   for(const gap of [1,3,6,10,14]){
     if(chosen)break;
-    for(let si=0;si<splits.length;si++){
+    for(let si=0;si<splits.length;si++)for(const shift of [0,1,-1]){   // 0: centred on the mark; 1 / -1: above / below it starting / ending at the mark, beside it with the first / last line level with it
+     if(chosen)break;
      const lines=splits[si],width=widths[si];
      const height=lines.length*lh+1;
+     if(shift&&(dir.length>1||((dir==='E'||dir==='W')&&lines.length<2)))continue;
      let x,y,anchor;
-     const isLeft=dir.startsWith('W'),isRight=dir.startsWith('E');
-     const hw=s.hw||0;   // half the coloured bundle the station sits on
-     if(isRight){x=s.sx+gap+6+hw;y=s.sy-height/2;anchor='start'}
-     else if(isLeft){x=s.sx-gap-6-hw-width;y=s.sy-height/2;anchor='end'}
-     else if(dir==='N'){x=s.sx-width/2;y=s.sy-gap-5-hw-height;anchor='middle'}
-     else {x=s.sx-width/2;y=s.sy+gap+5+hw;anchor='middle'}
-     if(dir.endsWith('N')&&(isLeft||isRight))y=s.sy-gap-hw-height+1;
-     if(dir.endsWith('S')&&(isLeft||isRight))y=s.sy+gap+hw-1;
+     const isLeft=dir.startsWith('W'),isRight=dir.startsWith('E'),k=R*0.7;
+     if(isRight){x=s.sx+R+gap+hw;y=s.sy-height/2;anchor='start'}
+     else if(isLeft){x=s.sx-R-gap-hw-width;y=s.sy-height/2;anchor='end'}
+     else if(dir==='N'){x=s.sx-width/2;y=s.sy-R-gap-hw-height;anchor='middle'}
+     else {x=s.sx-width/2;y=s.sy+R+gap+hw;anchor='middle'}
+     if(dir.endsWith('N')&&(isLeft||isRight)){y=s.sy-k-gap-hw-height;x=isRight?s.sx+k+gap+hw:s.sx-k-gap-hw-width}
+     if(dir.endsWith('S')&&(isLeft||isRight)){y=s.sy+k+gap+hw;x=isRight?s.sx+k+gap+hw:s.sx-k-gap-hw-width}
+     if(shift&&(dir==='N'||dir==='S')){x=shift>0?s.sx-R:s.sx+R-width;anchor=shift>0?'start':'end'}
+     if(shift&&(isLeft||isRight))y=shift>0?s.sy-lh/2:s.sy-height+lh/2;
      const r={x,y,w:width,h:height};
      // Collisions are tested at the current pixel zoom; no rectangles or label backplates are painted.
      if(x<12||y<12||x+width>W-12||y+height>H-12)continue;
-     // a name that is not forced sits right beside its dot (the site audit allows 24 px to the drawn text; this box sits ~2 px wider): a far diagonal spot is no spot
-     if(!mustName&&Math.hypot(Math.max(x-s.sx,0,s.sx-(x+width)),Math.max(y-s.sy,0,s.sy-(y+height)))>22)continue;
-     if(placedGrid.some(x-6,y-6,x+width+6,y+height+6,p=>rectOverlap(r,p,5)))continue;
+     const own=rrMarkGap(r,s.m);if(own<RR_NAME_CLEAR-1||own>lh)continue;   // beside its own mark: not on it, within one line height
+     if(!opt.noNames&&placedGrid.some(x-6,y-6,x+width+6,y+height+6,p=>!p.dead&&rectOverlap(r,p,5)))continue;
      if(overlayRects.some(p=>rectOverlap(r,p,3)))continue;
-     if(dotGrid.some(x-10-maxHw,y-10-maxHw,x+width+10+maxHw,y+height+10+maxHw,v=>v.name!==name&&(!overLines||LABELS.includes(v.name)||v.name===currentStation)&&v.sx>=x-9-v.hw&&v.sx<=x+width+9+v.hw&&v.sy>=y-9-v.hw&&v.sy<=y+height+9+v.hw))continue;   // a must-name label may cover minor halts' dots
+     // every other mark: not covered, and further from the name than its own mark (else the name reads as the other station's)
+     hidden.length=0;const reach=lh+RR_NAME_CLEAR+2;
+     if(dotGrid.some(x-reach,y-reach,x+width+reach,y+height+reach,v=>{if(v===s||v.hidden)return false;const e=rrMarkGap(r,v.m);
+      if(e>=RR_NAME_CLEAR&&e>=own+1)return false;if(pass.hide&&hideable(v)){hidden.push(v);return false}return true}))continue;
      const rr={x:x-2,y:y-2,w:width+4,h:height+4};
-     if(!overLines&&segGrid.some(rr.x,rr.y,rr.x+rr.w,rr.y+rr.h,([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
-     chosen={...r,anchor,lines,lh,fontSize,overLines};break;
+     if(!pass.lines&&segGrid.some(rr.x,rr.y,rr.x+rr.w,rr.y+rr.h,([a,b,c,d])=>lineRect(a,b,c,d,rr)))continue;
+     let track=0;if(pass.lines)segGrid.some(rr.x,rr.y,rr.x+rr.w,rr.y+rr.h,([a,b,c,d])=>{track+=rrClipLen(a,b,c,d,rr);return false});
+     const c={...r,anchor,lines,lh,fontSize,overLines:track>0};
+     if(!hidden.length&&!track){chosen=c;best=null;break}
+     // a fallback spot is scored: fewest marks hidden, then least track under the name (across a line, not along it)
+     const marks=hidden.reduce((t,v)=>t+(v.regio?1:3),0);if(marks>(pass.max??0))continue;
+     const cost=marks*1000+track;if(!best||cost<best.cost)best={c,h:[...hidden],cost};continue;
     }
    }
   }
   }
-  if(!chosen)continue;
-  placed.push(chosen);placedGrid.add(chosen.x,chosen.y,chosen.x+chosen.w,chosen.y+chosen.h,chosen);
+  if(!chosen&&best){chosen=best.c;hidden.splice(0,hidden.length,...best.h)}else if(chosen&&!best)hidden.length=0;
+  if(!chosen)return mustName?{fail:true}:null;
+  return {name,chosen,hidden:[...new Set(hidden)],key:important||name===currentStation||selectedSet.has(name),important,mixedServiceInterchange,tripHub,fontSize};
+ };
+ const commit=e=>{for(const v of e.hidden)v.hidden=true;   // minor halts that give way to a main station's name (they show when zoomed in)
+  e.chosen.dead=false;named.add(e.name);placedGrid.add(e.chosen.x,e.chosen.y,e.chosen.x+e.chosen.w,e.chosen.y+e.chosen.h,e.chosen);plan.push(e)};
+ const drop=e=>{e.chosen.dead=true;named.delete(e.name);plan.splice(plan.indexOf(e),1)};
+ const place=order=>{placedGrid=rrScreenGrid();named=new Set();plan=[];misses=[];for(const v of visible)v.hidden=false;
+ for(const name of order){const e=rrFindSpot(name);if(!e)continue;if(!e.fail){commit(e);continue}misses.push(name);
+  // a name that must be drawn but is boxed in by names placed before it (a dense spot at the deepest zoom) takes a spot from names
+  // that are not required themselves - only if each of them then finds another spot; otherwise all stays as it was
+  const f=rrFindSpot(name,{noNames:true,noHide:true});if(!f||f.fail)continue;
+  const blockers=plan.filter(p=>rectOverlap(f.chosen,p.chosen,5));if(!blockers.length||blockers.some(p=>p.key))continue;
+  blockers.forEach(drop);commit(f);const moved=[];let ok=true;
+  for(const q of blockers){const g=rrFindSpot(q.name,{noHide:true});if(!g||g.fail){ok=false;break}commit(g);moved.push(g)}
+  if(!ok){moved.forEach(drop);drop(f);blockers.forEach(q=>{q.chosen.dead=false;named.add(q.name);plan.push(q)})}else misses.pop()}};
+ // names that must be drawn but found no spot go first in a second (and third) try; the try with fewer misses (a main station
+ // weighs most) is kept
+ const missCost=()=>misses.reduce((t,n)=>t+(LABELS.includes(n)||n===currentStation||selectedSet.has(n)?100:1),0);
+ place(priorities);
+ for(let k=0;k<2&&misses.length;k++){const was={placedGrid,named,plan,misses,hid:visible.filter(v=>v.hidden),cost:missCost()},m=new Set(misses);
+  place([...misses,...priorities.filter(n=>!m.has(n))]);
+  if(missCost()>=was.cost){({placedGrid,named,plan,misses}=was);for(const v of visible)v.hidden=false;for(const v of was.hid)v.hidden=true;break}}
+ for(const v of visible)if(v.hidden)v.g.remove();
+ for(const {name,chosen,important,mixedServiceInterchange,tripHub,fontSize} of plan){
   const group=se('g',{class:'station-label',role:'button',tabindex:0,'aria-label':`Show departures at ${name}`});
   const textX=chosen.anchor==='end'?chosen.x+chosen.w:chosen.anchor==='middle'?chosen.x+chosen.w/2:chosen.x;
   const text=se('text',{x:textX,y:chosen.y+fontSize,'text-anchor':chosen.anchor,style:`font-size:${fontSize}px`,class:'label'+(important?' important':'')+(chosen.overLines?' over-lines':''),'pointer-events':'all'});
