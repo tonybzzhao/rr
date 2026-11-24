@@ -480,6 +480,16 @@
    for(const s of 'RL')if(d.includes(s)&&!u.has(s)){bad('track drawn for a system with no trains on it',(s==='R'?'Regio':'Local')+' at '+P[a]);break}
    for(const s of 'MRL')if(u.has(s)&&!d.includes(s)){bad('trains run on track not drawn in their colour (the line looks broken)',({M:'Mainline',R:'Regio',L:'Local'})[s]+' at '+P[a]);break}}
   out.counts['drawn track pieces checked']=ne}
+ // thick = high-speed available (user 2026-11-24: "If high-speed use thick line, if not high-speed use thin. very simple."): a
+ // Mainline segment is drawn thick if and only if a Max / VIA train is drawn on it, and the legend says so
+ {const key=(a,b)=>a<b?a+'_'+b:b+'_'+a,hs=new Set(),seenP=new Set();
+  for(const t of TRAINS){if(t.type!=='Max'&&t.type!=='VIA')continue;if(seenP.has(t.mp))continue;seenP.add(t.mp);const r=getTrainPath(t);for(let i=1;i<r.length;i++)if(r[i-1]!==r[i])hs.add(key(r[i-1],r[i]))}
+  let nt=0;for(const [a,b,t] of E){const thick=t===1||t===4,on=hs.has(key(a,b));nt++;
+   if(on&&!thick)bad('high-speed train drawn on thin track','at '+P[a]);
+   if(thick&&!on)bad('thick track with no high-speed train on it','at '+P[a])}
+  const lg=document.querySelector('.map-legend .key')?.textContent.trim();
+  if(lg!=='High-speed available'&&lg!=='Grande vitesse disponible')bad('legend: thick line is not "High-speed available"',String(lg));
+  out.counts['thick / thin segments checked']=nt}
  // a Mainline line never looks broken: no run of track without the Mainline lane, through plain points (no junction), with Mainline
  // track at both ends (2026-11-20, user: "last two broken lines" - a Regional / Local twin standing for the main line lost its lane)
  {const hasM=e=>e[2]===0||e[2]===1||[1,3,4].includes(e[3]),dg=new Map(),inc=new Map();E.forEach((e,i)=>{for(const v of [e[0],e[1]]){dg.set(v,(dg.get(v)||0)+1);if(!inc.has(v))inc.set(v,[]);inc.get(v).push(i)}});
