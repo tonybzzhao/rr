@@ -95,6 +95,9 @@ button:focus-visible,select:focus-visible{outline:2px solid var(--ui);outline-of
 .rail.hsl{stroke-width:2.8}.rail.ml{stroke-width:2.8}.rail.regio{stroke:var(--rail-regio);stroke-width:2.8}
 .rail-under{fill:none;stroke:var(--surface);stroke-width:10;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
 .route-line{fill:none;vector-effect:non-scaling-stroke;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+/* outline-badge trains (IC, RS; user 2026-11-24): the route is hollow like their badge, two edges in the line colour with the map
+   surface between them */
+.route-line-core{fill:none;stroke:var(--surface);vector-effect:non-scaling-stroke;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .mapnode{cursor:pointer}
 .label{font-family:'RR Glyphs',Frutiger,'Helvetica Neue',Arial,sans-serif;fill:var(--ink);font-size:15.625px;letter-spacing:-.01em;font-weight:500;cursor:pointer;pointer-events:all}
 .label.important{font-weight:700}
