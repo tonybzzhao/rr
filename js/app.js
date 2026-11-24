@@ -829,7 +829,7 @@ function fillRouteInfo(type,net,line,from=currentStation){rrLocalSystem=null;rrF
  detail.querySelectorAll('.route-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
  // the map shows the whole line: every branch, in the line colour; RS-only stops get a small dot, RX stops a ring
  const full=lanes.map(dir1).sort((a,b)=>b.route.length-a.route.length)[0];
- selectedJourney=null;selectedLegPaths=[];selectedTrain=null;manualTrace=false;routeColor=rrMapColor(full);
+ selectedJourney=null;selectedLegPaths=[];selectedTrain=null;manualTrace=false;routeColor=rrMapColor(full);routeOutline=lanes.every(k=>rrOutline(dir1(k)));
  if(branched&&many){selectedLegPaths=lanes.map(k=>({path:getTrainPath(dir1(k)),color:routeColor}));selectedPath=selectedLegPaths.flatMap(p=>p.path)}
  else selectedPath=getTrainPath(full);
  selectedNames=all;selectedRouteLine=full;
@@ -861,7 +861,7 @@ function rrRingRoute(type,net,line,from=currentStation){
  detail.innerHTML=`<div class="train-hero route-hero" data-route="${type}|${net}|${line}"><div class="route-badges">${badges}</div><div class="route-op">${rrSystemLink(type,net)}</div><div class="ring-facts">Ring line</div></div>${deps}<section class="rr-card" style="--route:${rrTrainCss(cw)}"><h3 class="rr-card-title">Route</h3><div class="ring-oval" style="--route:${rrTrainCss(cw)}" role="group" aria-label="Ring line: clockwise down the right side, anticlockwise up it">${rows}</div></section>`;
  detail.querySelectorAll('.route-dep').forEach(b=>b.addEventListener('click',()=>{const row=upcoming(from).find(t=>t.id===b.dataset.train);if(row){setCurrentStation(from);chooseTrain(row)}}));
  detail.querySelectorAll('.route-stn').forEach(b=>b.addEventListener('click',()=>{setCurrentStation(b.dataset.station);fillStationInfo(b.dataset.station)}));
- selectedJourney=null;selectedLegPaths=[];selectedTrain=null;manualTrace=false;routeColor=rrMapColor(cw);
+ selectedJourney=null;selectedLegPaths=[];selectedTrain=null;manualTrace=false;routeColor=rrMapColor(cw);routeOutline=rrOutline(cw);
  selectedPath=getTrainPath(cw);selectedNames=order;selectedRouteLine=cw;rrRouteMinor=new Set();
  drawBoard();drawRoute();drawMap();
  detail.scrollTop=0;app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()});rrSyncHash();
@@ -1224,7 +1224,7 @@ function fillDetails(t){rrDetailsHeading('Train details','rr-ui-more');$('focusR
  detail.querySelectorAll(".stop-station").forEach(btn=>btn.addEventListener("click",()=>{const station=t.route[Number(btn.dataset.stopIndex)][0];const returnTrain={train:t,station:currentStation,boardMode:viewMode,journeyReturn:rrTrainReturn};setCurrentStation(station);fillStationInfo(station,returnTrain)}));
 }
 let rrTrainReturn=null;   // the journey a train page was opened from (its train number in a journey result), for Back to journey
-function chooseTrain(t,openDrawer=true,ret=null){rrTrainReturn=ret&&{...ret,trainId:t.id};rrLocalSystem=null;rrFocusSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=t;selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=rrLineColor(t)||C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
+function chooseTrain(t,openDrawer=true,ret=null){rrTrainReturn=ret&&{...ret,trainId:t.id};rrLocalSystem=null;rrFocusSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=t;routeOutline=rrOutline(t);selectedPath=getTrainPath(t);selectedNames=t.route.map(r=>r[0]);routeColor=rrLineColor(t)||C[t.type];manualTrace=false;fillDetails(t);detail.scrollTop=0;drawBoard();drawRoute();drawMap();if(openDrawer){app.classList.add('detail-open');requestAnimationFrame(()=>{resize();focusRoute()})}}
 function clear(){rrLocalSystem=null;rrFocusSystem=null;selectedJourney=null;selectedLegPaths=[];selectedRouteLine=null;selectedTrain=null;selectedPath=[];selectedNames=currentStation?[currentStation]:[];manualTrace=false;routeWorld.replaceChildren();drawBoard();$('focusRoute').hidden=true;detail.innerHTML=`<div class="empty">Select ${viewMode==='arrivals'?'an arrival':'a departure'}.</div>`;app.classList.remove('detail-open');requestAnimationFrame(resize);drawMap()}
 // Shared schematic edges get smooth, adjacent half-width colour bands using
 // a single perpendicular gradient stroke; transfer-ring halves match these bands.
@@ -1238,13 +1238,14 @@ function rrTrackNormal(a,b){
 }
 function rrJourneyEdgeIndex(legs){
  const edges=new Map();
- for(const {path,color} of legs){
+ for(const {path,color,outline} of legs){
   for(let i=1;i<path.length;i++){
    const a=path[i-1],b=path[i];if(a===b)continue;
    const key=rrTrackKey(a,b);
    let edge=edges.get(key);
-   if(!edge){edge={a:Math.min(a,b),b:Math.max(a,b),colors:[]};edges.set(key,edge)}
+   if(!edge){edge={a:Math.min(a,b),b:Math.max(a,b),colors:[],outline:true};edges.set(key,edge)}
    if(!edge.colors.includes(color))edge.colors.push(color);
+   edge.outline&&=!!outline;   // hollow only where every leg on this track is an outline-badge train
   }
  }
  return edges;
@@ -1270,25 +1271,30 @@ function drawRoute(){
    routeWorld.append(
     se('path',{d:makePath(selectedPath),class:'rail-under'}),
     se('path',{d:makePath(selectedPath.slice(0,boundary+1)),class:'route-line',stroke:RR_UI_CSS_COLOR('--passed')}),
-    se('path',{d:makePath(selectedPath.slice(boundary)),class:'route-line',stroke:rrVisibleServiceAccent(routeColor)})
+    se('path',{d:makePath(selectedPath.slice(boundary)),class:'route-line',stroke:rrVisibleServiceAccent(routeColor)}),
+    ...(routeOutline?[se('path',{d:makePath(selectedPath),class:'route-line-core'})]:[])
    );
    return;
   }
  }
- const segments=selectedLegPaths.length?selectedLegPaths:[{path:selectedPath,color:routeColor}];
+ const segments=selectedLegPaths.length?selectedLegPaths:[{path:selectedPath,color:routeColor,outline:routeOutline}];
  if(!selectedJourney||segments.length<2){
-  for(const {path,color} of segments){if(path.length<2)continue;
+  const cores=[];
+  for(const {path,color,outline} of segments){if(path.length<2)continue;
    routeWorld.append(se('path',{d:makePath(path),class:'rail-under'}),
-    se('path',{d:makePath(path),class:'route-line',stroke:rrVisibleServiceAccent(color)}));}
+    se('path',{d:makePath(path),class:'route-line',stroke:rrVisibleServiceAccent(color)}));
+   if(outline??routeOutline)cores.push(se('path',{d:makePath(path),class:'route-line-core'}));}
+  routeWorld.append(...cores);   // after every casing, so branches of one hollow line join without seams
   return;
  }
  rrJourneyEdges=rrJourneyEdgeIndex(segments);
- const sc=Math.max(1e-6,fit*zoom),back=[],coloured=[],gradients=se('defs');
+ const sc=Math.max(1e-6,fit*zoom),back=[],coloured=[],cores=[],gradients=se('defs');
  let gradientIndex=0;
  for(const edge of rrJourneyEdges.values()){
   const a=P[edge.a],b=P[edge.b],d=`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`;
   back.push(se('path',{d,class:'rail-under'}));
   const n=edge.colors.length;
+  if(edge.outline)cores.push(se('path',{d,class:'route-line-core'}));
   if(n===1){coloured.push(se('path',{d,class:'route-line',stroke:rrVisibleServiceAccent(edge.colors[0])}));continue;}
   // One full-width stroke, split into adjacent, equal-width colour bands.
   // Unlike independently offset short segments, a perpendicular hard-stop
@@ -1309,7 +1315,7 @@ function drawRoute(){
   coloured.push(se('path',{d,class:'route-line',stroke:`url(#${id})`,
    'data-shared-colors':edge.colors.map(rrVisibleServiceAccent).join(',')}));
  }
- routeWorld.append(gradients,...back,...coloured);
+ routeWorld.append(gradients,...back,...coloured,...cores);
 }
 function screen(x,y){const sc=fit*zoom;return{x:x*sc+offX,y:y*sc+offY}}
 function resize(){const w=container.clientWidth,h=container.clientHeight;if(w&&h&&w===W&&h===H)return;   // same size: the map is already drawn for it
@@ -2058,6 +2064,7 @@ $('zoomIn').onclick=()=>zoomAt(1.25);$('zoomOut').onclick=()=>zoomAt(.8);$('zoom
 
 // Passenger journey planning. A connection must be formed by trains actually
 // calling at both stations in the correct order, with enough time to change.
+let routeOutline=false;   // the selected route belongs to outline-badge trains (IC, RS): its line is drawn hollow, like the badge (user 2026-11-24)
 let viewMode='departures',journeyResults=[],selectedJourney=null,journeyShown=12,selectedLegPaths=[],appliedJourneyQuery=null,journeyEditing=false;
 const JOURNEY_MAX_RESULTS=260;
 function fmtDuration(n){const h=Math.floor(n/60),m=n%60;return h?(m?`${h}h ${String(m).padStart(2,'0')}m`:`${h}h`):`${m} min`}
@@ -2360,7 +2367,7 @@ function getSegmentPath(t,a,b){
 }
 function chooseJourney(j){rrLocalSystem=null;rrFocusSystem=null;
  selectedJourney=j;selectedTrain=null;manualTrace=false;
- selectedLegPaths=j.legs.map(l=>({path:getSegmentPath(l.train,l.from,l.to),color:rrMapColor(l.train)}));
+ selectedLegPaths=j.legs.map(l=>({path:getSegmentPath(l.train,l.from,l.to),color:rrMapColor(l.train),outline:rrOutline(l.train)}));routeOutline=false;
  selectedPath=selectedLegPaths.flatMap((p,i)=>i?p.path.slice(1):p.path);
  selectedNames=[...new Set(j.legs.flatMap(l=>l.train.route.slice(l.fromIdx,l.toIdx+1).map(s=>s[0])))];
  routeColor=rrLineColor(j.legs[0].train)||C[j.legs[0].train.type];
