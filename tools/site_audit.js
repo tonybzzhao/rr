@@ -640,7 +640,12 @@
   for(const t of TRAINS){names.add(rrTrainLabel(t));if(t.network)names.add(t.network);if(t.line)names.add(String(t.line))}
   const sorted=[...names].filter(n=>n&&n.length>1).sort((a,b)=>b.length-a.length);
   const SAME=new Set('via train trains min direct services service information bus taxis express sprinter max rs rx ic nightline intercity local regio wc wi-fi date police assistance restaurant type couchette couchettes café locomotive destination english français copyright'.split(' '));
-  const left=new Map(),look=(t,lab)=>{if(!t||!/[A-Za-z]{3}/.test(t)||rrFrenchText(t)!==t)return;let r=' '+t+' ';for(const n of sorted)if(r.includes(n))r=r.split(n).join(' ');
+  // no English city name in French text (user 2026-11-23: "Windale in native French is Vindelle! Why still RR Banlieue Windale?"):
+  // a city whose French form differs may appear only inside a station's own name
+  const CITYMIX=[...RR_CITY_FR].filter(([e,f])=>e!==f),STN=STATIONS.map(x=>x.name),mixed=new Map();
+  const mix=(t,lab)=>{const fr=rrFrenchText(t);for(const [e] of CITYMIX){if(!new RegExp('(^|[^\\p{L}])'+e+'(?![\\p{L}])','u').test(fr))continue;
+    let r=fr;for(const n of STN)if(n.includes(e)&&r.includes(n))r=r.split(n).join(' ');if(new RegExp('(^|[^\\p{L}])'+e+'(?![\\p{L}])','u').test(r)&&!mixed.has(fr))mixed.set(fr,lab+' ('+e+')')}};
+  const left=new Map(),look=(t,lab)=>{if(t)mix(t,lab);if(!t||!/[A-Za-z]{3}/.test(t)||rrFrenchText(t)!==t)return;let r=' '+t+' ';for(const n of sorted)if(r.includes(n))r=r.split(n).join(' ');
    const w=(r.match(/\p{L}[\p{L}'’-]{2,}/gu)||[]).filter(x=>!SAME.has(x.toLowerCase()));if(w.length&&!left.has(t))left.set(t,lab)};
   const sweep=lab=>{rrLocalizeSubtree(document.body);const tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
    while(n=tw.nextNode()){const el=n.parentElement;if(!el||el.closest('script,style,svg')||el.dataset?.rrFr)continue;look((rrEnglishText.get(n)??n.nodeValue).replace(/\s+/g,' ').trim(),lab)}
@@ -653,8 +658,10 @@
    try{fillStationInfo(n);await frame();sweep('station information '+n)}catch(e){}}
   for(const t of pick){try{setCurrentStation(t.route[0][0]);chooseTrain(t);await frame();sweep('train '+t.type+' '+(t.pattern||''))}catch(e){}}
   for(const t of [...TRAINS.filter(t=>t.type==='Local').slice(0,2),...TRAINS.filter(t=>t.type==='Regio').slice(0,2)]){try{fillRouteInfo(t.type,t.network,t.line,t.route[0][0]);await frame();sweep('route '+t.type)}catch(e){}}
+  for(const net of [...new Set(TRAINS.filter(t=>t.type==='Local'&&t.network).map(t=>t.network))]){try{fillLocalSystem(net,STATIONS[0].name)}catch(e){}await frame();sweep('network '+net)}
   setViewMode('journeys');await frame();sweep('journeys');rrSelectValue($('from'),'Peiting Central');rrSelectValue($('to'),'Mapleriver Central');pickerViews.get('from')?.sync();pickerViews.get('to')?.sync();$('trace').click();await frame();sweep('journey results');
   for(const [t,lab] of left)bad('English left on the French site',lab+': '+t);
+  for(const [t,lab] of mixed)bad('English city name on the French site',lab+': '+t);
   rrApplyLocale(loc0);clear();setViewMode(vm0==='journeys'?'departures':vm0);serviceFilter=f0;setCurrentStation(st0||LABELS[0]);out.counts['French pages checked']=1}
  // City check-in (user 2026-11-22): every major station with a direct train within 90 min to a major airport (Mainline or Airport
  // Express served) lists City check-in under Help and services with its own icon and a note naming the airport(s); no other station

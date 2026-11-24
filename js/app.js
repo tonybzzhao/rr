@@ -168,7 +168,7 @@ function rrServiceLabel(type,network=''){
  const c=C[type]||RR_UI_CSS_COLOR('--ink-strong');
  const contrastToken=rrServiceAccentToken(type);
  const readable=contrastToken?`var(${contrastToken})`:c;
- return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type,network)}${network?` <span class="rr-network">${network}</span>`:''}</span></span>`;
+ return `<span class="rr-service-identity" style="--rr-service-identity-color:${c};--rr-service-aa-color:${readable}"><svg class="rr-service-logo" viewBox="0 0 108 50" aria-hidden="true" focusable="false"><use href="#rr-service-mark"></use></svg><span>${serviceName(type,network)}${network?` <span class="rr-network"${RR_CITY_FR.get(network)&&RR_CITY_FR.get(network)!==network?` data-rr-fr="${RR_CITY_FR.get(network)}"`:''}>${network}</span>`:''}</span></span>`;
 }
 function rrTrainLabel(t){return t.label||t.id}
 function rrOutline(t){return t.type==='InterCity'||t.pattern==='RS'}
@@ -344,6 +344,8 @@ const RR_CITIES=new Map();for(const x of STATIONS)if(x.city){const k=x.city+' (a
 function rrPlace(v){return RR_CITIES.get(v)||new Set([v])}
 // French names of the cities for the whole-city choice: "Pétine (toutes gares)" (approved by the user 2026-11-20; station names stay as they are).
 const RR_CITY_FR=new Map([["Peiting", "Pétine"], ["Mapleriver", "Érableuve"], ["Windale", "Vindelle"], ["Victoria", "Victoria"], ["Prinsburg", "Princebourg"], ["Yenchia", "Yenchia"], ["Touraine", "Touraine"], ["Somerfield", "Somerfield"], ["Havenbolme", "Havenbolme"], ["Bayarfort", "Bayarfort"], ["Amptonside", "Amptonside"], ["Yuchow", "Yuchou"], ["Cranford", "Cranford"], ["Southend", "Southend"], ["Hiltsbury", "Hiltsbury"], ["Binchester", "Bincastre"], ["Barton", "Barton"], ["Norbourne", "Norbourne"], ["Medway", "Medway"], ["Rotherham", "Rotherham"], ["Whitehurst", "Blanchebois"], ["Grafton", "Grafton"], ["Wardour", "Wardour"], ["Ribeauvillé", "Ribeauvillé"], ["Farinport", "Farinport"], ["Kingsbury", "Bourg-le-Roi"], ["Marlbury", "Marlbury"], ["Pinehurst", "Pinehurst"], ["Hanjin", "Hanjin"], ["Chatham", "Chatham"], ["Sulgen", "Sulgen"], ["Belwich", "Belwich"], ["Königstadt", "Villeroi"], ["Yungang", "Yungang"], ["Brunswick", "Brunswick"], ["Linhai New Town", "Linhai-Ville-Nouvelle"], ["Hengchu", "Hengchu"]]);
+// a city named inside a French service or network label takes its French form (station names stay as they are)
+const RR_CITY_FR_IN_NAME=new RegExp('\\b(RR Banlieue|RR Régional|Banlieue|Régional|Réseau|Métro de) ('+[...RR_CITY_FR.keys()].filter(c=>RR_CITY_FR.get(c)!==c).sort((a,b)=>b.length-a.length).map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')(?![\\p{L}-])','gu');
 function rrCityFr(v){const c=v.slice(0,-' (any station)'.length);return (RR_CITY_FR.get(c)||c)+' (toutes gares)'}
 function rrPlaceLabel(v){let fr=false;try{fr=rrActiveLocale==='fr'}catch(_){}return fr&&RR_CITIES.has(v)?rrCityFr(v):v}
 const RR_CITY_LABELS=[...RR_CITIES.keys()].sort((a,b)=>a.localeCompare(b));
@@ -2721,6 +2723,7 @@ function rrFrenchText(source){
   .replace(/\bRR Nightline\b/g,'RR Nocturne')
   .replace(/\bRR Regio\b/g,'RR Régional')
   .replace(/\bRR Local\b/g,'RR Banlieue')
+  .replace(RR_CITY_FR_IN_NAME,(m,p,c)=>p+' '+RR_CITY_FR.get(c))   // "RR Banlieue Vindelle", never "RR Banlieue Windale" (user 2026-11-23: no mixing French and English)
   .replace(/\bFirst Sleeper\b/g,'Voiture-lits Première')
   .replace(/\bFirst Class\b/g,'Première classe')
   .replace(/\bPower car\b/g,'Motrice')
