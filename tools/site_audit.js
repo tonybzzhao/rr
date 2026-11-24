@@ -209,9 +209,9 @@
      if(crowd&&zoom<rrMaxZoom()-1e-6)bad('stop named where highlighted dots crowd',rrTrainLabel(t)+': '+n);
      const b=g.getBBox();const dx=Math.max(b.x-p[0],0,p[0]-(b.x+b.width)),dy=Math.max(b.y-p[1],0,p[1]-(b.y+b.height));if(Math.hypot(dx,dy)>24)bad('stop name far from its dot',rrTrainLabel(t)+': '+n+' '+Math.round(Math.hypot(dx,dy))+' px')}}}
   zoom=v0.zoom;panX=v0.panX;panY=v0.panY;updateWorld();if(st0)setCurrentStation(st0);out.counts['trip stop names checked']=nl}
- // Mainline train numbers, DB style (user 2026-11-20): 3 digits; one line (type + the same two termini) per block of numbers; odd one
+ // Mainline train numbers, DB style (user 2026-11-20; 4 digits allowed since 2026-11-24): 3 or 4 digits; one line (type + the same two termini) per block of numbers; odd one
  // way, even the other; counting up through the day
- {const L=new Map();let nn=0;for(const t of TRAINS){if(t.type==='Regio'||t.type==='Local')continue;nn++;const m=String(t.id).match(/^(MAX|IC|VIA|NL) (\d{3})$/);if(!m){bad('Mainline train number not 3 digits with its type prefix',t.id);continue}
+ {const L=new Map();let nn=0;for(const t of TRAINS){if(t.type==='Regio'||t.type==='Local')continue;nn++;const m=String(t.id).match(/^(MAX|IC|VIA|NL) (\d{3,4})$/);if(!m){bad('Mainline train number not 3 or 4 digits with its type prefix',t.id);continue}
    const k=t.type+'|'+[t.origin,t.dest].sort().join('~');if(!L.has(k))L.set(k,[]);L.get(k).push(t)}
   const blocks=[];for(const [k,ts] of L){const ns=ts.map(t=>+t.id.split(' ')[1]);blocks.push([k.split('|')[0],Math.min(...ns),Math.max(...ns),k]);
    const par=new Map();for(const t of ts){const p=+t.id.split(' ')[1]%2,d=t.origin+'>'+t.dest;if(!par.has(d))par.set(d,new Set());par.get(d).add(p)}
