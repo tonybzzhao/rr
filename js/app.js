@@ -173,8 +173,11 @@ function rrServiceLabel(type,network=''){
 function rrTrainLabel(t){return t.label||t.id}
 function rrOutline(t){return t.type==='InterCity'||t.pattern==='RS'}
 // Local lines are colour-coded by letter (A red, B orange…); Havenbolme's S-Bahn uses one colour for every S-line, like Germany.
-const RR_LOCAL_COLORS={O:'#5A6B7B',A:'#D3141E',B:'#C25500',C:'#00803A',D:'#005EA8',E:'#7E3F98',F:'#8A4B22',G:'#C2006B',H:'#00808C'},RR_SBAHN_COLOR='#00783C',RR_PEITING_COLORS={A:'#093D86',B:'#FFD902',C:'#56A823',D:'#FF3400',E:'#DA81EA',F:'#F39400',G:'#AE3535'};   // Peiting: the old RR Local Peiting map's colours
-function rrLineColor(t){return t?.type==='Local'?(t.network==='Havenbolme'?C.Local:(t.network==='Peiting'&&RR_PEITING_COLORS[String(t.label||t.line)[0]])||RR_LOCAL_COLORS[String(t.label||t.line)[0]]||C.Local):null}   // S-Bahn Havenbolme is RR Local: one colour, the Local red
+const RR_LOCAL_COLORS={O:'#5A6B7B',A:'#D3141E',B:'#C25500',C:'#00803A',D:'#005EA8',E:'#7E3F98',F:'#8A4B22',G:'#C2006B',H:'#00808C',I:'#5E7F00',J:'#0079B8',K:'#9A6A00',L:'#4B3F9E',M:'#D6336C',N:'#7A1E3A',P:'#3D5A80',Q:'#8E5BD0',R:'#B5651D',S:'#2E7D32',T:'#A61F5C',U:'#00695C',V:'#6D4C41'},RR_SBAHN_COLOR='#00783C',RR_PEITING_COLORS={A:'#093D86',B:'#FFD902',C:'#56A823',D:'#FF3400',E:'#DA81EA',F:'#F39400',G:'#AE3535'};   // Peiting: the old RR Local Peiting map's colours
+// Letters I-V for the bigger run-8 networks (user 2026-11-25 "color coding stopped for local": they all fell back to the Local
+// red); a ring labelled "Ring" takes the ring grey O.
+const rrLocalKey=t=>{const l=String(t.label||t.line);return l==='Ring'?'O':l[0]};
+function rrLineColor(t){return t?.type==='Local'?(t.network==='Havenbolme'?C.Local:(t.network==='Peiting'&&RR_PEITING_COLORS[rrLocalKey(t)])||RR_LOCAL_COLORS[rrLocalKey(t)]||C.Local):null}   // S-Bahn Havenbolme is RR Local: one colour, the Local red
 // Line colours in the panels meet WCAG AA (4.5:1 for badge text). Light colours (Peiting yellow and orange) keep dark ink;
 // every other line colour carries white text, deepened just enough where the brand colour is too pale for it (Peiting green, pink).
 // The map keeps the brand colours (rrMapColor).
@@ -318,7 +321,15 @@ function rrDrawShared(sc){if(sc===rrDrawShared.sc)return;rrDrawShared.sc=sc;cons
 // Major rivers and lakes (format: tools/HYDROLOGY_FORMAT.md; the web map draws only major water, details stay in GIS). A layer
 // the export leaves out draws nothing. Lakes are water; rivers water-coloured lines under all track.
 const rrRingsD=rs=>(rs||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join('');
-function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',rrRingsD(GRAPH.land));$('waterShape')?.setAttribute('d',rrRingsD(GRAPH.water)+rrRingsD(GRAPH.lakes));$('riverShape').setAttribute('d',(GRAPH.rivers||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')).join(''));const g=[],sh=[],lc=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;if(shared)continue;(t===3?lc:t===2?g:t?h:m).push(d)}$('localTrack').setAttribute('d',lc.join(' '));$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '));
+// Rivers keep a true width (user 2026-11-25: "rivers still a thin line when zoom in all the way?"): each river is drawn at its
+// width in km (GRAPH.river_w, one per river; RR_RIVER_KM where the export gives none), never thinner than 1.6 px, so it is a
+// hairline at national scale and widens to its real size when zoomed in. Rivers of one width share a path.
+const RR_RIVER_KM=0.2;
+function rrDrawRivers(){const g=$('riverShape');if(!g)return;const by=new Map();
+ (GRAPH.rivers||[]).forEach((r,i)=>{const w=Math.round((+(GRAPH.river_w||[])[i]||RR_RIVER_KM)*100)/100;by.set(w,(by.get(w)||'')+'M'+r.map(p=>p[0]+' '+p[1]).join('L'))});
+ g.replaceChildren(...[...by].map(([w,d])=>se('path',{d,class:'river','data-km':w})));rrRiverWidths(fit*zoom)}
+function rrRiverWidths(sc){for(const p of document.querySelectorAll('#riverShape .river'))p.style.strokeWidth=Math.max(1.6,+p.dataset.km*RR_UNITS_PER_KM*sc).toFixed(2)+'px'}
+function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',rrRingsD(GRAPH.land));$('waterShape')?.setAttribute('d',rrRingsD(GRAPH.water)+rrRingsD(GRAPH.lakes));rrDrawRivers();const g=[],sh=[],lc=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;if(shared)continue;(t===3?lc:t===2?g:t?h:m).push(d)}$('localTrack').setAttribute('d',lc.join(' '));$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '));
  // one unified system (user 2026-11-22: "stop distinguishing line types and treat all lines as a unified system with neutral line
  // color by default when filter All. show correct network in color when filter that network"): every track once in a neutral
  // colour, and per network its own track, centred, shown only with that filter
@@ -1347,7 +1358,7 @@ let rrDrawnAt={x:0,y:0,sc:1},rrRedrawTimer=0,rrRedrawFrame=0;
 // The deepest zoom (user 2026-11-20: "maximum extent of zoom in should show all station label"): a scale, not a factor - 60 px
 // to the km on any screen (halts 1.2 km apart ~70 px apart, on a phone too); there every station in view is named.
 function rrMaxZoom(){return Math.max(28,60/RR_UNITS_PER_KM/(fit||1))}
-function rrPlaceWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);
+function rrPlaceWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);rrRiverWidths(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);
  const k=sc/rrDrawnAt.sc,t=Math.abs(k-1)<1e-9&&offX===rrDrawnAt.x&&offY===rrDrawnAt.y?'':`translate(${offX} ${offY}) scale(${k}) translate(${-rrDrawnAt.x} ${-rrDrawnAt.y})`;
  layer.setAttribute('transform',t);labels.setAttribute('transform',t);tooltip.style.display='none';$('zoomOut').disabled=zoom<=1.000001}
 function rrRedraw(){clearTimeout(rrRedrawTimer);cancelAnimationFrame(rrRedrawFrame);rrRedrawTimer=rrRedrawFrame=0;const sc=fit*zoom;if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap()}
@@ -1872,7 +1883,7 @@ function drawLocalColours(){
  // its own short stroke, so pieces pulled apart at every bend. Now each colour's pieces are chained and the offset lines meet
  // at a mitre point (or halfway, where the lane changes or the bend is too sharp).
  const gap=RR_LOCAL_GAP/sc,byCol=new Map(),f=v=>v.toFixed(2);
- const lanes=new Map();   // colour -> Map(edge key -> offset along the edge's lane frame normal)
+ const lanes=new Map(),rrLocalEdgeCount=new Map();   // colour -> Map(edge key -> offset along the edge's lane frame normal); lines per piece
  // One lane frame per piece of track, the same way along the whole bundle (user 2026-11-20 "what is this?": the frame came
  // from the order of the end points' numbers, so neighbouring pieces could face opposite ways and the lanes swapped sides -
  // the lines crossed between stations in fans). Walked piece to piece: a neighbour faces the way that turns least.
@@ -1899,16 +1910,21 @@ function drawLocalColours(){
   // a bundle, only where they part.
   const nextOn=(node,from,c)=>(nb.get(node)||[]).filter(k2=>k2!==from&&m.get(k2).includes(c));
   const turn=(pv,node,k2)=>{const [a,b]=k2.split('_').map(Number),w=a===node?b:a,i=[P[node][0]-P[pv][0],P[node][1]-P[pv][1]],o=[P[w][0]-P[node][0],P[w][1]-P[node][1]];return Math.atan2(i[0]*o[1]-i[1]*o[0],i[0]*o[0]+i[1]*o[1])};
-  const parts=(k,toward,c1,c2)=>{let [u,v]=FR.get(k)||k.split('_').map(Number);let pv=toward?u:v,node=toward?v:u,cur=k;
+  // returns [side, distance to the split]; side 0 where one line ends before they part
+  const parts=(k,toward,c1,c2)=>{let [u,v]=FR.get(k)||k.split('_').map(Number);let pv=toward?u:v,node=toward?v:u,cur=k,dist=0;
    for(let s=0;s<400;s++){const e1=nextOn(node,cur,c1),e2=nextOn(node,cur,c2),both=e1.filter(e=>e2.includes(e));
-    if(both.length){cur=both[0];const [a,b]=cur.split('_').map(Number);pv=node;node=a===node?b:a;continue}
-    if(!e1.length||!e2.length)return 0;
-    const d=turn(pv,node,e1[0])-turn(pv,node,e2[0]);return toward?d:-d}
-   return 0};
-  for(const [k,cols] of m)ord.set(k,[...cols].sort((c1,c2)=>{const f=parts(k,true,c1,c2)||parts(k,false,c1,c2);return f?Math.sign(f):(c1<c2?-1:1)}));
+    if(both.length){cur=both[0];const [a,b]=cur.split('_').map(Number);pv=node;node=a===node?b:a;dist+=Math.hypot(P[node][0]-P[pv][0],P[node][1]-P[pv][1]);continue}
+    if(!e1.length||!e2.length)return [0,dist];
+    const d=turn(pv,node,e1[0])-turn(pv,node,e2[0]);return [toward?d:-d,dist]}
+   return [0,dist]};
+  // Two lines that part on opposite sides at the two ends of a shared run must swap lanes somewhere (user 2026-11-25
+  // Birchridge screenshot: they swapped inside a short junction piece, a knot). Each piece follows the NEARER split, so the
+  // one swap falls midway along the shared run, where the track is long, never squeezed into the junction itself.
+  const pick=(k,c1,c2)=>{const [fa,da]=parts(k,true,c1,c2),[fb,db]=parts(k,false,c1,c2);return fa&&fb?(da<=db?fa:fb):fa||fb};
+  for(const [k,cols] of m)ord.set(k,[...cols].sort((c1,c2)=>{const f=pick(k,c1,c2);return f?Math.sign(f):(c1<c2?-1:1)}));
   return ord};
  for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;if(onlyKey&&!only.has(n))continue;const ord=laneOrder(m);
-  for(const [k] of m){const cols=ord.get(k)||m.get(k);cols.forEach((c,i)=>{if(!lanes.has(c))lanes.set(c,new Map());lanes.get(c).set(k,(i-(cols.length-1)/2)*gap)})}}
+  for(const [k] of m){const cols=ord.get(k)||m.get(k);rrLocalEdgeCount.set(k,cols.length);cols.forEach((c,i)=>{if(!lanes.has(c))lanes.set(c,new Map());lanes.get(c).set(k,(i-(cols.length-1)/2)*gap)})}}
  for(const [c,em] of lanes){
   const adj=new Map();for(const k of em.keys()){const [a,b]=k.split('_').map(Number);for(const [u,v] of [[a,b],[b,a]]){if(!adj.has(u))adj.set(u,[]);adj.get(u).push(v)}}
   const used=new Set(),chains=[],key=(a,b)=>a<b?a+'_'+b:b+'_'+a;
@@ -1916,18 +1932,24 @@ function drawLocalColours(){
    while((adj.get(q)||[]).length===2){const nx=adj.get(q).find(v=>v!==p);if(used.has(key(q,nx)))break;used.add(key(q,nx));ch.push(nx);p=q;q=nx}return ch};
   for(const [u,vs] of adj)if(vs.length!==2)for(const v of vs)if(!used.has(key(u,v)))chains.push(walk(u,v));
   for(const [u,vs] of adj)for(const v of vs)if(!used.has(key(u,v)))chains.push(walk(u,v));   // closed loops
+  // Where one line forks (its branches part at a node), every branch starts from one point: the line's lane on its busiest
+  // piece there. Each branch used to end on its own lane, so the fork showed as loose stubs (user 2026-11-25, Birchridge).
+  const fork=u=>{if((adj.get(u)||[]).length<3)return null;let best=null,bn=-1;
+   for(const v of adj.get(u)){const k=key(u,v),n=(rrLocalEdgeCount.get(k)||0);if(n>bn){bn=n;best=k}}
+   const [lo,hi]=FR.get(best)||best.split('_').map(Number),L=Math.hypot(P[hi][0]-P[lo][0],P[hi][1]-P[lo][1])||1,o=em.get(best)||0;
+   return [P[u][0]-(P[hi][1]-P[lo][1])/L*o,P[u][1]+(P[hi][0]-P[lo][0])/L*o]};
   let d='';
   for(const ch of chains){
    const seg=[];for(let i=0;i+1<ch.length;i++){const a=ch[i],b=ch[i+1],[x1,y1]=P[a],[x2,y2]=P[b],L=Math.hypot(x2-x1,y2-y1)||1;
     const [lo,hi]=FR.get(key(a,b))||[Math.min(a,b),Math.max(a,b)],[cx1,cy1]=P[lo],[cx2,cy2]=P[hi],Lc=Math.hypot(cx2-cx1,cy2-cy1)||1,o=em.get(key(a,b))||0;
     seg.push({p:[x1,y1],q:[x2,y2],d:[(x2-x1)/L,(y2-y1)/L],off:[-(cy2-cy1)/Lc*o,(cx2-cx1)/Lc*o]})}
    if(!seg.length)continue;
-   const pts=[[seg[0].p[0]+seg[0].off[0],seg[0].p[1]+seg[0].off[1]]];
+   const pts=[fork(ch[0])||[seg[0].p[0]+seg[0].off[0],seg[0].p[1]+seg[0].off[1]]];
    for(let i=1;i<seg.length;i++){const A=seg[i-1],B=seg[i],v=B.p,a0=[v[0]+A.off[0],v[1]+A.off[1]],b0=[v[0]+B.off[0],v[1]+B.off[1]];
     const cr=A.d[0]*B.d[1]-A.d[1]*B.d[0];let m=[(a0[0]+b0[0])/2,(a0[1]+b0[1])/2];
     if(Math.abs(cr)>0.02){const t=((b0[0]-a0[0])*B.d[1]-(b0[1]-a0[1])*B.d[0])/cr,q=[a0[0]+A.d[0]*t,a0[1]+A.d[1]*t];if(Math.hypot(q[0]-v[0],q[1]-v[1])<=4*gap+1e-9)m=q}
     pts.push(m)}
-   const z=seg.at(-1);pts.push([z.q[0]+z.off[0],z.q[1]+z.off[1]]);
+   const z=seg.at(-1);pts.push(fork(ch.at(-1))||[z.q[0]+z.off[0],z.q[1]+z.off[1]]);
    // a smooth curve through every point (Catmull-Rom as Bezier; user 2026-11-20 "curve, not zig zag"): it still passes
    // through each station's point, so the markers stay on the line
    d+='M'+f(pts[0][0])+' '+f(pts[0][1]);

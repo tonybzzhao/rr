@@ -9,6 +9,7 @@ nothing for it, as it does today.
 ```js
 GRAPH = {pts, edges, land, water, links, paths, causeways,
          rivers: [[[x,y], [x,y], …], …],   // major rivers: open polylines
+         river_w: [w, …],                  // optional: each river's width in km, same order as rivers
          lakes:  [[[x,y], [x,y], …], …]}   // major lakes: rings, like water
 ```
 
@@ -24,7 +25,9 @@ Use the same space and the same `site((x * U, y * U))` transform as `land` and `
 - Each river is two or more `[x,y]` points, open, with no repeated first point. Join links end to end into one line per
   river stretch, and simplify once with `_simplify(line, 0.3)`.
 - Leave out stretches that `water` already draws as a river polygon, so a river isn't drawn twice.
-- The site draws every river the same way at every zoom: a 1.6 px line in the water colour, under all track and labels.
+- The site draws each river at its true width (`river_w`, km; 0.2 km where it is missing), never thinner than 1.6 px, in the
+  water colour under all track and labels. So a river is a hairline at national scale and widens to its real size when zoomed in.
+  To make a river grow downstream, split it into stretches, each with its own width.
 
 ## `lakes`: major lakes and reservoirs only
 
