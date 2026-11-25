@@ -30,16 +30,12 @@ def calls(T,types):
   return c
 new,ref=trains(sys.argv[1]),trains(sys.argv[2])
 # The reference uses the names of its day: translate them through every later rename (tools/hq/ref_renames.json, old -> new,
-# cumulative; each rename release appends to it), so a renamed station isn't counted as a lost one.
+# reference-day name -> today's name, by station id; each rename release regenerates it), so a renamed station isn't counted as a lost one.
 import os
 _rn=os.path.join(os.path.dirname(os.path.abspath(__file__)),'ref_renames.json')
 if os.path.exists(_rn):
   RN=json.load(open(_rn))
-  def _tr(n):
-    for _ in range(10):
-      if n not in RN: break
-      n=RN[n]
-    return n
+  def _tr(n): return RN.get(n,n)      # one lookup: the file maps each reference-day name straight to today's (joined by station id), so a chain such as Jennanguan -> Eastley, Fukou -> Jennanguan never cascades
   ref=[(i,t,[_tr(x) for x in st]) for i,t,st in ref]
 app=open(sys.argv[3] if len(sys.argv)>3 else 'js/app.js').read()
 labels=json.loads(re.search(r'const LABELS=(\[.*?\]);',app).group(1))
