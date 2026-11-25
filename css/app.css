@@ -2255,6 +2255,8 @@ body{font-size:14px}
 .land{fill:var(--map-land);stroke:none}
 /* lakes and rivers (geographic map): the sea colour; a river keeps a hairline at every zoom */
 .water{fill:var(--map);stroke:var(--map);stroke-width:.6px;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+/* major rivers (tools/HYDROLOGY_FORMAT.md): water-coloured lines; lakes are drawn as .water */
+.river{fill:none;stroke:var(--map);stroke-width:1.6px;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 
 .keymark.shared{position:relative}.keymark.shared::after{content:"";position:absolute;left:0;right:0;top:-3.55px;border-top:1.3px solid var(--regio)}
 .journey-mode .service-filter{display:none}
