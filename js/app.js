@@ -1884,8 +1884,31 @@ function drawLocalColours(){
    for(const [end,dir] of [[v,1],[u,-1]])for(const k2 of nbr.get(end)||[]){if(FR.has(k2))continue;const [c,d]=k2.split('_').map(Number),w=c===end?d:c;
     const dw=[(P[w][0]-P[end][0])*dir,(P[w][1]-P[end][1])*dir],fwd=du[0]*dw[0]+du[1]*dw[1]>=0;   // continue the way we came
     FR.set(k2,(dir===1)===fwd?[end,w]:[w,end]);queue.push(k2)}}}
- for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;if(onlyKey&&!only.has(n))continue;
-  for(const [k,cols] of m)cols.forEach((c,i)=>{if(!lanes.has(c))lanes.set(c,new Map());lanes.get(c).set(k,(i-(cols.length-1)/2)*gap)})}
+ // Lane order carried along the bundle (user 2026-11-25 screenshot: lines twisted over each other at a junction): each piece
+ // used its own colour order, so neighbouring pieces swapped lanes. Now a piece keeps the order of the piece it continues from
+ // for the colours they share; a colour joining there takes the side it arrives from (the lane frame's normal side), so lines
+ // stay parallel through the bundle and only peel off where they really part.
+ const laneOrder=(m)=>{const ord=new Map(),nb=new Map();
+  for(const k of m.keys()){const [a,b]=k.split('_').map(Number);for(const u of [a,b]){if(!nb.has(u))nb.set(u,[]);nb.get(u).push(k)}}
+  const nrm=k=>{const [u,v]=FR.get(k)||k.split('_').map(Number),dx=P[v][0]-P[u][0],dy=P[v][1]-P[u][1],L=Math.hypot(dx,dy)||1;return [-dy/L,dx/L]};
+  const side=(k,node,c)=>{const n=nrm(k);let best=0;for(const k2 of nb.get(node)||[]){if(k2===k||!m.get(k2).includes(c))continue;const [a,b]=k2.split('_').map(Number),w=a===node?b:a;
+    const s=n[0]*(P[w][0]-P[node][0])+n[1]*(P[w][1]-P[node][1]);if(Math.abs(s)>Math.abs(best))best=s}return best};
+  // Order on every piece by where each pair of lines parts (the usual metro-map rule): walk along the two lines together,
+  // ahead along the lane frame and back against it, to the node where they first split; the one turning towards the frame's
+  // normal side takes the higher lane. The same rule on every piece gives one consistent order, so lines never cross inside
+  // a bundle, only where they part.
+  const nextOn=(node,from,c)=>(nb.get(node)||[]).filter(k2=>k2!==from&&m.get(k2).includes(c));
+  const turn=(pv,node,k2)=>{const [a,b]=k2.split('_').map(Number),w=a===node?b:a,i=[P[node][0]-P[pv][0],P[node][1]-P[pv][1]],o=[P[w][0]-P[node][0],P[w][1]-P[node][1]];return Math.atan2(i[0]*o[1]-i[1]*o[0],i[0]*o[0]+i[1]*o[1])};
+  const parts=(k,toward,c1,c2)=>{let [u,v]=FR.get(k)||k.split('_').map(Number);let pv=toward?u:v,node=toward?v:u,cur=k;
+   for(let s=0;s<400;s++){const e1=nextOn(node,cur,c1),e2=nextOn(node,cur,c2),both=e1.filter(e=>e2.includes(e));
+    if(both.length){cur=both[0];const [a,b]=cur.split('_').map(Number);pv=node;node=a===node?b:a;continue}
+    if(!e1.length||!e2.length)return 0;
+    const d=turn(pv,node,e1[0])-turn(pv,node,e2[0]);return toward?d:-d}
+   return 0};
+  for(const [k,cols] of m)ord.set(k,[...cols].sort((c1,c2)=>{const f=parts(k,true,c1,c2)||parts(k,false,c1,c2);return f?Math.sign(f):(c1<c2?-1:1)}));
+  return ord};
+ for(const [n,m] of rrLocalNetworkEdges()){if(net&&n!==net)continue;if(onlyKey&&!only.has(n))continue;const ord=laneOrder(m);
+  for(const [k] of m){const cols=ord.get(k)||m.get(k);cols.forEach((c,i)=>{if(!lanes.has(c))lanes.set(c,new Map());lanes.get(c).set(k,(i-(cols.length-1)/2)*gap)})}}
  for(const [c,em] of lanes){
   const adj=new Map();for(const k of em.keys()){const [a,b]=k.split('_').map(Number);for(const [u,v] of [[a,b],[b,a]]){if(!adj.has(u))adj.set(u,[]);adj.get(u).push(v)}}
   const used=new Set(),chains=[],key=(a,b)=>a<b?a+'_'+b:b+'_'+a;
