@@ -95,7 +95,7 @@ def arm(prev,cur,t,L):   # the point on this class's track at straight distance 
     q=P[c];p,c=c,nb[0]
   return tuple(P[c])
 CLS={0:'Mainline',1:'high-speed',2:'Regional',3:'Local'}
-RMIN={0:0.8,1:3.0,2:0.3,3:0.2,4:3.0}   # km, guidance: sensibly loose class minimums (user 2026-11-25 "technical standard should be sensibly looser")
+RMIN={0:0.8,1:1.2,2:0.3,3:0.2,4:3.0}   # km, guidance: 4 = dedicated HS alignment, 1 = Mainline / upgraded track HS trains use (~160-200 km/h); user 2026-11-25 "sensibly looser"
 for n,nb in adj.items():
   by=collections.defaultdict(list)
   for x,t in nb:by[t].append(x)
