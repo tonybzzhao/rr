@@ -65,11 +65,12 @@ adj=collections.defaultdict(list)
 for a,b,t,*_ in E:
   adj[a].append((b,t));adj[b].append((a,t))
 stx={tuple(x['attach']):x['name'] for x in json.loads(re.search(r'const STATIONS=(\[.*?\]);\n',app,re.S).group(1))}
-def far(prev,cur):
+stpts={tuple(x) for x in stx}
+def far(prev,cur,t):   # look ahead along this class's own track only, never through a station onto other track
   p,c=prev,cur;o=P[prev]
   for _ in range(500):
-    if math.dist(P[c],o)>=0.6:return c
-    nb=[x for x,_ in adj[c] if x!=p]
+    if math.dist(P[c],o)>=0.6 or tuple(P[c]) in stpts:return c
+    nb=[x for x,u in adj[c] if x!=p and u==t]
     if len(nb)!=1:return c
     p,c=c,nb[0]
   return c
@@ -79,7 +80,7 @@ for n,nb in adj.items():
   for x,t in nb:by[t].append(x)
   for t,ns in by.items():
     if len(ns)!=2:continue
-    a,c,b=P[far(n,ns[0])],P[far(n,ns[1])],P[n]
+    a,c,b=P[far(n,ns[0],t)],P[far(n,ns[1],t)],P[n]
     v1=(b[0]-a[0],b[1]-a[1]);v2=(c[0]-b[0],c[1]-b[1]);n1,n2=math.hypot(*v1),math.hypot(*v2)
     if n1<0.3 or n2<0.3:continue
     ang=math.degrees(math.acos(max(-1,min(1,(v1[0]*v2[0]+v1[1]*v2[1])/(n1*n2)))))
