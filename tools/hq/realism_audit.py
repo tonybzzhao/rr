@@ -82,6 +82,18 @@ def far(prev,cur,t):   # look ahead along this class's own track only, never thr
     if len(nb)!=1:return c
     p,c=c,nb[0]
   return c
+def arm(prev,cur,t,L):   # the point on this class's track at straight distance L from prev (interpolated)
+  p,c=prev,cur;o=P[prev];q=P[prev]
+  for _ in range(500):
+    d=math.dist(P[c],o)
+    if d>=L:
+      d0=math.dist(q,o);f=(L-d0)/(d-d0) if d>d0 else 1
+      return (q[0]+(P[c][0]-q[0])*f,q[1]+(P[c][1]-q[1])*f)
+    if tuple(P[c]) in stpts:return tuple(P[c])
+    nb=[x for x,u in adj[c] if x!=p and u==t]
+    if len(nb)!=1:return tuple(P[c])
+    q=P[c];p,c=c,nb[0]
+  return tuple(P[c])
 CLS={0:'Mainline',1:'high-speed',2:'Regional',3:'Local'}
 RMIN={0:0.8,1:3.0,2:0.3,3:0.2,4:3.0}   # km, guidance: sensibly loose class minimums (user 2026-11-25 "technical standard should be sensibly looser")
 for n,nb in adj.items():
@@ -89,7 +101,10 @@ for n,nb in adj.items():
   for x,t in nb:by[t].append(x)
   for t,ns in by.items():
     if len(ns)!=2:continue
-    a,c,b=P[far(n,ns[0],t)],P[far(n,ns[1],t)],P[n]
+    # symmetric arms (corner-tool 2026-11-25: a curve beside one long straight segment read as ~R/2): both look-ahead points
+    # at the same distance L from the node, the shorter arm's reach, interpolated along the track
+    b=P[n];fa,fc=far(n,ns[0],t),far(n,ns[1],t);L=min(math.dist(P[fa],b),math.dist(P[fc],b))
+    a,c=arm(n,ns[0],t,L),arm(n,ns[1],t,L)
     v1=(b[0]-a[0],b[1]-a[1]);v2=(c[0]-b[0],c[1]-b[1]);n1,n2=math.hypot(*v1),math.hypot(*v2)
     if n1<0.3 or n2<0.3:continue
     ang=math.degrees(math.acos(max(-1,min(1,(v1[0]*v2[0]+v1[1]*v2[1])/(n1*n2)))))
