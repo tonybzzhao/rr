@@ -87,7 +87,7 @@ def far(prev,cur,t):   # look ahead along this class's own track only, never thr
     p,c=c,nb[0]
   return c
 CLS={0:'Mainline',1:'high-speed',2:'Regional',3:'Local'}
-RMIN={0:1.2,1:4.0,2:0.5,3:0.3,4:4.0}   # km: real-world class minimums at line speed (GIS technical standards)
+RMIN={0:0.8,1:3.0,2:0.3,3:0.2,4:3.0}   # km, guidance: sensibly loose class minimums (user 2026-11-25 "technical standard should be sensibly looser")
 for n,nb in adj.items():
   by=collections.defaultdict(list)
   for x,t in nb:by[t].append(x)
