@@ -75,6 +75,7 @@ def far(prev,cur,t):   # look ahead along this class's own track only, never thr
     p,c=c,nb[0]
   return c
 CLS={0:'Mainline',1:'high-speed',2:'Regional',3:'Local'}
+RMIN={0:1.2,1:4.0,2:0.5,3:0.3,4:4.0}   # km: real-world class minimums at line speed (GIS technical standards)
 for n,nb in adj.items():
   by=collections.defaultdict(list)
   for x,t in nb:by[t].append(x)
@@ -85,6 +86,11 @@ for n,nb in adj.items():
     if n1<0.3 or n2<0.3:continue
     ang=math.degrees(math.acos(max(-1,min(1,(v1[0]*v2[0]+v1[1]*v2[1])/(n1*n2)))))
     st=stx.get(tuple(b))
+    # R tight curve (user 2026-11-25 "add curve line for this kind of 90 degree turns, see what real world does"): the curve
+    # radius through the look-ahead points, against the class minimum (km). Station throats are exempt.
+    R=min(n1,n2)/(2*math.sin(math.radians(ang)/2))/2.25 if ang>0.5 else 1e9
+    if not st and ang<=120 and R<RMIN.get(t,0):
+      F['R tight curve '+CLS.get(t,str(t))].append((int(R*1000),0,f"@{b[0]:.1f},{b[1]:.1f} radius ~{R*1000:.0f} m (min {RMIN[t]*1000:.0f})"))
     if ang>120 and not st:   # open track doubling back on itself: impossible, never EXPLAINED (user 2026-11-25 Peiting spike);
       F['K HARD hairpin '+CLS.get(t,str(t))].append((int(ang),0,f"{st or 'open track'} @{b[0]:.1f},{b[1]:.1f} ({int(ang)} deg)"))
     elif ang>45:
