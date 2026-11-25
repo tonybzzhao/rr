@@ -315,7 +315,30 @@ function rrSharedPathCls(o,kind,hs){let d='';for(const {pts,ns,ids} of rrSharedC
 function rrDrawShared(sc){if(sc===rrDrawShared.sc)return;rrDrawShared.sc=sc;const o=1.6/sc,d={ml:'',hsl:'',regio:'',local:''};
  for(const [k,lanes] of Object.entries(RR_SHARE_LANES))for(const [sys,m] of Object.entries(lanes)){if(sys==='ml'){d.ml+=rrSharedPathCls(m*o,+k,false);d.hsl+=rrSharedPathCls(m*o,+k,true)}else d[sys]+=rrSharedPath(m*o,+k)}
  $('mlShared').setAttribute('d',d.ml);$('hslShared').setAttribute('d',d.hsl);$('regioShared').setAttribute('d',d.regio);$('localShared').setAttribute('d',d.local)}
-function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',(GRAPH.land||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));$('waterShape')?.setAttribute('d',(GRAPH.water||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));const g=[],sh=[],lc=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;if(shared)continue;(t===3?lc:t===2?g:t?h:m).push(d)}$('localTrack').setAttribute('d',lc.join(' '));$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '));
+// Minor rivers, lakes and wetlands (format: tools/HYDROLOGY_FORMAT.md). A layer the export leaves out draws nothing. Lakes are
+// water; wetlands a light tint of it; rivers water-coloured lines by Strahler order: the biggest at every zoom, smaller ones as
+// the map zooms in. Each zoom band has its own path, simplified to half a screen pixel at the band's largest scale.
+const rrRingsD=rs=>(rs||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join('');
+const RR_RIVER_BANDS=[[0,5],[1.5,4],[3,3],[6,1]];   // [from map px per km, smallest order shown]
+const rrRiverWidth=o=>o>=5?'w3':o>=3?'w2':'w1';
+function rrSimplify(line,tol){   // Douglas-Peucker, iterative
+ const n=line.length;if(n<3)return line;const keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]];
+ while(st.length){const [a,b]=st.pop(),[ax,ay]=line[a],dx=line[b][0]-ax,dy=line[b][1]-ay,l=Math.hypot(dx,dy)||1;let m=0,i0=-1;
+  for(let i=a+1;i<b;i++){const d=Math.abs((line[i][0]-ax)*dy-(line[i][1]-ay)*dx)/l;if(d>m){m=d;i0=i}}
+  if(m>tol){keep[i0]=1;st.push([a,i0],[i0,b])}}
+ return line.filter((_,i)=>keep[i])}
+let rrRiverBand=-1;
+function rrDrawHydrology(){
+ $('wetlandShape').setAttribute('d',rrRingsD(GRAPH.wetlands));
+ const g=$('riverLayer');g.replaceChildren();rrRiverBand=-1;if(!GRAPH.rivers?.length)return;
+ RR_RIVER_BANDS.forEach(([,min],i)=>{const next=RR_RIVER_BANDS[i+1],tol=next?0.5*RR_UNITS_PER_KM/next[0]:0,d={w1:[],w2:[],w3:[]};
+  for(const [o,line] of GRAPH.rivers)if(o>=min){const s=tol?rrSimplify(line,tol):line;if(s.length>1)d[rrRiverWidth(o)].push('M'+s.map(p=>p[0]+' '+p[1]).join('L'))}
+  const band=se('g',{display:'none'});for(const w in d)if(d[w].length)band.append(se('path',{class:'river '+w,d:d[w].join('')}));g.append(band)});
+ rrShowRiverBand(fit*zoom)}
+function rrShowRiverBand(sc){const g=$('riverLayer');if(!g.children.length)return;const k=sc*RR_UNITS_PER_KM;let b=0;
+ RR_RIVER_BANDS.forEach(([from],i)=>{if(k>=from)b=i});if(b===rrRiverBand)return;
+ g.children[rrRiverBand]?.setAttribute('display','none');g.children[b].removeAttribute('display');rrRiverBand=b}
+function pathsByType(){const h=[],m=[];$('landShape').setAttribute('d',(GRAPH.land||[]).map(r=>'M'+r.map(p=>p[0]+' '+p[1]).join('L')+'Z').join(''));$('waterShape')?.setAttribute('d',rrRingsD(GRAPH.water)+rrRingsD(GRAPH.lakes));rrDrawHydrology();const g=[],sh=[],lc=[];for(const [a,b,t,shared] of E){const d=`M${P[a][0]} ${P[a][1]}L${P[b][0]} ${P[b][1]}`;if(shared)continue;(t===3?lc:t===2?g:t?h:m).push(d)}$('localTrack').setAttribute('d',lc.join(' '));$('regioTrack').setAttribute('d',g.join(' '));$('hslTrack').setAttribute('d',h.join(' '));$('mlTrack').setAttribute('d',m.join(' '));
  // one unified system (user 2026-11-22: "stop distinguishing line types and treat all lines as a unified system with neutral line
  // color by default when filter All. show correct network in color when filter that network"): every track once in a neutral
  // colour, and per network its own track, centred, shown only with that filter
@@ -1344,7 +1367,7 @@ let rrDrawnAt={x:0,y:0,sc:1},rrRedrawTimer=0,rrRedrawFrame=0;
 // The deepest zoom (user 2026-11-20: "maximum extent of zoom in should show all station label"): a scale, not a factor - 60 px
 // to the km on any screen (halts 1.2 km apart ~70 px apart, on a phone too); there every station in view is named.
 function rrMaxZoom(){return Math.max(28,60/RR_UNITS_PER_KM/(fit||1))}
-function rrPlaceWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);
+function rrPlaceWorld(){clampPan();const sc=fit*zoom;rrDrawShared(sc);rrShowRiverBand(sc);offX=(W-(graphWidth*sc))/2-minX*sc+panX;offY=(H-(graphHeight*sc))/2-minY*sc+panY;world.setAttribute('transform',`translate(${offX} ${offY}) scale(${sc})`);
  const k=sc/rrDrawnAt.sc,t=Math.abs(k-1)<1e-9&&offX===rrDrawnAt.x&&offY===rrDrawnAt.y?'':`translate(${offX} ${offY}) scale(${k}) translate(${-rrDrawnAt.x} ${-rrDrawnAt.y})`;
  layer.setAttribute('transform',t);labels.setAttribute('transform',t);tooltip.style.display='none';$('zoomOut').disabled=zoom<=1.000001}
 function rrRedraw(){clearTimeout(rrRedrawTimer);cancelAnimationFrame(rrRedrawFrame);rrRedrawTimer=rrRedrawFrame=0;const sc=fit*zoom;if(selectedJourney&&selectedLegPaths.length>1&&Math.abs((rrRouteRenderedScale??0)-sc)>1e-6)drawRoute();drawMap()}
