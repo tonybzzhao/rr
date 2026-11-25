@@ -173,8 +173,8 @@ function rrServiceLabel(type,network=''){
 function rrTrainLabel(t){return t.label||t.id}
 function rrOutline(t){return t.type==='InterCity'||t.pattern==='RS'}
 // Local lines are colour-coded by letter (A red, B orange…); Havenbolme's S-Bahn uses one colour for every S-line, like Germany.
-const RR_LOCAL_COLORS={O:'#5A6B7B',A:'#D3141E',B:'#C25500',C:'#00803A',D:'#005EA8',E:'#7E3F98',F:'#8A4B22',G:'#C2006B',H:'#00808C',I:'#5E7F00',J:'#0079B8',K:'#9A6A00',L:'#4B3F9E',M:'#D6336C',N:'#7A1E3A',P:'#3D5A80',Q:'#8E5BD0',R:'#B5651D',S:'#2E7D32',T:'#A61F5C',U:'#00695C',V:'#6D4C41'},RR_SBAHN_COLOR='#00783C',RR_PEITING_COLORS={A:'#093D86',B:'#FFD902',C:'#56A823',D:'#FF3400',E:'#DA81EA',F:'#F39400',G:'#AE3535'};   // Peiting: the old RR Local Peiting map's colours
-// Letters I-V for the bigger run-8 networks (user 2026-11-25 "color coding stopped for local": they all fell back to the Local
+const RR_LOCAL_COLORS={O:'#5A6B7B',A:'#D3141E',B:'#C25500',C:'#00803A',D:'#005EA8',E:'#7E3F98',F:'#8A4B22',G:'#C2006B',H:'#00808C',I:'#5E7F00',J:'#0079B8',K:'#9A6A00',L:'#4B3F9E',M:'#D6336C',N:'#7A1E3A',P:'#3D5A80',Q:'#8E5BD0',R:'#B5651D',S:'#2E7D32',T:'#A61F5C',U:'#00695C',V:'#6D4C41',W:'#1565C0',X:'#AD1457',Y:'#558B2F',Z:'#4E342E'},RR_SBAHN_COLOR='#00783C',RR_PEITING_COLORS={A:'#093D86',B:'#FFD902',C:'#56A823',D:'#FF3400',E:'#DA81EA',F:'#F39400',G:'#AE3535'};   // Peiting: the old RR Local Peiting map's colours
+// Letters I-Z for the bigger run-8 networks (user 2026-11-25 "color coding stopped for local": they all fell back to the Local
 // red); a ring labelled "Ring" takes the ring grey O.
 const rrLocalKey=t=>{const l=String(t.label||t.line);return l==='Ring'?'O':l[0]};
 function rrLineColor(t){return t?.type==='Local'?(t.network==='Havenbolme'?C.Local:(t.network==='Peiting'&&RR_PEITING_COLORS[rrLocalKey(t)])||RR_LOCAL_COLORS[rrLocalKey(t)]||C.Local):null}   // S-Bahn Havenbolme is RR Local: one colour, the Local red
