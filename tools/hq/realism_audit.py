@@ -44,12 +44,22 @@ cn,cr=calls(new,ML-{'Nightline'}),calls(ref,ML-{'Nightline'})
 top=[s for s,_ in cr.most_common(100) if s in nowst]
 major=set(labels)|set(top[:60])
 F=collections.defaultdict(list)
+import os
+_pr=os.environ.get('RR_PAIR_REVIEWS',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','..','Radeland_QGIS','RR_Info_Export','redraw','pair_reviews.json'))
+PAIR_REVIEW={}
+if os.path.exists(_pr):
+  for e in json.load(open(_pr)) if isinstance(json.load(open(_pr)),list) else json.load(open(_pr)).get('pairs',[]):
+    PAIR_REVIEW[e.get('pair','')]=e.get('status','')
 for g,ty in GROUPS.items():
   pn,pr=pairs(new,ty),pairs(ref,ty)
   for (a,b),o in pr.items():
     if a in major and b in major and a in nowst and b in nowst and o>=8:
       n=pn.get((a,b),0)
-      if n==0: F['A '+g].append((o,n,f'{a} – {b}'))
+      if n==0:
+        # user 2026-11-25: direct pairs may change; a lost direct train needs a passenger-impact review, not a fix.
+        # Pairs the coordinator accepted (redraw/pair_reviews.json, status "accepted") are listed as reviewed, not open.
+        k=f'{a} – {b}';st=PAIR_REVIEW.get(k) or PAIR_REVIEW.get(f'{b} – {a}')
+        F[('A reviewed ' if st=='accepted' else 'A REVIEW NEEDED ')+g].append((o,n,k))
 # B corridor IC gaps
 icn=pairs(new,{'InterCity'})
 seen=set()
@@ -126,6 +136,8 @@ for k in sorted(F):
   print(f'\n## {k}: {len(v)}')
   for o,n,x in v[:40]: print(f'  {o:5d} -> {n:4d}  {x}' if o else f'  {x}')
 hard=sum(len(v) for k,v in F.items() if ' HARD ' in k)
+rev=sum(len(v) for k,v in F.items() if k.startswith('A REVIEW NEEDED'))
+print('\nLOST DIRECT PAIRS needing a passenger-impact review (not faults):',rev)
 print('\nHARD (impossible, must be 0 to ship):',hard)
 print('TOTAL FAULTS',bad)
 sys.exit(1 if bad else 0)
