@@ -36,7 +36,8 @@ _rn=os.path.join(os.path.dirname(os.path.abspath(__file__)),'ref_renames.json')
 if os.path.exists(_rn):
   RN=json.load(open(_rn))
   def _tr(n): return RN.get(n,n)      # one lookup: the file maps each reference-day name straight to today's (joined by station id), so a chain such as Jennanguan -> Eastley, Fukou -> Jennanguan never cascades
-  ref=[(i,t,[_tr(x) for x in st]) for i,t,st in ref]
+  _cur={x for _,_,st in new for x in st}   # translate only names that no longer exist (a current-name reference stays as it is)
+  ref=[(i,t,[x if x in _cur else _tr(x) for x in st]) for i,t,st in ref]
 app=open(sys.argv[3] if len(sys.argv)>3 else 'js/app.js').read()
 labels=json.loads(re.search(r'const LABELS=(\[.*?\]);',app).group(1))
 nowst={x['name'] for x in json.loads(re.search(r'const STATIONS=(\[.*?\]);\n',app,re.S).group(1))}
