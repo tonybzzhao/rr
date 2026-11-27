@@ -748,8 +748,8 @@
    if(Math.abs(cr.top-m.bottom)>1||Math.abs(cr.bottom-sr.bottom)>1||parseFloat(cb.top)!==0||parseFloat(cb.bottom)!==0)bad('City check-in stop: route line broken beside the note',id);
    if(cb.backgroundImage!=='none'||(route&&cb.backgroundColor!==rc))bad('City check-in stop: line beside the note not in the route colour',id+': '+cb.backgroundColor+' vs '+rc)};
   const cand=TRAINS.filter(t=>t.route.some((_,i)=>rrCheckInHere(t,i)));const pick=[...cand.filter((_,k)=>k%Math.max(1,Math.floor(cand.length/24))===0).slice(0,24)];
-  for(const t of pick){const i0=t.route.findIndex((_,i)=>rrCheckInHere(t,i));for(const at of [t.route[0][0],t.route[i0][0]]){rrOpenTrainAt(t.id,at);nt++;
-    const here=rrTrainProgressIndex(t),base=rrTrainDayBase(t),want=t.route.filter((_,i)=>i>=here&&rrCheckInHere(t,i)&&openAt(t.route[i][0],stopOrdinal(t,i),base)).length,got=detail.querySelectorAll('.stop.has-checkin').length;nh+=got;
+  for(const t of pick){const i0=t.route.findIndex((_,i)=>rrCheckInHere(t,i));for(const at of [t.route[0][0],t.route[i0][0]]){const r=rrOpenTrainAt(t.id,at)||t;nt++;   /* the run the page opened (the next one once today's has left: its day may have other hours) */
+    const here=rrTrainProgressIndex(r),base=rrTrainDayBase(r),want=r.route.filter((_,i)=>i>=here&&rrCheckInHere(r,i)&&openAt(r.route[i][0],stopOrdinal(r,i),base)).length,got=detail.querySelectorAll('.stop.has-checkin').length;nh+=got;
     if(got!==want)bad('City check-in available shown where check-in is closed / missing where open',t.id+' at '+at+': '+got+' of '+want);
     for(const st of detail.querySelectorAll('.stop.has-checkin'))lineOK(st,t.id)}}
   /* French: the longer note wraps; the line must still be whole */
