@@ -85,12 +85,19 @@ for a,b,t,*_ in E:
   adj[a].append((b,t));adj[b].append((a,t))
 stx={tuple(x['attach']):x['name'] for x in json.loads(re.search(r'const STATIONS=(\[.*?\]);\n',app,re.S).group(1))}
 stpts={tuple(x) for x in stx}
-def far(prev,cur,t):   # look ahead along this class's own track only, never through a station onto other track
+def _turn(a,b,c):   # degrees the track turns at b
+  v1=(b[0]-a[0],b[1]-a[1]);v2=(c[0]-b[0],c[1]-b[1]);n1,n2=math.hypot(*v1),math.hypot(*v2)
+  if n1==0 or n2==0:return 0.0
+  return math.degrees(math.acos(max(-1,min(1,(v1[0]*v2[0]+v1[1]*v2[1])/(n1*n2)))))
+def far(prev,cur,t,skip=False):   # look ahead along this class's own track only, never through a station onto other track
   p,c=prev,cur;o=P[prev]
   for _ in range(500):
-    if math.dist(P[c],o)>=0.6 or tuple(P[c]) in stpts:return c
+    if math.dist(P[c],o)>=0.6 and not skip or tuple(P[c]) in stpts:return c
     nb=[x for x,u in adj[c] if x!=p and u==t]
     if len(nb)!=1:return c
+    # skip (curve radius only; coordinator 2026-11-28, Meiyin ML-036): a collinear vertex 0.6 out - the builder's extra
+    # drawing vertex on a straight - cut the arm short and a curve read 924 m; the reach then ends where the track bends
+    if skip and math.dist(P[c],o)>=0.6 and _turn(P[p],P[c],P[nb[0]])>1.0:return c
     p,c=c,nb[0]
   return c
 def arm(prev,cur,t,L):   # the point on this class's track at straight distance L from prev (interpolated)
@@ -123,6 +130,12 @@ for n,nb in adj.items():
     # R tight curve (user 2026-11-25 "add curve line for this kind of 90 degree turns, see what real world does"): the curve
     # radius through the look-ahead points, against the class minimum (km). Station throats are exempt.
     R=min(n1,n2)/(2*math.sin(math.radians(ang)/2))/2.25 if ang>0.5 else 1e9
+    if R<RMIN.get(t,0):   # the same radius with collinear vertices skipped (a drawing vertex on a straight is no curve)
+      fa,fc=far(n,ns[0],t,True),far(n,ns[1],t,True);L=min(math.dist(P[fa],b),math.dist(P[fc],b))
+      a2,c2=arm(n,ns[0],t,L),arm(n,ns[1],t,L)
+      u1=(b[0]-a2[0],b[1]-a2[1]);u2=(c2[0]-b[0],c2[1]-b[1]);m1,m2=math.hypot(*u1),math.hypot(*u2)
+      g2=math.degrees(math.acos(max(-1,min(1,(u1[0]*u2[0]+u1[1]*u2[1])/(m1*m2)))))
+      R=max(R,min(m1,m2)/(2*math.sin(math.radians(g2)/2))/2.25 if g2>0.5 else 1e9)
     if not st and ang<=120 and R<RMIN.get(t,0):
       F['R tight curve '+CLS.get(t,str(t))].append((int(R*1000),0,f"@{b[0]:.1f},{b[1]:.1f} radius ~{R*1000:.0f} m (min {RMIN[t]*1000:.0f})"))
     if ang>120 and not st:   # open track doubling back on itself: impossible, never EXPLAINED (user 2026-11-25 Peiting spike);
